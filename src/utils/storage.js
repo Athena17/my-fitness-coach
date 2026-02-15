@@ -1,0 +1,75 @@
+const SCHEMA_KEY = 'nt_schema_version';
+const TARGETS_KEY = 'nt_targets';
+const ENTRIES_KEY = 'nt_entries';
+const CURRENT_SCHEMA = 1;
+
+function safeGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error(`Failed to save ${key}:`, e);
+  }
+}
+
+export function runMigrations() {
+  const version = safeGet(SCHEMA_KEY) || 0;
+  if (version < CURRENT_SCHEMA) {
+    // Future migrations go here
+    safeSet(SCHEMA_KEY, CURRENT_SCHEMA);
+  }
+}
+
+export function loadTargets() {
+  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, onboardingComplete: false };
+}
+
+export function saveTargets(targets) {
+  safeSet(TARGETS_KEY, targets);
+}
+
+export function loadEntries() {
+  return safeGet(ENTRIES_KEY) || [];
+}
+
+export function saveEntries(entries) {
+  safeSet(ENTRIES_KEY, entries);
+}
+
+export function clearAllData() {
+  try {
+    localStorage.removeItem(TARGETS_KEY);
+    localStorage.removeItem(ENTRIES_KEY);
+    localStorage.removeItem(SCHEMA_KEY);
+  } catch (e) {
+    console.error('Failed to clear data:', e);
+  }
+}
+
+export function exportData() {
+  return JSON.stringify({
+    schemaVersion: CURRENT_SCHEMA,
+    targets: loadTargets(),
+    entries: loadEntries(),
+    exportedAt: new Date().toISOString(),
+  }, null, 2);
+}
+
+export function importData(jsonString) {
+  const data = JSON.parse(jsonString);
+  if (!data.targets || !Array.isArray(data.entries)) {
+    throw new Error('Invalid data format');
+  }
+  safeSet(TARGETS_KEY, data.targets);
+  safeSet(ENTRIES_KEY, data.entries);
+  safeSet(SCHEMA_KEY, data.schemaVersion || CURRENT_SCHEMA);
+  return { targets: data.targets, entries: data.entries };
+}
