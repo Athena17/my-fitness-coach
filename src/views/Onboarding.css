@@ -56,6 +56,12 @@
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
 .form-error {
   font-size: 0.8rem;
   color: var(--color-danger);

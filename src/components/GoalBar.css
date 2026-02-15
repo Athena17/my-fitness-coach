@@ -1,0 +1,55 @@
+.goal-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.8rem;
+  gap: 12px;
+}
+
+.goal-bar-targets {
+  display: flex;
+  gap: 16px;
+}
+
+.goal-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.goal-bar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.goal-bar-dot.kcal-dot {
+  background: var(--color-kcal);
+}
+
+.goal-bar-dot.protein-dot {
+  background: var(--color-protein);
+}
+
+.goal-bar-weight {
+  flex-shrink: 0;
+}
+
+.weight-value {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.weight-value.loss {
+  color: var(--color-success);
+}
+
+.weight-value.gain {
+  color: var(--color-danger);
+}

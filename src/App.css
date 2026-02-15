@@ -7,6 +7,10 @@
   width: 100%;
 }
 
+.app-header {
+  padding: 12px 16px 0;
+}
+
 .app-main {
   flex: 1;
   padding: 16px;

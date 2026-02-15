@@ -5,6 +5,7 @@ import Today from './views/Today.jsx';
 import History from './views/History.jsx';
 import Settings from './views/Settings.jsx';
 import NavBar from './components/NavBar.jsx';
+import GoalBar from './components/GoalBar.jsx';
 import './App.css';
 
 function App() {
@@ -28,6 +29,9 @@ function App() {
 
   return (
     <div className="app-shell">
+      <header className="app-header">
+        <GoalBar />
+      </header>
       <main className="app-main">{renderView()}</main>
       <NavBar />
     </div>

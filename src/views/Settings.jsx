@@ -11,6 +11,7 @@ export default function Settings() {
 
   const [kcal, setKcal] = useState(String(targets.kcal));
   const [protein, setProtein] = useState(String(targets.protein));
+  const [maintenanceKcal, setMaintenanceKcal] = useState(String(targets.maintenanceKcal || targets.kcal));
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -21,12 +22,14 @@ export default function Settings() {
     const errs = {};
     const k = Number(kcal);
     const p = Number(protein);
+    const m = Number(maintenanceKcal);
     if (!k || k < 500 || k > 10000) errs.kcal = 'Enter a value between 500–10,000';
     if (!p || p < 10 || p > 500) errs.protein = 'Enter a value between 10–500';
+    if (!m || m < 500 || m > 10000) errs.maintenanceKcal = 'Enter a value between 500–10,000';
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    dispatch({ type: 'SET_TARGETS', payload: { kcal: k, protein: p } });
+    dispatch({ type: 'SET_TARGETS', payload: { kcal: k, protein: p, maintenanceKcal: m } });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -52,6 +55,7 @@ export default function Settings() {
         dispatch({ type: 'IMPORT_DATA', payload: result });
         setKcal(String(result.targets.kcal));
         setProtein(String(result.targets.protein));
+        setMaintenanceKcal(String(result.targets.maintenanceKcal || result.targets.kcal));
         setImportMessage('Data imported successfully!');
       } catch {
         setImportMessage('Failed to import. Invalid file format.');
@@ -94,6 +98,17 @@ export default function Settings() {
             onChange={(e) => setProtein(e.target.value)}
           />
           {errors.protein && <span className="form-error">{errors.protein}</span>}
+        </div>
+        <div className="form-group">
+          <label htmlFor="settings-maintenance">Maintenance Calories (kcal)</label>
+          <input
+            id="settings-maintenance"
+            type="number"
+            inputMode="numeric"
+            value={maintenanceKcal}
+            onChange={(e) => setMaintenanceKcal(e.target.value)}
+          />
+          {errors.maintenanceKcal && <span className="form-error">{errors.maintenanceKcal}</span>}
         </div>
         <button type="submit" className="btn-primary">
           {saved ? 'Saved!' : 'Save Targets'}
