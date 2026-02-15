@@ -120,7 +120,7 @@ export default function FoodLog({ prefill, defaultMeal, onDone }) {
           </div>
         </div>
 
-        {!defaultMeal && (
+        {!defaultMeal && !isEditing && (
           <div className="form-group">
             <label>Meal <span className="required">*</span></label>
             <div className="meal-selector">
