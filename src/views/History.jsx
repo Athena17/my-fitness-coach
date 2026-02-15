@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition } from '../utils/nutritionCalc.js';
+import { getWaterStatusByDate } from '../utils/waterCalc.js';
 import './History.css';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -36,9 +37,7 @@ function DayRing({ status }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - Math.min(status.kcal / status.kcalTarget, 1));
 
-  let ringColor = 'var(--color-success)';
-  if (status.kcalOver20) ringColor = 'var(--color-danger)';
-  else if (status.kcalOver) ringColor = 'var(--color-warning)';
+  const ringColor = status.kcal > status.kcalTarget ? 'var(--color-danger)' : 'var(--color-success)';
 
   return (
     <svg width={size} height={size} className="day-ring">
@@ -73,7 +72,8 @@ function DayRing({ status }) {
 
 export default function History() {
   const { state } = useApp();
-  const { entries, targets } = state;
+  const { entries, targets, waterLogs } = state;
+  const waterTarget = targets.waterTargetLiters || 2.5;
   const today = getToday();
 
   const now = new Date();
@@ -115,13 +115,9 @@ export default function History() {
     const dayEntries = dayMap[dateKey];
     if (!dayEntries || dayEntries.length === 0) return null;
     const totals = sumNutrition(dayEntries);
-    const overPct = (totals.kcal - targets.kcal) / targets.kcal;
     return {
       kcal: totals.kcal,
       kcalTarget: targets.kcal,
-      kcalOk: totals.kcal <= targets.kcal,
-      kcalOver: overPct > 0 && overPct <= 0.2,
-      kcalOver20: overPct > 0.2,
       proteinOk: totals.protein >= targets.protein,
     };
   }
@@ -158,12 +154,16 @@ export default function History() {
             const status = getDayStatus(dayNum);
             const dateKey = formatDateKey(new Date(viewYear, viewMonth, dayNum));
             const isToday = dateKey === today;
+            const waterStatus = getWaterStatusByDate(dateKey, waterLogs || [], waterTarget);
 
             return (
               <div
                 key={dayNum}
                 className={`history-cell ${isToday ? 'history-cell--today' : ''}`}
               >
+                {waterStatus && (
+                  <span className={`history-water-dot ${waterStatus === 'met' ? 'history-water-dot--met' : ''}`} />
+                )}
                 {status ? (
                   <DayRing status={status} />
                 ) : (
@@ -180,30 +180,30 @@ export default function History() {
 
       <div className="history-legend">
         <div className="history-legend-row">
-          <span className="history-legend-title">Calories</span>
+          <span className="history-legend-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Calories
+          </span>
           <div className="history-legend-items">
             <div className="history-legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12">
                 <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-success)" strokeWidth="2" />
               </svg>
-              <span>Below target</span>
-            </div>
-            <div className="history-legend-item">
-              <svg width="12" height="12" viewBox="0 0 12 12">
-                <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-warning)" strokeWidth="2" />
-              </svg>
-              <span>Slightly above</span>
+              <span>At or below target</span>
             </div>
             <div className="history-legend-item">
               <svg width="12" height="12" viewBox="0 0 12 12">
                 <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-danger)" strokeWidth="2" />
               </svg>
-              <span>Significantly above</span>
+              <span>Above target</span>
             </div>
           </div>
         </div>
         <div className="history-legend-row">
-          <span className="history-legend-title">Protein</span>
+          <span className="history-legend-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-protein)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z"/></svg>
+            Protein
+          </span>
           <div className="history-legend-items">
             <div className="history-legend-item">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -217,6 +217,22 @@ export default function History() {
                 <line x1="12" y1="4" x2="4" y2="12" />
               </svg>
               <span>Insufficient</span>
+            </div>
+          </div>
+        </div>
+        <div className="history-legend-row">
+          <span className="history-legend-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-water)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+            Water
+          </span>
+          <div className="history-legend-items">
+            <div className="history-legend-item">
+              <span className="history-water-dot history-water-dot--met history-water-dot--legend" />
+              <span>Target met</span>
+            </div>
+            <div className="history-legend-item">
+              <span className="history-water-dot history-water-dot--legend" />
+              <span>Target not met</span>
             </div>
           </div>
         </div>
