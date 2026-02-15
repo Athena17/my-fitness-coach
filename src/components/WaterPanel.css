@@ -170,7 +170,7 @@
   color: var(--color-water);
   box-shadow: var(--shadow-sm);
   transition: all 0.15s;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .water-quick-btn:hover {

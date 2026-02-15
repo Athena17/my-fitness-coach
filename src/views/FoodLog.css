@@ -1,7 +1,7 @@
 .food-log {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
   font-family: var(--font-sans);
 }
 
@@ -12,15 +12,15 @@
 }
 
 .food-log-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
 }
 
 .food-log-cancel {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-text-secondary);
   font-weight: 500;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .food-log-search {
@@ -37,7 +37,7 @@
 .food-log-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .food-log-form .form-group {
@@ -47,26 +47,25 @@
 }
 
 .food-log-form .form-group label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .food-log-form .form-group input,
 .food-log-form .form-group select {
-  padding: 12px;
+  padding: 10px 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.5);
-  min-height: 48px;
+  min-height: 40px;
 }
 
 .food-log-form .form-group input:focus,
 .food-log-form .form-group select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+  border-color: var(--color-primary-light);
 }
 
 .form-row {
@@ -93,8 +92,8 @@
 .meal-chip {
   padding: 8px 16px;
   border-radius: 20px;
-  font-size: 0.85rem;
-  min-height: 44px;
+  font-size: 0.82rem;
+  min-height: 40px;
   font-weight: 500;
   background: var(--color-border);
   color: var(--color-text-secondary);
@@ -107,14 +106,14 @@
 }
 
 .btn-submit {
-  padding: 14px;
-  min-height: 48px;
+  padding: 10px;
+  min-height: 40px;
   background: var(--color-primary);
   color: #fff;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .btn-submit:hover {

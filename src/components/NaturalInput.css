@@ -7,11 +7,11 @@
 
 .natural-input-textarea {
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
   padding: 10px 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   resize: vertical;
   background: var(--color-surface-highlight);
   font-family: var(--font-sans);
@@ -19,8 +19,7 @@
 
 .natural-input-textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+  border-color: var(--color-primary-light);
 }
 
 .natural-input-actions {
@@ -33,7 +32,7 @@
   min-height: 40px;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   font-family: var(--font-sans);
 }
@@ -105,7 +104,7 @@
   padding: 8px;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-family: var(--font-sans);
 }
 
