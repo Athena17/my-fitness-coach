@@ -120,22 +120,24 @@ export default function FoodLog({ prefill, defaultMeal, onDone }) {
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Meal <span className="required">*</span></label>
-          <div className="meal-selector">
-            {MEALS.map((m) => (
-              <button
-                key={m}
-                type="button"
-                className={`meal-chip ${meal === m ? 'active' : ''}`}
-                onClick={() => setMeal(m)}
-              >
-                {m}
-              </button>
-            ))}
+        {!defaultMeal && (
+          <div className="form-group">
+            <label>Meal <span className="required">*</span></label>
+            <div className="meal-selector">
+              {MEALS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`meal-chip ${meal === m ? 'active' : ''}`}
+                  onClick={() => setMeal(m)}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            {errors.meal && <span className="form-error">{errors.meal}</span>}
           </div>
-          {errors.meal && <span className="form-error">{errors.meal}</span>}
-        </div>
+        )}
 
         <button type="submit" className="btn-primary btn-submit">
           {isEditing ? 'Update Entry' : 'Add Entry'}
