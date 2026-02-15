@@ -1,5 +1,5 @@
 import { useReducer, useEffect } from 'react';
-import { loadTargets, saveTargets, loadEntries, saveEntries, runMigrations } from '../utils/storage.js';
+import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, runMigrations } from '../utils/storage.js';
 import { VIEWS } from './constants.js';
 import { AppContext } from './context.js';
 
@@ -8,6 +8,7 @@ function init() {
   return {
     targets: loadTargets(),
     entries: loadEntries(),
+    exerciseLogs: loadExerciseLogs(),
     currentView: VIEWS.TODAY,
     editingEntry: null,
   };
@@ -39,6 +40,15 @@ function reducer(state, action) {
     case 'SET_EDITING_ENTRY':
       return { ...state, editingEntry: action.payload };
 
+    case 'ADD_EXERCISE':
+      return { ...state, exerciseLogs: [...state.exerciseLogs, action.payload] };
+
+    case 'DELETE_EXERCISE':
+      return {
+        ...state,
+        exerciseLogs: state.exerciseLogs.filter((e) => e.id !== action.payload),
+      };
+
     case 'IMPORT_DATA':
       return {
         ...state,
@@ -61,6 +71,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     saveEntries(state.entries);
   }, [state.entries]);
+
+  useEffect(() => {
+    saveExerciseLogs(state.exerciseLogs);
+  }, [state.exerciseLogs]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

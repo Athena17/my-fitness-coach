@@ -9,6 +9,7 @@ import Modal from '../components/Modal.jsx';
 import FoodLog from './FoodLog.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import InsightCard from '../components/InsightCard.jsx';
+import ExercisePanel from '../components/ExercisePanel.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -36,7 +37,7 @@ const MEAL_CONFIG = [
 
 export default function Today() {
   const { state, dispatch } = useApp();
-  const { todayEntries } = useDailyEntries();
+  const { todayEntries, caloriesBurned } = useDailyEntries();
   const [activeTab, setActiveTab] = useState('food');
   const [addingMeal, setAddingMeal] = useState(null);
   const [naturalPrefill, setNaturalPrefill] = useState(null);
@@ -126,6 +127,9 @@ export default function Today() {
             <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
           </svg>
           Exercise
+          {caloriesBurned > 0 && (
+            <span className="today-tab-burned">-{caloriesBurned} cal</span>
+          )}
         </button>
       </div>
 
@@ -138,14 +142,7 @@ export default function Today() {
         </div>
       )}
 
-      {activeTab === 'exercise' && (
-        <div className="exercise-placeholder">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
-            <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
-          </svg>
-          <p className="exercise-placeholder-text">Exercise tracking coming soon</p>
-        </div>
-      )}
+      {activeTab === 'exercise' && <ExercisePanel />}
 
       {activeTab === 'food' && <>
         <InsightCard />

@@ -91,25 +91,33 @@ function WeekStrip({ entries, targets }) {
 export default function GoalBar({ variant = 'full' }) {
   const { state } = useApp();
   const { targets, entries } = state;
-  const { todayTotals } = useDailyEntries();
+  const { todayTotals, caloriesBurned } = useDailyEntries();
 
-  const _kcalLeft = Math.max(0, targets.kcal - todayTotals.kcal);
+  const netKcal = todayTotals.kcal - caloriesBurned;
+  const _kcalLeft = Math.max(0, targets.kcal - netKcal);
   const _proteinLeft = Math.max(0, targets.protein - todayTotals.protein);
 
   const weightEstimate = useMemo(() => {
     const maintenance = targets.maintenanceKcal || targets.kcal;
+    const logs = state.exerciseLogs || [];
     const byDay = {};
     for (const e of entries) {
       if (!byDay[e.dateKey]) byDay[e.dateKey] = [];
       byDay[e.dateKey].push(e);
     }
+    const burnByDay = {};
+    for (const e of logs) {
+      burnByDay[e.dateKey] = (burnByDay[e.dateKey] || 0) + (e.caloriesBurned || 0);
+    }
     let totalDeficit = 0;
-    for (const dateKey in byDay) {
-      const dayTotal = sumNutrition(byDay[dateKey]);
-      totalDeficit += maintenance - dayTotal.kcal;
+    const allDays = new Set([...Object.keys(byDay), ...Object.keys(burnByDay)]);
+    for (const dateKey of allDays) {
+      const dayTotal = byDay[dateKey] ? sumNutrition(byDay[dateKey]) : { kcal: 0 };
+      const dayBurn = burnByDay[dateKey] || 0;
+      totalDeficit += maintenance - dayTotal.kcal + dayBurn;
     }
     return totalDeficit / 7000;
-  }, [entries, targets]);
+  }, [entries, state.exerciseLogs, targets]);
 
   const absKg = Math.abs(weightEstimate).toFixed(1);
   const goalKg = targets.weightLossTarget || 5;
@@ -155,9 +163,9 @@ export default function GoalBar({ variant = 'full' }) {
       <div className="goal-bar-rings">
         <div className="goal-ring-group">
           <div className="goal-ring-wrap">
-            <Ring value={todayTotals.kcal} max={targets.kcal} color="var(--color-kcal)" />
+            <Ring value={Math.max(0, netKcal)} max={targets.kcal} color="var(--color-kcal)" />
             <div className="goal-ring-inner">
-              <span className="goal-ring-number">{Math.round(todayTotals.kcal)}</span>
+              <span className="goal-ring-number">{Math.round(Math.max(0, netKcal))}</span>
             </div>
           </div>
           <div className="goal-ring-meta">
@@ -165,11 +173,11 @@ export default function GoalBar({ variant = 'full' }) {
               <svg className="goal-ring-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
               </svg>
-              Calories
+              {caloriesBurned > 0 ? 'Net Cal' : 'Calories'}
             </span>
             <span className="goal-ring-sub">
-              {todayTotals.kcal > targets.kcal
-                ? `${Math.round(todayTotals.kcal - targets.kcal)} over`
+              {netKcal > targets.kcal
+                ? `${Math.round(netKcal - targets.kcal)} over`
                 : `/ ${Math.round(targets.kcal)} cal`
               }
             </span>
