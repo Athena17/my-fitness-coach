@@ -7,7 +7,7 @@ import './FoodLog.css';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
-export default function FoodLog({ prefill, onDone }) {
+export default function FoodLog({ prefill, defaultMeal, onDone }) {
   const { state, dispatch } = useApp();
   const editing = state.editingEntry;
   const isEditing = !!editing;
@@ -17,15 +17,13 @@ export default function FoodLog({ prefill, onDone }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [kcal, setKcal] = useState(initial ? String(initial.kcal) : '');
   const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
-  const [meal, setMeal] = useState(initial?.meal ?? 'Breakfast');
-  const [servingSize, setServingSize] = useState(initial ? String(initial.servingSize) : '');
+  const [meal, setMeal] = useState(initial?.meal ?? defaultMeal ?? 'Breakfast');
   const [errors, setErrors] = useState({});
 
   function handleFoodSelect(food) {
     setName(food.name);
     setKcal(String(food.serving.kcal));
     setProtein(String(food.serving.protein));
-    setServingSize(String(food.serving.size));
   }
 
   function validate() {
@@ -35,7 +33,6 @@ export default function FoodLog({ prefill, onDone }) {
     if (isNaN(k) || k < 0) e.kcal = 'Enter valid calories';
     const p = Number(protein);
     if (isNaN(p) || p < 0) e.protein = 'Enter valid protein';
-    if (!servingSize || Number(servingSize) <= 0) e.servingSize = 'Enter valid serving size';
     if (!meal) e.meal = 'Select a meal';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -51,7 +48,7 @@ export default function FoodLog({ prefill, onDone }) {
       kcal: Number(kcal),
       protein: Number(protein),
       meal,
-      servingSize: Number(servingSize),
+      servingSize: 1,
       servingUnit: 'g',
       timestamp: isEditing ? state.editingEntry.timestamp : Date.now(),
       dateKey: isEditing ? state.editingEntry.dateKey : getToday(),
@@ -121,19 +118,6 @@ export default function FoodLog({ prefill, onDone }) {
             />
             {errors.protein && <span className="form-error">{errors.protein}</span>}
           </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="food-serving">Serving Size (g)</label>
-          <input
-            id="food-serving"
-            type="number"
-            inputMode="decimal"
-            value={servingSize}
-            onChange={(e) => setServingSize(e.target.value)}
-            placeholder="100"
-          />
-          {errors.servingSize && <span className="form-error">{errors.servingSize}</span>}
         </div>
 
         <div className="form-group">

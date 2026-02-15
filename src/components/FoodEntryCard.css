@@ -2,9 +2,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-family: var(--font-sans);
 }
 
 .food-entry-info {
@@ -16,16 +15,11 @@
 }
 
 .food-entry-name {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.food-entry-serving {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
 }
 
 .food-entry-nutrition {
@@ -37,13 +31,13 @@
 }
 
 .food-entry-kcal {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-kcal);
 }
 
 .food-entry-protein {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-protein);
 }
 

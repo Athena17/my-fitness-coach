@@ -38,7 +38,7 @@ export default function Onboarding() {
   return (
     <div className="onboarding">
       <div className="onboarding-content">
-        <h1 className="onboarding-title">NutriTrack</h1>
+        <h1 className="onboarding-title">myfitnesscoach</h1>
         <p className="onboarding-subtitle">Set your daily nutrition targets to get started.</p>
 
         <form onSubmit={handleSubmit} className="onboarding-form">

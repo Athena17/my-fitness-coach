@@ -14,9 +14,12 @@
   flex-direction: column;
   gap: 12px;
   background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   padding: 16px;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .settings-section h2 {
@@ -42,13 +45,13 @@
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 1rem;
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .settings-section .form-group input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
 .settings-section .btn-primary {

@@ -142,7 +142,7 @@ export default function Settings() {
       </div>
 
       <div className="settings-section settings-about">
-        <p>NutriTrack v1.0 — All data stored locally on your device.</p>
+        <p>myfitnesscoach v1.1 — All data stored locally on your device.</p>
       </div>
 
       {showClearConfirm && (

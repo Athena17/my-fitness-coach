@@ -57,7 +57,7 @@
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 16px;
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.5);
   min-height: 48px;
 }
 
@@ -65,7 +65,7 @@
 .food-log-form .form-group select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
 .form-row {
