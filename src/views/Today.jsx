@@ -7,10 +7,12 @@ import NaturalInput from '../components/NaturalInput.jsx';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import Modal from '../components/Modal.jsx';
 import FoodLog from './FoodLog.jsx';
+import FoodSearch from '../components/FoodSearch.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import InsightCard from '../components/InsightCard.jsx';
 import ExercisePanel from '../components/ExercisePanel.jsx';
 import WaterPanel from '../components/WaterPanel.jsx';
+import MealBuilder from '../components/MealBuilder.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -44,6 +46,31 @@ export default function Today() {
   const [naturalPrefill, setNaturalPrefill] = useState(null);
   const [showManualForm, setShowManualForm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [customMealPrefill, setCustomMealPrefill] = useState(null);
+  const [addMode, setAddMode] = useState(null); // 'describe' | 'manual' | 'build'
+  const [manualName, setManualName] = useState('');
+  const [manualKcal, setManualKcal] = useState('');
+  const [manualProtein, setManualProtein] = useState('');
+
+  function handleInlineSearchSelect(food) {
+    if (food.isCustomMeal && food.ingredients) {
+      setCustomMealPrefill({
+        name: food.name,
+        kcal: food.serving.kcal,
+        protein: food.serving.protein,
+        ingredients: food.ingredients,
+      });
+      return;
+    }
+    // Prefill the manual form with selected food
+    setNaturalPrefill({
+      name: food.name,
+      kcal: food.serving.kcal,
+      protein: food.serving.protein,
+      meal: addingMeal || 'Snack',
+    });
+    setShowManualForm(true);
+  }
 
   function handleNaturalAdd(parsed) {
     const entry = {
@@ -70,13 +97,73 @@ export default function Today() {
     setShowManualForm(false);
     setAddingMeal(null);
     setNaturalPrefill(null);
+    setCustomMealPrefill(null);
     dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
+  }
+
+  function handleCustomMealSelect(food) {
+    setShowManualForm(false);
+    setCustomMealPrefill({
+      name: food.name,
+      kcal: food.serving.kcal,
+      protein: food.serving.protein,
+      ingredients: food.ingredients,
+    });
+  }
+
+  function handleManualSubmit() {
+    const k = Number(manualKcal);
+    const p = Number(manualProtein);
+    if (!manualName.trim() || isNaN(k) || isNaN(p)) return;
+    const entry = {
+      id: generateId(),
+      name: manualName.trim(),
+      kcal: k,
+      protein: p,
+      meal: addingMeal || 'Snack',
+      servingSize: 1,
+      servingUnit: 'g',
+      timestamp: Date.now(),
+      dateKey: getToday(),
+    };
+    dispatch({ type: 'ADD_ENTRY', payload: entry });
+    setManualName('');
+    setManualKcal('');
+    setManualProtein('');
+    setAddMode(null);
+    setAddingMeal(null);
+  }
+
+  function handleBackToSearch() {
+    setAddMode(null);
+    setManualName('');
+    setManualKcal('');
+    setManualProtein('');
   }
 
   function handleAddToMeal(meal) {
     setAddingMeal(addingMeal === meal ? null : meal);
     setNaturalPrefill(null);
     setShowManualForm(false);
+    setAddMode(null);
+  }
+
+  function handleMealBuilderSave(built) {
+    const entry = {
+      id: generateId(),
+      name: built.name,
+      kcal: built.totalKcal,
+      protein: built.totalProtein,
+      ingredients: built.ingredients,
+      meal: addingMeal || 'Snack',
+      servingSize: 1,
+      servingUnit: 'g',
+      timestamp: Date.now(),
+      dateKey: getToday(),
+    };
+    dispatch({ type: 'ADD_ENTRY', payload: entry });
+    setAddMode(null);
+    setAddingMeal(null);
   }
 
   function confirmDelete() {
@@ -85,6 +172,52 @@ export default function Today() {
   }
 
   const isEditing = !!state.editingEntry;
+  const isEditingBuiltMeal = isEditing && state.editingEntry.ingredients;
+
+  function handleMealBuilderUpdate(built) {
+    const entry = {
+      ...state.editingEntry,
+      name: built.name,
+      kcal: built.totalKcal,
+      protein: built.totalProtein,
+      ingredients: built.ingredients,
+    };
+    dispatch({ type: 'UPDATE_ENTRY', payload: entry });
+    dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
+  }
+
+  function handleMealBuilderEditCancel() {
+    dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
+  }
+
+  if (isEditingBuiltMeal) {
+    return (
+      <div className="today">
+        <MealBuilder
+          meal={state.editingEntry.meal}
+          editingEntry={state.editingEntry}
+          onSave={handleMealBuilderUpdate}
+          onCancel={handleMealBuilderEditCancel}
+        />
+      </div>
+    );
+  }
+
+  if (customMealPrefill) {
+    return (
+      <div className="today">
+        <MealBuilder
+          meal={addingMeal || 'Snack'}
+          editingEntry={customMealPrefill}
+          onSave={(built) => {
+            handleMealBuilderSave(built);
+            setCustomMealPrefill(null);
+          }}
+          onCancel={() => setCustomMealPrefill(null)}
+        />
+      </div>
+    );
+  }
 
   if (showManualForm || isEditing) {
     return (
@@ -93,6 +226,7 @@ export default function Today() {
           prefill={naturalPrefill}
           defaultMeal={addingMeal}
           onDone={handleFoodLogDone}
+          onCustomMealSelect={handleCustomMealSelect}
         />
       </div>
     );
@@ -181,11 +315,86 @@ export default function Today() {
                 <div className="meal-row-body">
                   {isAdding && (
                     <div className="meal-add-section">
-                      <NaturalInput
-                        onAdd={handleNaturalAdd}
-                        onEdit={handleNaturalEdit}
-                        onSearchDb={() => setShowManualForm(true)}
-                      />
+                      {!addMode && (
+                        <>
+                          <FoodSearch onSelect={handleInlineSearchSelect} />
+                          <div className="add-alt-row">
+                            <span className="add-alt-label">or</span>
+                            <button className="add-alt-btn" onClick={() => setAddMode('describe')}>Describe</button>
+                            <button className="add-alt-btn" onClick={() => setAddMode('manual')}>Enter Manually</button>
+                            <button className="add-alt-btn" onClick={() => setAddMode('build')}>Build Meal</button>
+                          </div>
+                        </>
+                      )}
+
+                      {addMode && (
+                        <div className="add-mode-view">
+                          <div className="add-mode-header">
+                            <button className="add-mode-back" onClick={handleBackToSearch}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="m15 18-6-6 6-6"/>
+                              </svg>
+                            </button>
+                            <span className="add-mode-title">
+                              {addMode === 'describe' && 'Describe'}
+                              {addMode === 'manual' && 'Enter Manually'}
+                              {addMode === 'build' && 'Build Meal'}
+                            </span>
+                          </div>
+
+                          {addMode === 'describe' && (
+                            <NaturalInput
+                              onAdd={handleNaturalAdd}
+                              onEdit={handleNaturalEdit}
+                            />
+                          )}
+
+                          {addMode === 'manual' && (
+                            <div className="add-manual-form">
+                              <input
+                                type="text"
+                                className="add-manual-input"
+                                value={manualName}
+                                onChange={(e) => setManualName(e.target.value)}
+                                placeholder="Food name"
+                              />
+                              <div className="add-manual-row">
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  className="add-manual-input"
+                                  value={manualKcal}
+                                  onChange={(e) => setManualKcal(e.target.value)}
+                                  placeholder="Calories"
+                                />
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  className="add-manual-input"
+                                  value={manualProtein}
+                                  onChange={(e) => setManualProtein(e.target.value)}
+                                  placeholder="Protein (g)"
+                                />
+                              </div>
+                              <button
+                                className="add-manual-submit"
+                                onClick={handleManualSubmit}
+                                disabled={!manualName.trim() || !manualKcal}
+                              >
+                                Add Entry
+                              </button>
+                            </div>
+                          )}
+
+                          {addMode === 'build' && (
+                            <MealBuilder
+                              meal={meal}
+                              onSave={handleMealBuilderSave}
+                              onCancel={handleBackToSearch}
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

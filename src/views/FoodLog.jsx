@@ -7,7 +7,7 @@ import './FoodLog.css';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
-export default function FoodLog({ prefill, defaultMeal, onDone }) {
+export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSelect }) {
   const { state, dispatch } = useApp();
   const editing = state.editingEntry;
   const isEditing = !!editing;
@@ -21,6 +21,10 @@ export default function FoodLog({ prefill, defaultMeal, onDone }) {
   const [errors, setErrors] = useState({});
 
   function handleFoodSelect(food) {
+    if (food.isCustomMeal && food.ingredients && onCustomMealSelect) {
+      onCustomMealSelect(food);
+      return;
+    }
     setName(food.name);
     setKcal(String(food.serving.kcal));
     setProtein(String(food.serving.protein));

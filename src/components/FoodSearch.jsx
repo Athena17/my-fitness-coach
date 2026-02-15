@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import foodDatabase from '../data/foodDatabase.js';
+import { loadCustomMeals } from '../utils/storage.js';
 import './FoodSearch.css';
 
 export default function FoodSearch({ onSelect }) {
@@ -26,9 +27,27 @@ export default function FoodSearch({ onSelect }) {
       return;
     }
     const q = value.toLowerCase();
-    const matches = foodDatabase.filter(
+
+    // Search custom meals first
+    const customMeals = loadCustomMeals();
+    const customMatches = customMeals
+      .filter((m) => m.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((m) => ({
+        name: m.name,
+        category: 'My Meals',
+        per100g: { kcal: 0, protein: 0 },
+        serving: { size: 1, unit: 'meal', label: '1 meal', kcal: m.kcal, protein: m.protein },
+        ingredients: m.ingredients,
+        isCustomMeal: true,
+      }));
+
+    // Search food database
+    const dbMatches = foodDatabase.filter(
       (f) => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
-    ).slice(0, 10);
+    ).slice(0, 10 - customMatches.length);
+
+    const matches = [...customMatches, ...dbMatches];
     setResults(matches);
     setIsOpen(matches.length > 0);
   }
@@ -44,7 +63,7 @@ export default function FoodSearch({ onSelect }) {
     <div className="food-search" ref={wrapperRef}>
       <input
         type="text"
-        placeholder="Search foods (e.g. chicken, rice)..."
+        placeholder="Search foods or my meals…"
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
         onFocus={() => results.length > 0 && setIsOpen(true)}
@@ -55,7 +74,10 @@ export default function FoodSearch({ onSelect }) {
           {results.map((food, i) => (
             <li key={i}>
               <button className="food-search-item" onClick={() => handleSelect(food)}>
-                <span className="food-search-name">{food.name}</span>
+                <span className="food-search-name">
+                  {food.isCustomMeal && <span className="food-search-badge">My Meal</span>}
+                  {food.name}
+                </span>
                 <span className="food-search-meta">
                   {food.serving.kcal} cal · {food.serving.protein}g · {food.serving.label}
                 </span>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { parseNaturalInput } from '../utils/naturalParse.js';
 import './NaturalInput.css';
 
-export default function NaturalInput({ onAdd, onEdit, onSearchDb }) {
+export default function NaturalInput({ onAdd, onEdit }) {
   const [text, setText] = useState('');
   const [preview, setPreview] = useState(null);
 
@@ -53,12 +53,6 @@ export default function NaturalInput({ onAdd, onEdit, onSearchDb }) {
           disabled={!text.trim()}
         >
           Estimate
-        </button>
-        <button
-          className="natural-input-btn natural-input-btn--secondary"
-          onClick={onSearchDb}
-        >
-          Search database
         </button>
       </div>
 

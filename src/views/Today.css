@@ -174,13 +174,125 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.meal-manual-btn {
-  font-size: 0.8rem;
-  color: var(--color-primary);
+/* Alternative add methods */
+.add-alt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-alt-label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+}
+
+.add-alt-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 0.7rem;
   font-weight: 500;
-  text-align: center;
-  padding: 8px;
-  min-height: 44px;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.04);
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 32px;
+}
+
+.add-alt-btn:hover {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.add-alt-btn svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* Shared mode view */
+.add-mode-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-mode-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+
+.add-mode-back:hover {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.add-mode-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Inline manual form */
+.add-manual-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-manual-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.add-manual-input {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  min-height: 40px;
+}
+
+.add-manual-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+}
+
+.add-manual-submit {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  min-height: 40px;
+}
+
+.add-manual-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .meal-entries {

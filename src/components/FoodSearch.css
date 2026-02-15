@@ -4,11 +4,12 @@
 
 .food-search-input {
   width: 100%;
-  padding: 12px;
+  padding: 8px 10px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.5);
+  min-height: 36px;
 }
 
 .food-search-input:focus {
@@ -54,8 +55,22 @@
 }
 
 .food-search-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+.food-search-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .food-search-meta {
