@@ -98,7 +98,6 @@
   justify-content: space-between;
   gap: 2px;
   padding: 2px 0;
-  opacity: 0.7;
 }
 
 .week-day {
@@ -117,7 +116,7 @@
 }
 
 .week-day-label {
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);

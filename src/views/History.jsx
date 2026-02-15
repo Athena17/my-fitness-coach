@@ -162,7 +162,9 @@ export default function History() {
                 className={`history-cell ${isToday ? 'history-cell--today' : ''}`}
               >
                 {waterStatus && (
-                  <span className={`history-water-dot ${waterStatus === 'met' ? 'history-water-dot--met' : ''}`} />
+                  <svg className="history-water-drop" width="10" height="12" viewBox="0 0 24 30" fill={waterStatus === 'met' ? 'var(--color-water)' : 'rgba(0,0,0,0.12)'}>
+                    <path d="M12 2C12 2 4 12.5 4 19a8 8 0 0 0 16 0c0-6.5-8-17-8-17z" />
+                  </svg>
                 )}
                 {status ? (
                   <DayRing status={status} />
@@ -227,11 +229,15 @@ export default function History() {
           </span>
           <div className="history-legend-items">
             <div className="history-legend-item">
-              <span className="history-water-dot history-water-dot--met history-water-dot--legend" />
+              <svg width="10" height="12" viewBox="0 0 24 30" fill="var(--color-water)">
+                <path d="M12 2C12 2 4 12.5 4 19a8 8 0 0 0 16 0c0-6.5-8-17-8-17z" />
+              </svg>
               <span>Target met</span>
             </div>
             <div className="history-legend-item">
-              <span className="history-water-dot history-water-dot--legend" />
+              <svg width="10" height="12" viewBox="0 0 24 30" fill="rgba(0,0,0,0.12)">
+                <path d="M12 2C12 2 4 12.5 4 19a8 8 0 0 0 16 0c0-6.5-8-17-8-17z" />
+              </svg>
               <span>Target not met</span>
             </div>
           </div>

@@ -1,24 +1,12 @@
 .insight-card {
-  background: linear-gradient(135deg, rgba(255, 250, 240, 0.5) 0%, rgba(255, 245, 225, 0.35) 100%);
+  background: var(--color-surface);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(210, 180, 120, 0.25);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 12px rgba(180, 155, 90, 0.07);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-sans);
-  position: relative;
   overflow: hidden;
-}
-
-.insight-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(210, 175, 95, 0.6) 0%, rgba(210, 175, 95, 0.15) 100%);
-  border-radius: 3px 0 0 3px;
 }
 
 .insight-card--empty {
@@ -28,13 +16,7 @@
   padding: 12px 14px;
   font-size: 0.75rem;
   color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border: 1px solid var(--glass-border);
   opacity: 0.7;
-}
-
-.insight-card--empty::before {
-  display: none;
 }
 
 .insight-icon {
@@ -58,11 +40,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(195, 165, 85, 0.8);
+  color: var(--color-text-secondary);
 }
 
 .insight-title {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: 0.03em;
@@ -72,8 +54,8 @@
 .insight-badge {
   font-size: 0.6rem;
   font-weight: 700;
-  background: rgba(210, 175, 95, 0.2);
-  color: rgba(160, 130, 60, 0.9);
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-secondary);
   padding: 1px 6px;
   border-radius: 10px;
 }
@@ -91,26 +73,19 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   padding: 0 14px 10px;
 }
 
 .insight-item {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--color-text);
   line-height: 1.45;
-  padding: 6px 10px 6px 22px;
-  background: rgba(255, 255, 255, 0.35);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.025);
   border-radius: 8px;
-  position: relative;
 }
 
 .insight-item::before {
-  content: '→';
-  position: absolute;
-  left: 8px;
-  top: 6px;
-  font-size: 0.65rem;
-  color: rgba(195, 165, 85, 0.7);
-  font-weight: 600;
+  display: none;
 }

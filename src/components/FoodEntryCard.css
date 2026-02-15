@@ -1,8 +1,8 @@
 .food-entry-card {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 8px;
+  padding: 8px 14px;
   font-family: var(--font-sans);
 }
 
@@ -15,7 +15,7 @@
 }
 
 .food-entry-name {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;

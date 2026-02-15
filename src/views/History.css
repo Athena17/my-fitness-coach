@@ -111,24 +111,11 @@
   font-size: 0.55rem;
 }
 
-/* Water indicator dot */
-.history-water-dot {
+/* Water indicator drop */
+.history-water-drop {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.history-water-dot--met {
-  background: var(--color-water);
-}
-
-.history-water-dot--legend {
-  position: static;
-  flex-shrink: 0;
+  top: 3px;
+  right: 3px;
 }
 
 /* Day ring */
