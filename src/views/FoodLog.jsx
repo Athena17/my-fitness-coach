@@ -19,8 +19,6 @@ export default function FoodLog({ prefill, onDone }) {
   const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
   const [meal, setMeal] = useState(initial?.meal ?? 'Breakfast');
   const [servingSize, setServingSize] = useState(initial ? String(initial.servingSize) : '');
-  const [servingUnit, setServingUnit] = useState(initial?.servingUnit ?? 'g');
-  const [servingLabel, setServingLabel] = useState(initial?.servingLabel ?? '');
   const [errors, setErrors] = useState({});
 
   function handleFoodSelect(food) {
@@ -28,8 +26,6 @@ export default function FoodLog({ prefill, onDone }) {
     setKcal(String(food.serving.kcal));
     setProtein(String(food.serving.protein));
     setServingSize(String(food.serving.size));
-    setServingUnit(food.serving.unit);
-    setServingLabel(food.serving.label);
   }
 
   function validate() {
@@ -40,6 +36,7 @@ export default function FoodLog({ prefill, onDone }) {
     const p = Number(protein);
     if (isNaN(p) || p < 0) e.protein = 'Enter valid protein';
     if (!servingSize || Number(servingSize) <= 0) e.servingSize = 'Enter valid serving size';
+    if (!meal) e.meal = 'Select a meal';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -53,12 +50,9 @@ export default function FoodLog({ prefill, onDone }) {
       name: name.trim(),
       kcal: Number(kcal),
       protein: Number(protein),
-      carbs: null,
-      fat: null,
       meal,
       servingSize: Number(servingSize),
-      servingUnit,
-      servingLabel,
+      servingUnit: 'g',
       timestamp: isEditing ? state.editingEntry.timestamp : Date.now(),
       dateKey: isEditing ? state.editingEntry.dateKey : getToday(),
     };
@@ -129,48 +123,21 @@ export default function FoodLog({ prefill, onDone }) {
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="food-serving">Serving Size</label>
-            <input
-              id="food-serving"
-              type="number"
-              inputMode="decimal"
-              value={servingSize}
-              onChange={(e) => setServingSize(e.target.value)}
-              placeholder="100"
-            />
-            {errors.servingSize && <span className="form-error">{errors.servingSize}</span>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="food-unit">Unit</label>
-            <select
-              id="food-unit"
-              value={servingUnit}
-              onChange={(e) => setServingUnit(e.target.value)}
-            >
-              <option value="g">g</option>
-              <option value="ml">ml</option>
-              <option value="oz">oz</option>
-              <option value="cup">cup</option>
-              <option value="piece">piece</option>
-            </select>
-          </div>
-        </div>
-
         <div className="form-group">
-          <label htmlFor="food-label">Serving Label (optional)</label>
+          <label htmlFor="food-serving">Serving Size (g)</label>
           <input
-            id="food-label"
-            type="text"
-            value={servingLabel}
-            onChange={(e) => setServingLabel(e.target.value)}
-            placeholder="e.g. 1 breast, 1 cup"
+            id="food-serving"
+            type="number"
+            inputMode="decimal"
+            value={servingSize}
+            onChange={(e) => setServingSize(e.target.value)}
+            placeholder="100"
           />
+          {errors.servingSize && <span className="form-error">{errors.servingSize}</span>}
         </div>
 
         <div className="form-group">
-          <label>Meal</label>
+          <label>Meal <span className="required">*</span></label>
           <div className="meal-selector">
             {MEALS.map((m) => (
               <button
@@ -183,6 +150,7 @@ export default function FoodLog({ prefill, onDone }) {
               </button>
             ))}
           </div>
+          {errors.meal && <span className="form-error">{errors.meal}</span>}
         </div>
 
         <button type="submit" className="btn-primary btn-submit">

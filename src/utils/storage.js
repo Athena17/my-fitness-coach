@@ -1,7 +1,7 @@
 const SCHEMA_KEY = 'nt_schema_version';
 const TARGETS_KEY = 'nt_targets';
 const ENTRIES_KEY = 'nt_entries';
-const CURRENT_SCHEMA = 1;
+const CURRENT_SCHEMA = 2;
 
 function safeGet(key) {
   try {
@@ -22,14 +22,28 @@ function safeSet(key, value) {
 
 export function runMigrations() {
   const version = safeGet(SCHEMA_KEY) || 0;
+  if (version < 2) {
+    // v2: remove servingLabel, add maintenanceKcal, lock servingUnit to 'g'
+    const entries = safeGet(ENTRIES_KEY) || [];
+    const migrated = entries.map((e) => {
+      const { servingLabel: _SL, carbs: _C, fat: _F, ...rest } = e;
+      return { ...rest, servingUnit: 'g' };
+    });
+    safeSet(ENTRIES_KEY, migrated);
+
+    const targets = safeGet(TARGETS_KEY);
+    if (targets && !targets.maintenanceKcal) {
+      targets.maintenanceKcal = targets.kcal || 2000;
+      safeSet(TARGETS_KEY, targets);
+    }
+  }
   if (version < CURRENT_SCHEMA) {
-    // Future migrations go here
     safeSet(SCHEMA_KEY, CURRENT_SCHEMA);
   }
 }
 
 export function loadTargets() {
-  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, onboardingComplete: false };
+  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, maintenanceKcal: 2000, onboardingComplete: false };
 }
 
 export function saveTargets(targets) {

@@ -13,7 +13,7 @@ export default function FoodEntryCard({ entry, onDelete }) {
       <div className="food-entry-info">
         <span className="food-entry-name">{entry.name}</span>
         <span className="food-entry-serving">
-          {entry.servingSize}{entry.servingUnit} {entry.servingLabel ? `(${entry.servingLabel})` : ''}
+          {entry.servingSize}{entry.servingUnit}
         </span>
       </div>
       <div className="food-entry-nutrition">

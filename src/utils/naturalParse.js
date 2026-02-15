@@ -86,8 +86,7 @@ export function parseNaturalInput(text) {
     kcal: Math.round(totalKcal),
     protein: Math.round(totalProtein),
     servingSize: 1,
-    servingUnit: 'piece',
-    servingLabel: '1 serving',
+    servingUnit: 'g',
     matchedFoods: used.map((f) => f.name),
   };
 }

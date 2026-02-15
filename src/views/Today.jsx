@@ -29,12 +29,9 @@ export default function Today() {
       name: parsed.name,
       kcal: parsed.kcal,
       protein: parsed.protein,
-      carbs: null,
-      fat: null,
       meal: 'Snack',
       servingSize: parsed.servingSize,
-      servingUnit: parsed.servingUnit,
-      servingLabel: parsed.servingLabel,
+      servingUnit: 'g',
       timestamp: Date.now(),
       dateKey: getToday(),
     };

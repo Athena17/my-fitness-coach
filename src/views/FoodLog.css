@@ -19,6 +19,7 @@
   font-size: 0.9rem;
   color: var(--color-text-secondary);
   font-weight: 500;
+  min-height: 44px;
 }
 
 .food-log-search {
@@ -75,6 +76,10 @@
 
 .form-error {
   font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+.required {
   color: var(--color-danger);
 }
 
