@@ -36,6 +36,7 @@ const MEAL_CONFIG = [
 export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries } = useDailyEntries();
+  const [activeTab, setActiveTab] = useState('food');
   const [addingMeal, setAddingMeal] = useState(null);
   const [naturalPrefill, setNaturalPrefill] = useState(null);
   const [showManualForm, setShowManualForm] = useState(false);
@@ -96,7 +97,56 @@ export default function Today() {
 
   return (
     <div className="today">
-      <div className="meals-section">
+      {/* Food / Exercise tabs */}
+      <div className="today-tabs">
+        <button
+          className={`today-tab ${activeTab === 'food' ? 'today-tab--active' : ''}`}
+          onClick={() => setActiveTab('food')}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+          </svg>
+          Food
+        </button>
+        <button
+          className={`today-tab ${activeTab === 'water' ? 'today-tab--active' : ''}`}
+          onClick={() => setActiveTab('water')}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+          </svg>
+          Water
+        </button>
+        <button
+          className={`today-tab ${activeTab === 'exercise' ? 'today-tab--active' : ''}`}
+          onClick={() => setActiveTab('exercise')}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
+          </svg>
+          Exercise
+        </button>
+      </div>
+
+      {activeTab === 'water' && (
+        <div className="exercise-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+          </svg>
+          <p className="exercise-placeholder-text">Water tracking coming soon</p>
+        </div>
+      )}
+
+      {activeTab === 'exercise' && (
+        <div className="exercise-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+            <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
+          </svg>
+          <p className="exercise-placeholder-text">Exercise tracking coming soon</p>
+        </div>
+      )}
+
+      {activeTab === 'food' && <div className="meals-section">
         {MEAL_CONFIG.map(({ key: meal, label, icon }) => {
           const entries = todayEntries.filter((e) => e.meal === meal);
           const totals = sumNutrition(entries);
@@ -110,7 +160,11 @@ export default function Today() {
                   <span className="meal-label">{label}</span>
                   {entries.length > 0 && (
                     <span className="meal-totals">
-                      {Math.round(totals.kcal)} kcal · {Math.round(totals.protein)}g protein
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                      {Math.round(totals.kcal)} cal
+                      <span className="meal-totals-dot" />
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--color-protein)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z"/></svg>
+                      {Math.round(totals.protein)}g
                     </span>
                   )}
                 </div>
@@ -133,13 +187,11 @@ export default function Today() {
                 <div className="meal-row-body">
                   {isAdding && (
                     <div className="meal-add-section">
-                      <NaturalInput onAdd={handleNaturalAdd} onEdit={handleNaturalEdit} />
-                      <button
-                        className="meal-manual-btn"
-                        onClick={() => setShowManualForm(true)}
-                      >
-                        Or search / enter manually
-                      </button>
+                      <NaturalInput
+                        onAdd={handleNaturalAdd}
+                        onEdit={handleNaturalEdit}
+                        onSearchDb={() => setShowManualForm(true)}
+                      />
                     </div>
                   )}
 
@@ -159,7 +211,7 @@ export default function Today() {
             </div>
           );
         })}
-      </div>
+      </div>}
 
       {deleteId && (
         <Modal title="Delete Entry" onClose={() => setDeleteId(null)}>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { parseNaturalInput } from '../utils/naturalParse.js';
 import './NaturalInput.css';
 
-export default function NaturalInput({ onAdd, onEdit }) {
+export default function NaturalInput({ onAdd, onEdit, onSearchDb }) {
   const [text, setText] = useState('');
   const [preview, setPreview] = useState(null);
 
@@ -19,7 +19,7 @@ export default function NaturalInput({ onAdd, onEdit }) {
     setPreview(null);
   }
 
-  function handleEdit() {
+  function handleEditPreview() {
     if (!preview) return;
     onEdit(preview);
     setText('');
@@ -46,13 +46,21 @@ export default function NaturalInput({ onAdd, onEdit }) {
         onKeyDown={handleKeyDown}
         rows={2}
       />
-      <button
-        className="natural-input-btn"
-        onClick={handleEstimate}
-        disabled={!text.trim()}
-      >
-        Estimate
-      </button>
+      <div className="natural-input-actions">
+        <button
+          className="natural-input-btn natural-input-btn--primary"
+          onClick={handleEstimate}
+          disabled={!text.trim()}
+        >
+          Estimate
+        </button>
+        <button
+          className="natural-input-btn natural-input-btn--secondary"
+          onClick={onSearchDb}
+        >
+          Search database
+        </button>
+      </div>
 
       {preview && (
         <div className="natural-input-preview">
@@ -70,7 +78,7 @@ export default function NaturalInput({ onAdd, onEdit }) {
           )}
           <div className="preview-actions">
             <button className="preview-add" onClick={handleAdd}>Add</button>
-            <button className="preview-edit" onClick={handleEdit}>Edit</button>
+            <button className="preview-edit" onClick={handleEditPreview}>Edit</button>
           </div>
         </div>
       )}

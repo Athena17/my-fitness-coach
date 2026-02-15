@@ -1,7 +1,7 @@
 .history {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   font-family: var(--font-sans);
 }
 
@@ -45,8 +45,8 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  padding: 16px 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 12px 8px;
+  box-shadow: var(--shadow-md);
 }
 
 /* Weekday header row */
@@ -59,11 +59,11 @@
 
 .history-weekday {
   text-align: center;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 /* Calendar grid */
@@ -78,9 +78,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 4px 2px;
-  min-height: 48px;
+  gap: 1px;
+  padding: 3px 2px;
+  min-height: 40px;
   border-radius: 8px;
   transition: background 0.15s;
 }
@@ -90,7 +90,7 @@
 }
 
 .history-cell--today {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-surface-highlight);
 }
 
 .history-cell--today .history-cell-day {
@@ -120,13 +120,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px 16px;
-  background: var(--color-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 6px 4px;
 }
 
 .history-legend-row {
@@ -159,22 +153,6 @@
   font-family: var(--font-sans);
 }
 
-.history-legend-swatch {
-  display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.history-legend-item svg {
   flex-shrink: 0;
-}
-
-.history-legend-swatch--green {
-  background: var(--color-success);
-}
-
-.history-legend-swatch--yellow {
-  background: var(--color-warning);
-}
-
-.history-legend-swatch--red {
-  background: var(--color-danger);
 }

@@ -1,19 +1,19 @@
 .natural-input {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   font-family: var(--font-sans);
 }
 
 .natural-input-textarea {
   width: 100%;
-  min-height: 48px;
-  padding: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: 0.8rem;
   resize: vertical;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-surface-highlight);
   font-family: var(--font-sans);
 }
 
@@ -23,19 +23,34 @@
   box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
-.natural-input-btn {
-  min-height: 44px;
-  padding: 10px 20px;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 600;
+.natural-input-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.natural-input-btn:disabled {
+.natural-input-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.natural-input-btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.natural-input-btn--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.natural-input-btn--secondary {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-primary);
 }
 
 .natural-input-preview {
@@ -43,20 +58,22 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--color-surface-highlight);
   border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border);
 }
 
 .preview-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
 }
 
 .preview-macros {
   display: flex;
   gap: 16px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  font-family: var(--font-sans);
 }
 
 .preview-kcal {
@@ -70,8 +87,9 @@
 }
 
 .preview-matched {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-sans);
 }
 
 .preview-actions {
@@ -83,11 +101,12 @@
 .preview-add,
 .preview-edit {
   flex: 1;
-  min-height: 44px;
-  padding: 10px;
+  min-height: 40px;
+  padding: 8px;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  font-family: var(--font-sans);
 }
 
 .preview-add {

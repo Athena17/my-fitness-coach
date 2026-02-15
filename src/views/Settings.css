@@ -1,7 +1,7 @@
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   font-family: var(--font-sans);
 }
 
@@ -9,13 +9,13 @@
 .profile-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .profile-avatar {
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--color-surface);
   backdrop-filter: var(--glass-blur);
@@ -44,7 +44,7 @@
   border: none;
   background: none;
   padding: 4px 0;
-  border-bottom: 1.5px solid transparent;
+  border-bottom: 1.5px solid var(--color-border);
   transition: border-color 0.2s;
 }
 
@@ -58,65 +58,183 @@
   font-weight: 500;
 }
 
-/* Sections */
-.settings-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--color-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  padding: 16px;
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.settings-section h2 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 2px;
+.profile-name-display {
+  font-size: 1.1rem;
+  font-weight: 700;
   font-family: var(--font-sans);
   color: var(--color-text);
 }
 
-.settings-section .form-group {
+/* Sections */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
+
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.edit-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Display mode (read-only targets) ---- */
+.targets-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.target-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.target-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.target-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.target-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.target-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.target-sub {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  opacity: 0.7;
+}
+
+.target-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+}
+
+.target-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Edit mode (form) ---- */
+.targets-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section .form-group,
+.targets-form .form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.settings-section .form-group label {
+.form-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.settings-section .form-group label,
+.settings-section .form-group-header label,
+.targets-form .form-group label,
+.targets-form .form-group-header label {
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
 }
 
-.settings-section .form-hint {
+.form-annotation {
   font-size: 0.7rem;
   color: var(--color-text-secondary);
-  margin: 0;
+  font-weight: 500;
   font-family: var(--font-sans);
 }
 
-.settings-section .form-group input {
+.settings-section .form-group input,
+.targets-form .form-group input {
   padding: 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
   font-family: var(--font-sans);
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-surface-highlight);
   min-height: 48px;
 }
 
-.settings-section .form-group input:focus {
+.settings-section .form-group input:focus,
+.targets-form .form-group input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .settings-save-btn {
+  flex: 1;
   padding: 14px;
   background: var(--color-primary);
   color: #fff;
@@ -125,12 +243,26 @@
   font-family: var(--font-sans);
   font-size: 0.95rem;
   min-height: 48px;
-  width: 100%;
-  margin-top: 4px;
 }
 
 .settings-save-btn:hover {
   background: var(--color-primary-dark);
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  min-height: 48px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-secondary);
+}
+
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .form-error {
@@ -142,23 +274,23 @@
 .settings-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .btn-secondary {
-  padding: 12px;
+  padding: 10px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-weight: 500;
   font-family: var(--font-sans);
   font-size: 0.85rem;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-surface);
   transition: background 0.2s;
   min-height: 44px;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-surface-highlight);
 }
 
 .btn-danger-outline {

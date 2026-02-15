@@ -1,8 +1,8 @@
 .food-entry-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 6px 12px;
   font-family: var(--font-sans);
 }
 
@@ -15,7 +15,7 @@
 }
 
 .food-entry-name {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -31,13 +31,13 @@
 }
 
 .food-entry-kcal {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: var(--color-kcal);
 }
 
 .food-entry-protein {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--color-protein);
 }
 
@@ -66,8 +66,8 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 36px;
+  min-width: 36px;
   padding: 0;
   border-radius: 6px;
   color: var(--color-text-secondary);

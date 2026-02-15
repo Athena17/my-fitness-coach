@@ -5,8 +5,8 @@ import './NavBar.css';
 function TodayIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 6v6l4 2" />
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }
@@ -42,17 +42,19 @@ export default function NavBar() {
   const { currentView } = state;
 
   return (
-    <nav className="navbar">
-      {tabs.map((tab) => (
-        <button
-          key={tab.view}
-          className={`navbar-tab ${currentView === tab.view ? 'active' : ''}`}
-          onClick={() => dispatch({ type: 'SET_VIEW', payload: tab.view })}
-        >
-          <span className="navbar-icon">{tab.icon}</span>
-          <span className="navbar-label">{tab.label}</span>
-        </button>
-      ))}
-    </nav>
+    <div className="navbar-wrapper">
+      <nav className="navbar">
+        {tabs.map((tab) => (
+          <button
+            key={tab.view}
+            className={`navbar-tab ${currentView === tab.view ? 'active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_VIEW', payload: tab.view })}
+          >
+            <span className="navbar-icon">{tab.icon}</span>
+            <span className="navbar-label">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
   );
 }

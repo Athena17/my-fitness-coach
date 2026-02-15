@@ -28,7 +28,7 @@ function formatMonthLabel(year, month) {
 }
 
 function DayRing({ status }) {
-  const size = 32;
+  const size = 28;
   const cx = size / 2;
   const cy = size / 2;
   const strokeWidth = 3;
@@ -180,18 +180,24 @@ export default function History() {
 
       <div className="history-legend">
         <div className="history-legend-row">
-          <span className="history-legend-title">Calories vs. target</span>
+          <span className="history-legend-title">Calories</span>
           <div className="history-legend-items">
             <div className="history-legend-item">
-              <span className="history-legend-swatch history-legend-swatch--green" />
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-success)" strokeWidth="2" />
+              </svg>
               <span>Below target</span>
             </div>
             <div className="history-legend-item">
-              <span className="history-legend-swatch history-legend-swatch--yellow" />
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-warning)" strokeWidth="2" />
+              </svg>
               <span>Slightly above</span>
             </div>
             <div className="history-legend-item">
-              <span className="history-legend-swatch history-legend-swatch--red" />
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--color-danger)" strokeWidth="2" />
+              </svg>
               <span>Significantly above</span>
             </div>
           </div>

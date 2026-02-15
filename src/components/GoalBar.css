@@ -1,8 +1,8 @@
 .goal-bar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 8px;
+  padding: 12px 16px;
   font-family: var(--font-sans);
 }
 
@@ -13,12 +13,12 @@
   box-shadow: none;
 }
 
-/* Compact variant (Progress page): no background either */
+/* Compact variant (Progress page): just brand */
 .goal-bar--compact {
   background: none;
   border: none;
   box-shadow: none;
-  gap: 12px;
+  padding: 16px 18px 8px;
 }
 
 .goal-bar-top {
@@ -35,39 +35,18 @@
   font-family: var(--font-sans);
 }
 
-.goal-bar-weight {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-}
-
-.weight-label {
-  font-size: 0.65rem;
-  color: var(--color-text-secondary);
-  letter-spacing: 0.02em;
-  font-family: var(--font-sans);
-}
-
-.weight-value {
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: var(--font-sans);
-}
-
-.goal-bar-weight.loss .weight-value {
-  color: var(--color-success);
-}
-
-.goal-bar-weight.gain .weight-value {
-  color: var(--color-danger);
-}
-
 /* Weight loss progress bar */
 .weight-progress {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .weight-progress-header {
@@ -77,35 +56,34 @@
 }
 
 .weight-progress-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
 }
 
 .weight-progress-value {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--color-success);
   font-family: var(--font-sans);
 }
 
-.weight-progress-fill--gain ~ .weight-progress-value,
-.weight-progress-track:has(.weight-progress-fill--gain) + .weight-progress-value {
+.weight-progress-value--gain {
   color: var(--color-danger);
 }
 
 .weight-progress-track {
-  height: 8px;
+  height: 5px;
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .weight-progress-fill {
   height: 100%;
   background: var(--color-success);
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.5s ease;
   min-width: 2px;
 }
@@ -114,12 +92,87 @@
   background: var(--color-danger);
 }
 
+/* Weekly strip */
+.week-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 2px 0;
+  opacity: 0.7;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  padding: 5px 2px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.week-day--today {
+  background: var(--color-surface-highlight);
+}
+
+.week-day-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.week-day--today .week-day-label {
+  color: var(--color-text);
+}
+
+.week-day-num {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.week-day--today .week-day-num {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.week-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.week-dot--green {
+  background: var(--color-success);
+}
+
+.week-dot--yellow {
+  background: var(--color-warning);
+}
+
+.week-dot--red {
+  background: var(--color-danger);
+}
+
 /* Rings */
 .goal-bar-rings {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  box-shadow: var(--shadow-sm);
 }
 
 .goal-ring-divider {
@@ -138,8 +191,8 @@
 
 .goal-ring-wrap {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
 }
 
@@ -152,7 +205,7 @@
 }
 
 .goal-ring-number {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--color-text);
   font-family: var(--font-sans);
@@ -165,15 +218,22 @@
 }
 
 .goal-ring-label {
-  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text);
   letter-spacing: -0.01em;
   font-family: var(--font-sans);
 }
 
+.goal-ring-icon {
+  flex-shrink: 0;
+}
+
 .goal-ring-sub {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
 }
