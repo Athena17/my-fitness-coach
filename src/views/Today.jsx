@@ -8,6 +8,7 @@ import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import Modal from '../components/Modal.jsx';
 import FoodLog from './FoodLog.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
+import InsightCard from '../components/InsightCard.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -146,7 +147,9 @@ export default function Today() {
         </div>
       )}
 
-      {activeTab === 'food' && <div className="meals-section">
+      {activeTab === 'food' && <>
+        <InsightCard />
+        <div className="meals-section">
         {MEAL_CONFIG.map(({ key: meal, label, icon }) => {
           const entries = todayEntries.filter((e) => e.meal === meal);
           const totals = sumNutrition(entries);
@@ -211,7 +214,8 @@ export default function Today() {
             </div>
           );
         })}
-      </div>}
+      </div>
+      </>}
 
       {deleteId && (
         <Modal title="Delete Entry" onClose={() => setDeleteId(null)}>
