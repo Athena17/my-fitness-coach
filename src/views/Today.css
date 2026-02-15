@@ -1,14 +1,26 @@
-.dashboard {
+.today {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.dashboard-title {
+.today-title {
   font-size: 1.5rem;
   font-weight: 700;
 }
 
+.today-natural-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.today-natural-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Reuse dashboard styles for shared sections */
 .progress-section {
   display: flex;
   flex-direction: column;
@@ -37,6 +49,7 @@
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   background: rgba(79, 70, 229, 0.08);
+  min-height: 44px;
 }
 
 .meals-section {
@@ -64,52 +77,5 @@
   color: #fff;
   border-radius: var(--radius-sm);
   font-weight: 600;
-}
-
-.week-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.week-section h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.week-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.week-day {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 8px;
-  align-items: center;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  font-size: 0.85rem;
-}
-
-.week-day-label {
-  font-weight: 600;
-}
-
-.week-day-kcal {
-  color: var(--color-kcal);
-  font-weight: 500;
-}
-
-.week-day-protein {
-  color: var(--color-protein);
-  font-weight: 500;
-}
-
-.week-day-count {
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
+  min-height: 44px;
 }

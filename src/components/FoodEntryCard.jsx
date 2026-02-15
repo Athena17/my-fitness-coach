@@ -1,5 +1,4 @@
 import { useApp } from '../context/useApp.js';
-import { VIEWS } from '../context/constants.js';
 import './FoodEntryCard.css';
 
 export default function FoodEntryCard({ entry, onDelete }) {
@@ -7,7 +6,6 @@ export default function FoodEntryCard({ entry, onDelete }) {
 
   function handleEdit() {
     dispatch({ type: 'SET_EDITING_ENTRY', payload: entry });
-    dispatch({ type: 'SET_VIEW', payload: VIEWS.FOOD_LOG });
   }
 
   return (

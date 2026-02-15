@@ -1,1 +1,1 @@
-export const VIEWS = { DASHBOARD: 'dashboard', FOOD_LOG: 'foodLog', SETTINGS: 'settings' };
+export const VIEWS = { TODAY: 'today', HISTORY: 'history', SETTINGS: 'settings' };

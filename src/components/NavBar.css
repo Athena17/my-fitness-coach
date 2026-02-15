@@ -21,6 +21,7 @@
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   transition: color 0.2s;
+  min-height: 44px;
 }
 
 .navbar-tab.active {

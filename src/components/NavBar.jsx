@@ -7,8 +7,8 @@ export default function NavBar() {
   const { currentView } = state;
 
   const tabs = [
-    { view: VIEWS.DASHBOARD, label: 'Dashboard', icon: '📊' },
-    { view: VIEWS.FOOD_LOG, label: 'Add', icon: '➕' },
+    { view: VIEWS.TODAY, label: 'Today', icon: '📊' },
+    { view: VIEWS.HISTORY, label: 'History', icon: '📅' },
     { view: VIEWS.SETTINGS, label: 'Settings', icon: '⚙️' },
   ];
 

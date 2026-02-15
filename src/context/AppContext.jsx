@@ -8,7 +8,7 @@ function init() {
   return {
     targets: loadTargets(),
     entries: loadEntries(),
-    currentView: VIEWS.DASHBOARD,
+    currentView: VIEWS.TODAY,
     editingEntry: null,
   };
 }

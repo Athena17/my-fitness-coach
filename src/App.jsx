@@ -1,8 +1,8 @@
 import { useApp } from './context/useApp.js';
 import { VIEWS } from './context/constants.js';
 import Onboarding from './views/Onboarding.jsx';
-import Dashboard from './views/Dashboard.jsx';
-import FoodLog from './views/FoodLog.jsx';
+import Today from './views/Today.jsx';
+import History from './views/History.jsx';
 import Settings from './views/Settings.jsx';
 import NavBar from './components/NavBar.jsx';
 import './App.css';
@@ -16,13 +16,13 @@ function App() {
 
   const renderView = () => {
     switch (state.currentView) {
-      case VIEWS.FOOD_LOG:
-        return <FoodLog />;
+      case VIEWS.HISTORY:
+        return <History />;
       case VIEWS.SETTINGS:
         return <Settings />;
-      case VIEWS.DASHBOARD:
+      case VIEWS.TODAY:
       default:
-        return <Dashboard />;
+        return <Today />;
     }
   };
 

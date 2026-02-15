@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
-import { VIEWS } from '../context/constants.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday } from '../utils/dateUtils.js';
 import FoodSearch from '../components/FoodSearch.jsx';
@@ -8,18 +7,20 @@ import './FoodLog.css';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
-export default function FoodLog() {
+export default function FoodLog({ prefill, onDone }) {
   const { state, dispatch } = useApp();
   const editing = state.editingEntry;
   const isEditing = !!editing;
 
-  const [name, setName] = useState(editing?.name ?? '');
-  const [kcal, setKcal] = useState(editing ? String(editing.kcal) : '');
-  const [protein, setProtein] = useState(editing ? String(editing.protein) : '');
-  const [meal, setMeal] = useState(editing?.meal ?? 'Breakfast');
-  const [servingSize, setServingSize] = useState(editing ? String(editing.servingSize) : '');
-  const [servingUnit, setServingUnit] = useState(editing?.servingUnit ?? 'g');
-  const [servingLabel, setServingLabel] = useState(editing?.servingLabel ?? '');
+  const initial = editing || prefill;
+
+  const [name, setName] = useState(initial?.name ?? '');
+  const [kcal, setKcal] = useState(initial ? String(initial.kcal) : '');
+  const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
+  const [meal, setMeal] = useState(initial?.meal ?? 'Breakfast');
+  const [servingSize, setServingSize] = useState(initial ? String(initial.servingSize) : '');
+  const [servingUnit, setServingUnit] = useState(initial?.servingUnit ?? 'g');
+  const [servingLabel, setServingLabel] = useState(initial?.servingLabel ?? '');
   const [errors, setErrors] = useState({});
 
   function handleFoodSelect(food) {
@@ -66,12 +67,12 @@ export default function FoodLog() {
       type: isEditing ? 'UPDATE_ENTRY' : 'ADD_ENTRY',
       payload: entry,
     });
-    dispatch({ type: 'SET_VIEW', payload: VIEWS.DASHBOARD });
+    onDone();
   }
 
   function handleCancel() {
     dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
-    dispatch({ type: 'SET_VIEW', payload: VIEWS.DASHBOARD });
+    onDone();
   }
 
   return (
