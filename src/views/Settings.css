@@ -1,14 +1,64 @@
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  font-family: var(--font-sans);
 }
 
-.settings-title {
-  font-size: 1.5rem;
+/* Profile header: avatar + name */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.profile-name-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.profile-name-input {
+  font-size: 1.1rem;
   font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  border: none;
+  background: none;
+  padding: 4px 0;
+  border-bottom: 1.5px solid transparent;
+  transition: border-color 0.2s;
 }
 
+.profile-name-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary);
+}
+
+.profile-name-input::placeholder {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Sections */
 .settings-section {
   display: flex;
   flex-direction: column;
@@ -23,9 +73,11 @@
 }
 
 .settings-section h2 {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  font-family: var(--font-sans);
+  color: var(--color-text);
 }
 
 .settings-section .form-group {
@@ -35,17 +87,27 @@
 }
 
 .settings-section .form-group label {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.settings-section .form-hint {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-family: var(--font-sans);
 }
 
 .settings-section .form-group input {
   padding: 12px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
   background: rgba(255, 255, 255, 0.5);
+  min-height: 48px;
 }
 
 .settings-section .form-group input:focus {
@@ -54,21 +116,27 @@
   box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
-.settings-section .btn-primary {
-  padding: 12px;
+.settings-save-btn {
+  padding: 14px;
   background: var(--color-primary);
   color: #fff;
   border-radius: var(--radius-sm);
   font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  min-height: 48px;
+  width: 100%;
+  margin-top: 4px;
 }
 
-.settings-section .btn-primary:hover {
+.settings-save-btn:hover {
   background: var(--color-primary-dark);
 }
 
 .form-error {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-danger);
+  font-family: var(--font-sans);
 }
 
 .settings-actions {
@@ -82,12 +150,15 @@
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-weight: 500;
-  background: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.3);
   transition: background 0.2s;
+  min-height: 44px;
 }
 
 .btn-secondary:hover {
-  background: var(--color-bg);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .btn-danger-outline {
@@ -100,9 +171,10 @@
 }
 
 .settings-message {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-success);
   font-weight: 500;
+  font-family: var(--font-sans);
 }
 
 .settings-about {
@@ -110,6 +182,7 @@
 }
 
 .settings-about p {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-sans);
 }

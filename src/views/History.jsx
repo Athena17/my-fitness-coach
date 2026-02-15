@@ -9,12 +9,10 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 function getMonthData(year, month) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  // Monday = 0, Sunday = 6
   let startOffset = firstDay.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
   const days = [];
-  // Empty cells before first day
   for (let i = 0; i < startOffset; i++) {
     days.push(null);
   }
@@ -27,6 +25,50 @@ function getMonthData(year, month) {
 function formatMonthLabel(year, month) {
   const date = new Date(year, month, 1);
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function DayRing({ status }) {
+  const size = 32;
+  const cx = size / 2;
+  const cy = size / 2;
+  const strokeWidth = 3;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - Math.min(status.kcal / status.kcalTarget, 1));
+
+  let ringColor = 'var(--color-success)';
+  if (status.kcalOver20) ringColor = 'var(--color-danger)';
+  else if (status.kcalOver) ringColor = 'var(--color-warning)';
+
+  return (
+    <svg width={size} height={size} className="day-ring">
+      <circle
+        cx={cx} cy={cy} r={radius}
+        fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={cx} cy={cy} r={radius}
+        fill="none" stroke={ringColor} strokeWidth={strokeWidth}
+        strokeDasharray={circumference} strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+      />
+      {/* Protein: centered check or X */}
+      {status.proteinOk ? (
+        <polyline
+          points={`${cx - 4},${cy} ${cx - 1},${cy + 3} ${cx + 5},${cy - 3}`}
+          fill="none" stroke="var(--color-success)" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
+        />
+      ) : (
+        <g stroke="var(--color-danger)" strokeWidth="1.5" strokeLinecap="round" opacity="0.6">
+          <line x1={cx - 3} y1={cy - 3} x2={cx + 3} y2={cy + 3} />
+          <line x1={cx + 3} y1={cy - 3} x2={cx - 3} y2={cy + 3} />
+        </g>
+      )}
+    </svg>
+  );
 }
 
 export default function History() {
@@ -73,12 +115,13 @@ export default function History() {
     const dayEntries = dayMap[dateKey];
     if (!dayEntries || dayEntries.length === 0) return null;
     const totals = sumNutrition(dayEntries);
+    const overPct = (totals.kcal - targets.kcal) / targets.kcal;
     return {
-      dateKey,
       kcal: totals.kcal,
-      protein: totals.protein,
-      kcalOk: totals.kcal <= targets.kcal && totals.kcal > 0,
-      kcalOver: totals.kcal > targets.kcal,
+      kcalTarget: targets.kcal,
+      kcalOk: totals.kcal <= targets.kcal,
+      kcalOver: overPct > 0 && overPct <= 0.2,
+      kcalOver20: overPct > 0.2,
       proteinOk: totals.protein >= targets.protein,
     };
   }
@@ -119,20 +162,15 @@ export default function History() {
             return (
               <div
                 key={dayNum}
-                className={`history-cell ${isToday ? 'history-cell--today' : ''} ${status ? 'history-cell--logged' : ''}`}
+                className={`history-cell ${isToday ? 'history-cell--today' : ''}`}
               >
-                <span className="history-cell-day">{dayNum}</span>
+                {status ? (
+                  <DayRing status={status} />
+                ) : (
+                  <span className="history-cell-day">{dayNum}</span>
+                )}
                 {status && (
-                  <div className="history-cell-dots">
-                    <span
-                      className={`history-dot history-dot--kcal ${status.kcalOk ? 'ok' : ''} ${status.kcalOver ? 'over' : ''}`}
-                      title={`${Math.round(status.kcal)} kcal`}
-                    />
-                    <span
-                      className={`history-dot history-dot--protein ${status.proteinOk ? 'ok' : ''}`}
-                      title={`${Math.round(status.protein)}g protein`}
-                    />
-                  </div>
+                  <span className="history-cell-day history-cell-day--below">{dayNum}</span>
                 )}
               </div>
             );
@@ -141,17 +179,40 @@ export default function History() {
       </div>
 
       <div className="history-legend">
-        <div className="history-legend-item">
-          <span className="history-dot history-dot--kcal ok" />
-          <span>Calories on track</span>
+        <div className="history-legend-row">
+          <span className="history-legend-title">Calories vs. target</span>
+          <div className="history-legend-items">
+            <div className="history-legend-item">
+              <span className="history-legend-swatch history-legend-swatch--green" />
+              <span>Below target</span>
+            </div>
+            <div className="history-legend-item">
+              <span className="history-legend-swatch history-legend-swatch--yellow" />
+              <span>Slightly above</span>
+            </div>
+            <div className="history-legend-item">
+              <span className="history-legend-swatch history-legend-swatch--red" />
+              <span>Significantly above</span>
+            </div>
+          </div>
         </div>
-        <div className="history-legend-item">
-          <span className="history-dot history-dot--kcal over" />
-          <span>Calories over</span>
-        </div>
-        <div className="history-legend-item">
-          <span className="history-dot history-dot--protein ok" />
-          <span>Protein target hit</span>
+        <div className="history-legend-row">
+          <span className="history-legend-title">Protein</span>
+          <div className="history-legend-items">
+            <div className="history-legend-item">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3,8 6.5,11.5 13,5" />
+              </svg>
+              <span>Sufficient</span>
+            </div>
+            <div className="history-legend-item">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--color-danger)" strokeWidth="2" strokeLinecap="round" opacity="0.6">
+                <line x1="4" y1="4" x2="12" y2="12" />
+                <line x1="12" y1="4" x2="4" y2="12" />
+              </svg>
+              <span>Insufficient</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -31,7 +31,9 @@
 }
 
 .navbar-icon {
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navbar-label {

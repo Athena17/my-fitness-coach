@@ -27,10 +27,12 @@ function App() {
     }
   };
 
+  const isToday = state.currentView === VIEWS.TODAY;
+
   return (
     <div className="app-shell">
       <header className="app-header">
-        <GoalBar />
+        <GoalBar variant={isToday ? 'full' : 'compact'} />
       </header>
       <main className="app-main">{renderView()}</main>
       <NavBar />

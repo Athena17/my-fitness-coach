@@ -4,6 +4,7 @@
   justify-content: center;
   min-height: 100dvh;
   padding: 24px;
+  font-family: var(--font-sans);
 }
 
 .onboarding-content {

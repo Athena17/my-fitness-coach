@@ -1,14 +1,24 @@
 .goal-bar {
-  background: var(--color-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 16px 18px;
+  font-family: var(--font-sans);
+}
+
+/* Today variant: no background */
+.goal-bar--today {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* Compact variant (Progress page): no background either */
+.goal-bar--compact {
+  background: none;
+  border: none;
+  box-shadow: none;
+  gap: 12px;
 }
 
 .goal-bar-top {
@@ -22,6 +32,7 @@
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: -0.02em;
+  font-family: var(--font-sans);
 }
 
 .goal-bar-weight {
@@ -35,11 +46,13 @@
   font-size: 0.65rem;
   color: var(--color-text-secondary);
   letter-spacing: 0.02em;
+  font-family: var(--font-sans);
 }
 
 .weight-value {
   font-size: 0.9rem;
   font-weight: 700;
+  font-family: var(--font-sans);
 }
 
 .goal-bar-weight.loss .weight-value {
@@ -48,6 +61,57 @@
 
 .goal-bar-weight.gain .weight-value {
   color: var(--color-danger);
+}
+
+/* Weight loss progress bar */
+.weight-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.weight-progress-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.weight-progress-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-success);
+  font-family: var(--font-sans);
+}
+
+.weight-progress-fill--gain ~ .weight-progress-value,
+.weight-progress-track:has(.weight-progress-fill--gain) + .weight-progress-value {
+  color: var(--color-danger);
+}
+
+.weight-progress-track {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.weight-progress-fill {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+.weight-progress-fill--gain {
+  background: var(--color-danger);
 }
 
 /* Rings */
@@ -91,6 +155,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--color-text);
+  font-family: var(--font-sans);
 }
 
 .goal-ring-meta {
@@ -104,9 +169,11 @@
   font-weight: 600;
   color: var(--color-text);
   letter-spacing: -0.01em;
+  font-family: var(--font-sans);
 }
 
 .goal-ring-sub {
   font-size: 0.7rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-sans);
 }

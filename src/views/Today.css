@@ -44,6 +44,13 @@
   flex-shrink: 0;
 }
 
+.meal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .meal-label {
   font-size: 0.95rem;
   font-weight: 600;
@@ -52,13 +59,9 @@
 }
 
 .meal-totals {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
   font-weight: 500;
-}
-
-.meal-totals::after {
-  content: ' kcal';
 }
 
 .meal-add-btn {

@@ -37,7 +37,7 @@ function Ring({ value, max, color, size = 64, strokeWidth = 5 }) {
   );
 }
 
-export default function GoalBar() {
+export default function GoalBar({ variant = 'full' }) {
   const { state } = useApp();
   const { targets, entries } = state;
   const { todayTotals } = useDailyEntries();
@@ -60,16 +60,44 @@ export default function GoalBar() {
     return totalDeficit / 7000;
   }, [entries, targets]);
 
-  const sign = weightEstimate >= 0 ? '-' : '+';
   const absKg = Math.abs(weightEstimate).toFixed(1);
+  const goalKg = targets.weightLossTarget || 5;
+  const progressPct = Math.min(Math.max(weightEstimate / goalKg, 0), 1) * 100;
+
+  // Compact variant: brand + weight loss progress bar (for Progress page)
+  if (variant === 'compact') {
+    return (
+      <div className="goal-bar goal-bar--compact">
+        <div className="goal-bar-top">
+          <span className="goal-bar-brand">myfitnesscoach</span>
+        </div>
+        <div className="weight-progress">
+          <div className="weight-progress-header">
+            <span className="weight-progress-label">
+              {weightEstimate >= 0 ? 'Weight loss progress' : 'Weight gained'}
+            </span>
+            <span className="weight-progress-value">
+              {absKg} / {goalKg} kg
+            </span>
+          </div>
+          <div className="weight-progress-track">
+            <div
+              className={`weight-progress-fill ${weightEstimate < 0 ? 'weight-progress-fill--gain' : ''}`}
+              style={{ width: `${weightEstimate >= 0 ? progressPct : 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="goal-bar">
+    <div className="goal-bar goal-bar--today">
       <div className="goal-bar-top">
         <span className="goal-bar-brand">myfitnesscoach</span>
         <div className={`goal-bar-weight ${weightEstimate >= 0 ? 'loss' : 'gain'}`}>
           <span className="weight-label">{weightEstimate >= 0 ? 'Progress' : 'Gained'}</span>
-          <span className="weight-value">{sign}{absKg} kg</span>
+          <span className="weight-value">{absKg} kg</span>
         </div>
       </div>
 
@@ -86,7 +114,7 @@ export default function GoalBar() {
             <span className="goal-ring-sub">
               {todayTotals.kcal > targets.kcal
                 ? `${Math.round(todayTotals.kcal - targets.kcal)} over`
-                : `${Math.round(kcalLeft)} left`
+                : `${Math.round(kcalLeft)} of ${Math.round(targets.kcal)} left`
               }
             </span>
           </div>
@@ -105,8 +133,8 @@ export default function GoalBar() {
             <span className="goal-ring-label">Protein</span>
             <span className="goal-ring-sub">
               {todayTotals.protein >= targets.protein
-                ? 'Target hit!'
-                : `${Math.round(proteinLeft)}g left`
+                ? `${Math.round(targets.protein)}g target hit!`
+                : `${Math.round(proteinLeft)} of ${Math.round(targets.protein)}g left`
               }
             </span>
           </div>

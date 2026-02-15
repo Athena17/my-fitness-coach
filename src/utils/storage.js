@@ -1,7 +1,7 @@
 const SCHEMA_KEY = 'nt_schema_version';
 const TARGETS_KEY = 'nt_targets';
 const ENTRIES_KEY = 'nt_entries';
-const CURRENT_SCHEMA = 2;
+const CURRENT_SCHEMA = 3;
 
 function safeGet(key) {
   try {
@@ -37,13 +37,22 @@ export function runMigrations() {
       safeSet(TARGETS_KEY, targets);
     }
   }
+  if (version < 3) {
+    // v3: add userName and weightLossTarget
+    const targets = safeGet(TARGETS_KEY);
+    if (targets) {
+      if (!targets.userName) targets.userName = '';
+      if (!targets.weightLossTarget) targets.weightLossTarget = 5;
+      safeSet(TARGETS_KEY, targets);
+    }
+  }
   if (version < CURRENT_SCHEMA) {
     safeSet(SCHEMA_KEY, CURRENT_SCHEMA);
   }
 }
 
 export function loadTargets() {
-  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, maintenanceKcal: 2000, onboardingComplete: false };
+  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, maintenanceKcal: 2000, userName: '', weightLossTarget: 5, onboardingComplete: false };
 }
 
 export function saveTargets(targets) {
