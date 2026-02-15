@@ -24,6 +24,16 @@ export function useDailyEntries() {
     [todayExerciseLogs]
   );
 
+  const todayWaterLogs = useMemo(
+    () => (state.waterLogs || []).filter((e) => e.dateKey === today),
+    [state.waterLogs, today]
+  );
+
+  const todayWaterTotal = useMemo(
+    () => todayWaterLogs.reduce((sum, e) => sum + (e.amountLiters || 0), 0),
+    [todayWaterLogs]
+  );
+
   const weekSummary = useMemo(() => {
     const days = getWeekRange();
     return days.map((dateKey) => {
@@ -34,5 +44,5 @@ export function useDailyEntries() {
     });
   }, [state.entries, state.exerciseLogs]);
 
-  return { todayEntries, todayTotals, todayExerciseLogs, caloriesBurned, weekSummary };
+  return { todayEntries, todayTotals, todayExerciseLogs, caloriesBurned, todayWaterLogs, todayWaterTotal, weekSummary };
 }

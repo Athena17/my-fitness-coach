@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { calculateMaintenance, suggestTargets } from '../utils/nutritionCalc.js';
+import { recommendedWaterLiters } from '../utils/waterCalc.js';
 import './Onboarding.css';
 
 const ACTIVITY_OPTIONS = [
@@ -12,9 +13,9 @@ const ACTIVITY_OPTIONS = [
 ];
 
 const GOAL_OPTIONS = [
-  { key: 'lose', label: 'Lose weight', desc: 'Calorie deficit (−300 kcal)' },
+  { key: 'lose', label: 'Lose weight', desc: 'Calorie deficit (−300 cal)' },
   { key: 'maintain', label: 'Maintain weight', desc: 'Eat at maintenance' },
-  { key: 'gain', label: 'Gain weight', desc: 'Calorie surplus (+300 kcal)' },
+  { key: 'gain', label: 'Gain weight', desc: 'Calorie surplus (+300 cal)' },
 ];
 
 export default function Onboarding() {
@@ -36,6 +37,7 @@ export default function Onboarding() {
   const [goal, setGoal] = useState('lose');
   const [kcalOverride, setKcalOverride] = useState('');
   const [proteinOverride, setProteinOverride] = useState('');
+  const [waterOverride, setWaterOverride] = useState('');
 
   const maintenance = useMemo(() => {
     const w = Number(weight), h = Number(height), a = Number(age);
@@ -51,6 +53,11 @@ export default function Onboarding() {
     }
     return { kcal: 2000, protein: 120 };
   }, [maintenance, weight, goal]);
+
+  const suggestedWater = useMemo(() => {
+    const w = Number(weight);
+    return w > 0 ? recommendedWaterLiters(w) : 2.5;
+  }, [weight]);
 
   function validateStep1() {
     const e = {};
@@ -94,6 +101,7 @@ export default function Onboarding() {
     if (!validateStep3()) return;
     const finalKcal = Number(kcalOverride || suggested.kcal);
     const finalProtein = Number(proteinOverride || suggested.protein);
+    const finalWater = Number(waterOverride || suggestedWater);
     const weightLossTarget = goal === 'lose' ? 5 : 0;
 
     dispatch({
@@ -109,6 +117,7 @@ export default function Onboarding() {
         maintenanceKcal: maintenance,
         kcal: finalKcal,
         protein: finalProtein,
+        waterTargetLiters: finalWater,
         weightLossTarget,
         onboardingComplete: true,
       },
@@ -207,7 +216,7 @@ export default function Onboarding() {
               {maintenance && (
                 <div className="maintenance-result">
                   <span className="maintenance-label">Your maintenance calories</span>
-                  <span className="maintenance-value">{maintenance} kcal / day</span>
+                  <span className="maintenance-value">{maintenance} cal / day</span>
                 </div>
               )}
 
@@ -246,7 +255,7 @@ export default function Onboarding() {
                       value={kcalOverride || suggested.kcal}
                       onChange={(e) => setKcalOverride(e.target.value)}
                     />
-                    <span className="target-preview-unit">kcal</span>
+                    <span className="target-preview-unit">cal</span>
                   </div>
                   {errors.kcal && <span className="form-error">{errors.kcal}</span>}
                 </div>
@@ -261,6 +270,17 @@ export default function Onboarding() {
                     <span className="target-preview-unit">g / day</span>
                   </div>
                   {errors.protein && <span className="form-error">{errors.protein}</span>}
+                </div>
+                <div className="target-preview-row">
+                  <span className="target-preview-label">Daily water intake</span>
+                  <div className="target-preview-input">
+                    <input
+                      type="number" inputMode="decimal" step="0.1"
+                      value={waterOverride || suggestedWater}
+                      onChange={(e) => setWaterOverride(e.target.value)}
+                    />
+                    <span className="target-preview-unit">L / day</span>
+                  </div>
                 </div>
                 <p className="form-hint">Auto-calculated. Tap to adjust.</p>
               </div>

@@ -95,7 +95,7 @@ export default function FoodLog({ prefill, defaultMeal, onDone }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="food-kcal">Calories (kcal)</label>
+            <label htmlFor="food-kcal">Calories (cal)</label>
             <input
               id="food-kcal"
               type="number"

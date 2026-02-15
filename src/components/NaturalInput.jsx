@@ -68,7 +68,7 @@ export default function NaturalInput({ onAdd, onEdit, onSearchDb }) {
             <span className="preview-name">{preview.name}</span>
           </div>
           <div className="preview-macros">
-            <span className="preview-kcal">{preview.kcal} kcal</span>
+            <span className="preview-kcal">{preview.kcal} cal</span>
             <span className="preview-protein">{preview.protein}g protein</span>
           </div>
           {preview.matchedFoods.length > 0 && (

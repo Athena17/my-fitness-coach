@@ -33,7 +33,7 @@ export default function FoodEntryCard({ entry, onDelete }) {
         <span className="food-entry-name">{entry.name}</span>
       </div>
       <div className="food-entry-nutrition">
-        <span className="food-entry-kcal">{Math.round(entry.kcal)} kcal</span>
+        <span className="food-entry-kcal">{Math.round(entry.kcal)} cal</span>
         <span className="food-entry-protein">{Math.round(entry.protein)}g</span>
       </div>
       <div className="food-entry-actions">

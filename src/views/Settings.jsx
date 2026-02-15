@@ -20,6 +20,11 @@ function TargetIcon({ type }) {
       <path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z" />
     </svg>
   );
+  if (type === 'water') return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+    </svg>
+  );
   return null;
 }
 
@@ -33,6 +38,7 @@ export default function Settings() {
   const [weightLossTarget, setWeightLossTarget] = useState(String(targets.weightLossTarget || 5));
   const [kcal, setKcal] = useState(String(targets.kcal));
   const [protein, setProtein] = useState(String(targets.protein));
+  const [water, setWater] = useState(String(targets.waterTargetLiters || 2.5));
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -43,6 +49,7 @@ export default function Settings() {
     setWeightLossTarget(String(targets.weightLossTarget || 5));
     setKcal(String(targets.kcal));
     setProtein(String(targets.protein));
+    setWater(String(targets.waterTargetLiters || 2.5));
     setErrors({});
     setEditing(true);
   }
@@ -58,10 +65,12 @@ export default function Settings() {
     const k = Number(kcal);
     const p = Number(protein);
     const w = Number(weightLossTarget);
+    const wt = Number(water);
     if (!userName.trim()) errs.userName = 'Enter your name';
     if (!k || k < 500 || k > 10000) errs.kcal = '500–10,000';
     if (!p || p < 10 || p > 500) errs.protein = '10–500';
     if (!w || w < 0.5 || w > 100) errs.weightLossTarget = '0.5–100';
+    if (!wt || wt < 0.5 || wt > 15) errs.water = '0.5–15';
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
@@ -71,6 +80,7 @@ export default function Settings() {
         userName: userName.trim(),
         kcal: k,
         protein: p,
+        waterTargetLiters: wt,
         maintenanceKcal: targets.maintenanceKcal || targets.kcal,
         weightLossTarget: w,
       },
@@ -178,7 +188,7 @@ export default function Settings() {
 
             <div className="form-group">
               <div className="form-group-header">
-                <label htmlFor="settings-kcal">Calorie target (kcal)</label>
+                <label htmlFor="settings-kcal">Calorie target (cal)</label>
                 <span className="form-annotation">Maintenance: {maintenanceKcal}</span>
               </div>
               <input
@@ -205,6 +215,20 @@ export default function Settings() {
               {errors.protein && <span className="form-error">{errors.protein}</span>}
             </div>
 
+            <div className="form-group">
+              <label htmlFor="settings-water">Water target (L / day)</label>
+              <input
+                id="settings-water"
+                type="number"
+                inputMode="decimal"
+                step="0.1"
+                value={water}
+                onChange={(e) => setWater(e.target.value)}
+                placeholder="e.g. 2.5"
+              />
+              {errors.water && <span className="form-error">{errors.water}</span>}
+            </div>
+
             <div className="form-actions">
               <button type="submit" className="btn-primary settings-save-btn">Save</button>
               <button type="button" className="btn-cancel" onClick={cancelEditing}>Cancel</button>
@@ -227,10 +251,10 @@ export default function Settings() {
                 <span className="target-icon"><TargetIcon type="calories" /></span>
                 <div className="target-label-group">
                   <span className="target-label">Calorie target</span>
-                  <span className="target-sub">Maintenance: {maintenanceKcal} kcal</span>
+                  <span className="target-sub">Maintenance: {maintenanceKcal} cal</span>
                 </div>
               </div>
-              <span className="target-value">{targets.kcal} kcal</span>
+              <span className="target-value">{targets.kcal} cal</span>
             </div>
 
             <div className="target-divider" />
@@ -241,6 +265,16 @@ export default function Settings() {
                 <span className="target-label">Protein target</span>
               </div>
               <span className="target-value">{targets.protein} g / day</span>
+            </div>
+
+            <div className="target-divider" />
+
+            <div className="target-row">
+              <div className="target-row-left">
+                <span className="target-icon"><TargetIcon type="water" /></span>
+                <span className="target-label">Water target</span>
+              </div>
+              <span className="target-value">{targets.waterTargetLiters || 2.5} L / day</span>
             </div>
           </div>
         )}

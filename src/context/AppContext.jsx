@@ -1,5 +1,5 @@
 import { useReducer, useEffect } from 'react';
-import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, runMigrations } from '../utils/storage.js';
+import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, loadWaterLogs, saveWaterLogs, runMigrations } from '../utils/storage.js';
 import { VIEWS } from './constants.js';
 import { AppContext } from './context.js';
 
@@ -9,6 +9,7 @@ function init() {
     targets: loadTargets(),
     entries: loadEntries(),
     exerciseLogs: loadExerciseLogs(),
+    waterLogs: loadWaterLogs(),
     currentView: VIEWS.TODAY,
     editingEntry: null,
   };
@@ -49,6 +50,15 @@ function reducer(state, action) {
         exerciseLogs: state.exerciseLogs.filter((e) => e.id !== action.payload),
       };
 
+    case 'ADD_WATER':
+      return { ...state, waterLogs: [...state.waterLogs, action.payload] };
+
+    case 'DELETE_WATER':
+      return {
+        ...state,
+        waterLogs: state.waterLogs.filter((e) => e.id !== action.payload),
+      };
+
     case 'IMPORT_DATA':
       return {
         ...state,
@@ -75,6 +85,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     saveExerciseLogs(state.exerciseLogs);
   }, [state.exerciseLogs]);
+
+  useEffect(() => {
+    saveWaterLogs(state.waterLogs);
+  }, [state.waterLogs]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

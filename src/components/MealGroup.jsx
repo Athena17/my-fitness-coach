@@ -20,7 +20,7 @@ export default function MealGroup({ meal, entries }) {
       <div className="meal-group-header">
         <h3 className="meal-group-title">{meal}</h3>
         <span className="meal-group-totals">
-          {Math.round(totals.kcal)} kcal · {Math.round(totals.protein)}g protein
+          {Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g protein
         </span>
       </div>
       <div className="meal-group-entries">

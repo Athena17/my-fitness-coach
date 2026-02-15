@@ -10,6 +10,7 @@ import FoodLog from './FoodLog.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import InsightCard from '../components/InsightCard.jsx';
 import ExercisePanel from '../components/ExercisePanel.jsx';
+import WaterPanel from '../components/WaterPanel.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -133,14 +134,7 @@ export default function Today() {
         </button>
       </div>
 
-      {activeTab === 'water' && (
-        <div className="exercise-placeholder">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
-            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
-          </svg>
-          <p className="exercise-placeholder-text">Water tracking coming soon</p>
-        </div>
-      )}
+      {activeTab === 'water' && <WaterPanel />}
 
       {activeTab === 'exercise' && <ExercisePanel />}
 

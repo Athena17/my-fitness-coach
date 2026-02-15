@@ -15,7 +15,6 @@ function Ring({ value, max, color, size = 52, strokeWidth = 4.5 }) {
 
   return (
     <svg width={size} height={size} className="goal-ring">
-      {/* Track */}
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none" stroke={color} strokeWidth={strokeWidth}
@@ -91,7 +90,7 @@ function WeekStrip({ entries, targets }) {
 export default function GoalBar({ variant = 'full' }) {
   const { state } = useApp();
   const { targets, entries } = state;
-  const { todayTotals, caloriesBurned } = useDailyEntries();
+  const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
 
   const netKcal = todayTotals.kcal - caloriesBurned;
   const _kcalLeft = Math.max(0, targets.kcal - netKcal);
@@ -159,54 +158,48 @@ export default function GoalBar({ variant = 'full' }) {
       {/* Weekly strip */}
       <WeekStrip entries={entries} targets={targets} />
 
-      {/* Calorie + Protein rings */}
+      {/* Calories / Protein / Water rings */}
       <div className="goal-bar-rings">
-        <div className="goal-ring-group">
+        <div className="goal-ring-col">
           <div className="goal-ring-wrap">
             <Ring value={Math.max(0, netKcal)} max={targets.kcal} color="var(--color-kcal)" />
             <div className="goal-ring-inner">
               <span className="goal-ring-number">{Math.round(Math.max(0, netKcal))}</span>
             </div>
           </div>
-          <div className="goal-ring-meta">
-            <span className="goal-ring-label">
-              <svg className="goal-ring-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-              {caloriesBurned > 0 ? 'Net Cal' : 'Calories'}
-            </span>
-            <span className="goal-ring-sub">
-              {netKcal > targets.kcal
-                ? `${Math.round(netKcal - targets.kcal)} over`
-                : `/ ${Math.round(targets.kcal)} cal`
-              }
-            </span>
-          </div>
+          <span className="goal-ring-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            {caloriesBurned > 0 ? 'Calories (Net)' : 'Calories'}
+          </span>
+          <span className="goal-ring-sub">/ {Math.round(targets.kcal)} cal</span>
         </div>
 
-        <div className="goal-ring-divider" />
-
-        <div className="goal-ring-group">
+        <div className="goal-ring-col">
           <div className="goal-ring-wrap">
             <Ring value={todayTotals.protein} max={targets.protein} color="var(--color-protein)" />
             <div className="goal-ring-inner">
               <span className="goal-ring-number">{Math.round(todayTotals.protein)}</span>
             </div>
           </div>
-          <div className="goal-ring-meta">
-            <span className="goal-ring-label">
-              <svg className="goal-ring-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-protein)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z" />
-              </svg>
-              Protein
-            </span>
-            <span className="goal-ring-sub">
-              {todayTotals.protein >= targets.protein
-                ? 'Target hit!'
-                : `/ ${Math.round(targets.protein)}g`
-              }
-            </span>
+          <span className="goal-ring-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-protein)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z"/></svg>
+            Protein
+          </span>
+          <span className="goal-ring-sub">/ {Math.round(targets.protein)}g</span>
+        </div>
+
+        <div className="goal-ring-col">
+          <div className="goal-ring-wrap">
+            <Ring value={todayWaterTotal} max={targets.waterTargetLiters || 2.5} color="var(--color-water)" />
+            <div className="goal-ring-inner">
+              <span className="goal-ring-number">{todayWaterTotal.toFixed(1)}</span>
+            </div>
           </div>
+          <span className="goal-ring-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-water)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+            Water
+          </span>
+          <span className="goal-ring-sub">/ {targets.waterTargetLiters || 2.5} L</span>
         </div>
       </div>
     </div>

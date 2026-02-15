@@ -2,6 +2,7 @@ const SCHEMA_KEY = 'nt_schema_version';
 const TARGETS_KEY = 'nt_targets';
 const ENTRIES_KEY = 'nt_entries';
 const EXERCISE_LOGS_KEY = 'nt_exercise_logs';
+const WATER_LOGS_KEY = 'nt_water_logs';
 const CURRENT_SCHEMA = 3;
 
 function safeGet(key) {
@@ -76,11 +77,20 @@ export function saveExerciseLogs(logs) {
   safeSet(EXERCISE_LOGS_KEY, logs);
 }
 
+export function loadWaterLogs() {
+  return safeGet(WATER_LOGS_KEY) || [];
+}
+
+export function saveWaterLogs(logs) {
+  safeSet(WATER_LOGS_KEY, logs);
+}
+
 export function clearAllData() {
   try {
     localStorage.removeItem(TARGETS_KEY);
     localStorage.removeItem(ENTRIES_KEY);
     localStorage.removeItem(EXERCISE_LOGS_KEY);
+    localStorage.removeItem(WATER_LOGS_KEY);
     localStorage.removeItem(SCHEMA_KEY);
   } catch (e) {
     console.error('Failed to clear data:', e);

@@ -57,7 +57,7 @@ export default function FoodSearch({ onSelect }) {
               <button className="food-search-item" onClick={() => handleSelect(food)}>
                 <span className="food-search-name">{food.name}</span>
                 <span className="food-search-meta">
-                  {food.serving.kcal} kcal · {food.serving.protein}g · {food.serving.label}
+                  {food.serving.kcal} cal · {food.serving.protein}g · {food.serving.label}
                 </span>
               </button>
             </li>
