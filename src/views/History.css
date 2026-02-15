@@ -1,62 +1,154 @@
 .history {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
-.history-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.history-section {
+/* Month navigation header */
+.history-header {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.history-section h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.history-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.history-day {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.history-month-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.history-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: color 0.15s, background 0.15s;
+}
+
+.history-nav-btn:hover {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Calendar card */
+.history-calendar {
   background: var(--color-surface);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  font-size: 0.85rem;
-  min-height: 44px;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.history-day-label {
+/* Weekday header row */
+.history-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.history-weekday {
+  text-align: center;
+  font-size: 0.65rem;
   font-weight: 600;
-}
-
-.history-day-kcal {
-  color: var(--color-kcal);
-  font-weight: 500;
-}
-
-.history-day-protein {
-  color: var(--color-protein);
-  font-weight: 500;
-}
-
-.history-day-count {
   color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  padding: 4px 0;
+}
+
+/* Calendar grid */
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.history-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px;
+  min-height: 44px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.history-cell--empty {
+  min-height: 0;
+}
+
+.history-cell--today {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.history-cell--today .history-cell-day {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.history-cell-day {
   font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+/* Dual dots: calorie + protein indicators */
+.history-cell-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.history-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.history-dot--kcal.ok {
+  background: var(--color-success);
+}
+
+.history-dot--kcal.over {
+  background: var(--color-danger);
+}
+
+.history-dot--protein.ok {
+  background: var(--color-protein);
+}
+
+/* Legend */
+.history-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.history-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.history-legend-item .history-dot {
+  flex-shrink: 0;
 }

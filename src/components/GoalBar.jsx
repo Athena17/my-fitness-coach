@@ -68,7 +68,7 @@ export default function GoalBar() {
       <div className="goal-bar-top">
         <span className="goal-bar-brand">myfitnesscoach</span>
         <div className={`goal-bar-weight ${weightEstimate >= 0 ? 'loss' : 'gain'}`}>
-          <span className="weight-label">Est. change</span>
+          <span className="weight-label">{weightEstimate >= 0 ? 'Progress' : 'Gained'}</span>
           <span className="weight-value">{sign}{absKg} kg</span>
         </div>
       </div>

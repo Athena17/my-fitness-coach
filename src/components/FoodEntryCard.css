@@ -43,16 +43,38 @@
 
 .food-entry-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+.food-entry-card:hover .food-entry-actions {
+  opacity: 1;
+}
+
+/* On touch devices, keep actions visible but subtle */
+@media (hover: none) {
+  .food-entry-actions {
+    opacity: 0.5;
+  }
 }
 
 .food-entry-btn {
-  font-size: 0.9rem;
-  padding: 4px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  transition: color 0.15s, background 0.15s;
 }
 
 .food-entry-btn:hover {
-  background: var(--color-border);
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text);
 }
