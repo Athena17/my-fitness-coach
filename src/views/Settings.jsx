@@ -309,6 +309,68 @@ export default function Settings() {
         {importMessage && <p className="settings-message">{importMessage}</p>}
       </div>
 
+      {/* Recipe Book */}
+      <div className="settings-section">
+        <h2>Recipe Book</h2>
+        {state.recipes.length === 0 ? (
+          <p className="settings-empty">No recipes yet. Use the Cook flow to create one.</p>
+        ) : (
+          <div className="settings-list">
+            {state.recipes.map((recipe) => (
+              <div key={recipe.id} className="settings-list-item">
+                <div className="settings-list-info">
+                  <span className="settings-list-name">{recipe.name}</span>
+                  <span className="settings-list-meta">
+                    {recipe.servingsYield} servings · {recipe.perServing.kcal} cal / {recipe.perServing.protein}g per serving
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="settings-list-delete"
+                  onClick={() => dispatch({ type: 'DELETE_RECIPE', payload: recipe.id })}
+                  aria-label="Delete recipe"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Active Leftovers */}
+      <div className="settings-section">
+        <h2>Active Leftovers</h2>
+        {state.leftovers.filter((l) => l.remainingServings > 0).length === 0 ? (
+          <p className="settings-empty">No active leftovers.</p>
+        ) : (
+          <div className="settings-list">
+            {state.leftovers.filter((l) => l.remainingServings > 0).map((leftover) => (
+              <div key={leftover.id} className="settings-list-item">
+                <div className="settings-list-info">
+                  <span className="settings-list-name">{leftover.name}</span>
+                  <span className="settings-list-meta">
+                    {leftover.remainingServings} / {leftover.totalServings} servings left · cooked {leftover.dateCooked}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="settings-list-delete"
+                  onClick={() => dispatch({ type: 'DELETE_LEFTOVER', payload: leftover.id })}
+                  aria-label="Delete leftover"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="settings-section settings-about">
         <p>myfitnesscoach v1.2 — All data stored locally on your device.</p>
       </div>

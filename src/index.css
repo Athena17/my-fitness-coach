@@ -34,8 +34,8 @@ html {
   font-size: 16px;
   line-height: 1.5;
   color: var(--color-text);
-  background: #ddd9d5;
-  background: linear-gradient(160deg, #ddd9d5 0%, #d3cfd9 35%, #dbd6d3 65%, #cfd0d8 100%);
+  background: #e8e4df;
+  background: linear-gradient(155deg, #ede9e4 0%, #e3dfe6 30%, #e8e5e0 55%, #dfe2e8 80%, #e6e3de 100%);
   background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -59,19 +59,19 @@ body::after {
 }
 
 body::before {
-  width: 300px;
-  height: 300px;
-  background: #9a96a8;
-  top: -60px;
-  right: -60px;
+  width: 320px;
+  height: 320px;
+  background: #c4b8a8;
+  top: -80px;
+  right: -80px;
 }
 
 body::after {
-  width: 350px;
-  height: 350px;
-  background: #7e9ab4;
-  bottom: 10%;
-  left: -80px;
+  width: 360px;
+  height: 360px;
+  background: #9ab0c4;
+  bottom: 8%;
+  left: -90px;
 }
 
 #root {

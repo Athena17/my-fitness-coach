@@ -72,6 +72,14 @@
   flex-shrink: 0;
 }
 
+.food-search-badge--leftover {
+  background: #b8860b;
+}
+
+.food-search-badge--recipe {
+  background: #6b8e23;
+}
+
 .food-search-meta {
   font-size: 0.75rem;
   color: var(--color-text-secondary);

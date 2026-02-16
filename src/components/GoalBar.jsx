@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
-import { useApp } from '../context/useApp.js';
-import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import { getWeekRange, getToday } from '../utils/dateUtils.js';
 import './GoalBar.css';
 
-function Ring({ value, max, color, size = 52, strokeWidth = 4.5 }) {
+export function Ring({ value, max, color, size = 52, strokeWidth = 4.5 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = value / max;
@@ -42,7 +40,7 @@ function Ring({ value, max, color, size = 52, strokeWidth = 4.5 }) {
   );
 }
 
-function WeekStrip({ entries, targets }) {
+export function WeekStrip({ entries, targets }) {
   const today = getToday();
   const weekDays = getWeekRange();
 
@@ -87,121 +85,10 @@ function WeekStrip({ entries, targets }) {
   );
 }
 
-export default function GoalBar({ variant = 'full' }) {
-  const { state } = useApp();
-  const { targets, entries } = state;
-  const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
-
-  const netKcal = todayTotals.kcal - caloriesBurned;
-  const _kcalLeft = Math.max(0, targets.kcal - netKcal);
-  const _proteinLeft = Math.max(0, targets.protein - todayTotals.protein);
-
-  const weightEstimate = useMemo(() => {
-    const maintenance = targets.maintenanceKcal || targets.kcal;
-    const logs = state.exerciseLogs || [];
-    const byDay = {};
-    for (const e of entries) {
-      if (!byDay[e.dateKey]) byDay[e.dateKey] = [];
-      byDay[e.dateKey].push(e);
-    }
-    const burnByDay = {};
-    for (const e of logs) {
-      burnByDay[e.dateKey] = (burnByDay[e.dateKey] || 0) + (e.caloriesBurned || 0);
-    }
-    let totalDeficit = 0;
-    const allDays = new Set([...Object.keys(byDay), ...Object.keys(burnByDay)]);
-    for (const dateKey of allDays) {
-      const dayTotal = byDay[dateKey] ? sumNutrition(byDay[dateKey]) : { kcal: 0 };
-      const dayBurn = burnByDay[dateKey] || 0;
-      totalDeficit += maintenance - dayTotal.kcal + dayBurn;
-    }
-    return totalDeficit / 7000;
-  }, [entries, state.exerciseLogs, targets]);
-
-  const absKg = Math.abs(weightEstimate).toFixed(1);
-  const goalKg = targets.weightLossTarget || 5;
-  const progressPct = Math.min(Math.max(weightEstimate / goalKg, 0), 1) * 100;
-
-  // Compact variant: brand only (for Progress page)
-  if (variant === 'compact') {
-    return (
-      <div className="goal-bar goal-bar--compact">
-        <span className="goal-bar-brand">myfitnesscoach</span>
-      </div>
-    );
-  }
-
+export default function GoalBar() {
   return (
-    <div className="goal-bar goal-bar--today">
-      <div className="goal-bar-top">
-        <span className="goal-bar-brand">myfitnesscoach</span>
-      </div>
-
-      {/* Weight loss progress bar */}
-      <div className="weight-progress">
-        <div className="weight-progress-header">
-          <span className="weight-progress-label">
-            {weightEstimate >= 0 ? 'Weight loss progress' : 'Weight gained'}
-          </span>
-          <span className={`weight-progress-value ${weightEstimate < 0 ? 'weight-progress-value--gain' : ''}`}>
-            {absKg} / {goalKg} kg
-          </span>
-        </div>
-        <div className="weight-progress-track">
-          <div
-            className={`weight-progress-fill ${weightEstimate < 0 ? 'weight-progress-fill--gain' : ''}`}
-            style={{ width: `${weightEstimate >= 0 ? progressPct : 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Weekly strip */}
-      <WeekStrip entries={entries} targets={targets} />
-
-      {/* Calories / Protein / Water rings */}
-      <div className="goal-bar-rings">
-        <div className="goal-ring-col">
-          <div className="goal-ring-wrap">
-            <Ring value={Math.max(0, netKcal)} max={targets.kcal} color="var(--color-kcal)" />
-            <div className="goal-ring-inner">
-              <span className="goal-ring-number">{Math.round(Math.max(0, netKcal))}</span>
-            </div>
-          </div>
-          <span className="goal-ring-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-kcal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            {caloriesBurned > 0 ? 'Calories (Net)' : 'Calories'}
-          </span>
-          <span className="goal-ring-sub">/ {Math.round(targets.kcal)} cal</span>
-        </div>
-
-        <div className="goal-ring-col">
-          <div className="goal-ring-wrap">
-            <Ring value={todayTotals.protein} max={targets.protein} color="var(--color-protein)" />
-            <div className="goal-ring-inner">
-              <span className="goal-ring-number">{Math.round(todayTotals.protein)}</span>
-            </div>
-          </div>
-          <span className="goal-ring-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-protein)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9 2 7 4.2 7 7c0 2 1.2 3.8 3 4.6V20a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-8.4c1.8-.8 3-2.6 3-4.6 0-2.8-2-5-5-5z"/></svg>
-            Protein
-          </span>
-          <span className="goal-ring-sub">/ {Math.round(targets.protein)}g</span>
-        </div>
-
-        <div className="goal-ring-col">
-          <div className="goal-ring-wrap">
-            <Ring value={todayWaterTotal} max={targets.waterTargetLiters || 2.5} color="var(--color-water)" />
-            <div className="goal-ring-inner">
-              <span className="goal-ring-number">{todayWaterTotal.toFixed(1)}</span>
-            </div>
-          </div>
-          <span className="goal-ring-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-water)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
-            Water
-          </span>
-          <span className="goal-ring-sub">/ {targets.waterTargetLiters || 2.5} L</span>
-        </div>
-      </div>
+    <div className="goal-bar goal-bar--compact">
+      <span className="goal-bar-brand">myfitnesscoach</span>
     </div>
   );
 }

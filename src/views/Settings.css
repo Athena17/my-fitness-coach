@@ -313,6 +313,71 @@
   text-align: center;
 }
 
+/* Recipe / Leftover lists */
+.settings-empty {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settings-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.settings-list-item:last-child {
+  border-bottom: none;
+}
+
+.settings-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-list-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.settings-list-meta {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.settings-list-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.settings-list-delete:hover {
+  opacity: 1;
+  color: var(--color-danger);
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .settings-about p {
   font-size: 0.75rem;
   color: var(--color-text-secondary);

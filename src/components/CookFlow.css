@@ -1,0 +1,149 @@
+.cf {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--font-sans);
+}
+
+.cf-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--color-surface-highlight);
+  border-radius: var(--radius-sm);
+}
+
+.cf-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cf-total {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cf-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.cf-input {
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  background: rgba(255, 255, 255, 0.5);
+  min-height: 40px;
+}
+
+.cf-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+}
+
+.cf-per-serving {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--color-surface-highlight);
+  border-radius: var(--radius-sm);
+}
+
+.cf-per-serving-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cf-per-serving-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.cf-leftover-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.cf-leftover-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.cf-leftover-text {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.cf .btn-submit {
+  margin-top: 4px;
+}
+
+.cf .btn-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cf-back-btn {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.cf-back-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Meal picker */
+.cf-meal-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cf-meal-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.04);
+  transition: all 0.15s;
+  min-height: 32px;
+}
+
+.cf-meal-chip:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.cf-meal-chip--active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.cf-meal-chip--active:hover {
+  background: var(--color-primary);
+}

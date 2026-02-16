@@ -2,16 +2,26 @@ import { useApp } from '../context/useApp.js';
 import { VIEWS } from '../context/constants.js';
 import './NavBar.css';
 
-function TodayIcon() {
+function DashboardIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   );
 }
 
-function ProgressIcon() {
+function DailyLogIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+    </svg>
+  );
+}
+
+function HistoryIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -22,7 +32,7 @@ function ProgressIcon() {
   );
 }
 
-function ProfileIcon() {
+function SettingsIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />
@@ -32,9 +42,10 @@ function ProfileIcon() {
 }
 
 const tabs = [
-  { view: VIEWS.TODAY, label: 'Today', icon: <TodayIcon /> },
-  { view: VIEWS.HISTORY, label: 'Progress', icon: <ProgressIcon /> },
-  { view: VIEWS.SETTINGS, label: 'Profile', icon: <ProfileIcon /> },
+  { view: VIEWS.DASHBOARD, label: 'Dashboard', icon: <DashboardIcon /> },
+  { view: VIEWS.DAILY_LOG, label: 'Daily Log', icon: <DailyLogIcon /> },
+  { view: VIEWS.HISTORY, label: 'History', icon: <HistoryIcon /> },
+  { view: VIEWS.SETTINGS, label: 'Settings', icon: <SettingsIcon /> },
 ];
 
 export default function NavBar() {

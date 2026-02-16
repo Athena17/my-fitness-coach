@@ -84,7 +84,7 @@ function buildRowFromIngredient(ing) {
   };
 }
 
-export default function MealBuilder({ meal, editingEntry, onSave, onCancel }) {
+export default function MealBuilder({ meal, editingEntry, onSave, onCancel, submitLabel, skipCustomMealSave }) {
   const isEditing = !!editingEntry;
   const [mealName, setMealName] = useState(editingEntry?.name ?? '');
   const [rows, setRows] = useState(() => {
@@ -162,21 +162,23 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel }) {
 
     const builtName = mealName.trim() || `${meal} (${validRows.length} ingredients)`;
 
-    // Save as custom meal for future searches
-    const customMeals = loadCustomMeals();
-    const existing = customMeals.findIndex((m) => m.name.toLowerCase() === builtName.toLowerCase());
-    const customMeal = {
-      name: builtName,
-      kcal: totals.kcal,
-      protein: totals.protein,
-      ingredients,
-    };
-    if (existing >= 0) {
-      customMeals[existing] = customMeal;
-    } else {
-      customMeals.unshift(customMeal);
+    // Save as custom meal for future searches (unless skipped by CookFlow)
+    if (!skipCustomMealSave) {
+      const customMeals = loadCustomMeals();
+      const existing = customMeals.findIndex((m) => m.name.toLowerCase() === builtName.toLowerCase());
+      const customMeal = {
+        name: builtName,
+        kcal: totals.kcal,
+        protein: totals.protein,
+        ingredients,
+      };
+      if (existing >= 0) {
+        customMeals[existing] = customMeal;
+      } else {
+        customMeals.unshift(customMeal);
+      }
+      saveCustomMeals(customMeals);
     }
-    saveCustomMeals(customMeals);
 
     onSave({
       name: builtName,
@@ -277,7 +279,7 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel }) {
         disabled={validRows.length === 0}
         onClick={handleSave}
       >
-        {isEditing ? 'Update Meal' : 'Add Meal'}
+        {isEditing ? 'Update Meal' : (submitLabel || 'Add Meal')}
       </button>
     </div>
   );

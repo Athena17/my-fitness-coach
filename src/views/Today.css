@@ -4,7 +4,7 @@
   gap: 10px;
 }
 
-/* Food / Exercise tabs */
+/* ——— Food / Water / Exercise tabs ——— */
 .today-tabs {
   display: flex;
   gap: 0;
@@ -48,130 +48,120 @@
   line-height: 1;
 }
 
-/* Exercise placeholder */
-.exercise-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 48px 24px;
-  text-align: center;
-}
-
-.exercise-placeholder-text {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  font-family: var(--font-sans);
-  opacity: 0.6;
-}
-
-/* Meals section */
+/* ——— Meal log ——— */
 .meals-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* Each meal row */
 .meal-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
   background: var(--color-surface);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: border-color 0.2s;
   box-shadow: var(--shadow-sm);
 }
 
-.meal-row--active {
-  border-color: var(--color-primary-light);
-}
-
-.meal-row-left {
+.meal-row-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   padding: 10px 14px;
 }
 
-.meal-icon {
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.meal-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .meal-label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-text);
   font-family: var(--font-sans);
 }
 
-.meal-totals {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+.meal-totals-compact {
   font-size: 0.65rem;
-  color: var(--color-text-secondary);
   font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
 }
 
-.meal-totals-dot {
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: var(--color-text-secondary);
-  opacity: 0.5;
-  margin: 0 2px;
-}
-
-.meal-add-btn {
+.meal-entries {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  min-height: 40px;
-  color: var(--color-text-secondary);
-  transition: color 0.15s;
-  align-self: start;
-  margin: 2px;
-  border-radius: var(--radius-sm);
-}
-
-.meal-add-btn:hover {
-  color: var(--color-primary);
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.meal-add-btn--close {
-  color: var(--color-text-secondary);
-}
-
-/* Body — spans full width below the header */
-.meal-row-body {
-  grid-column: 1 / -1;
+  flex-direction: column;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.meal-add-section {
-  padding: 14px 16px;
+.meal-entries > *:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ——— Full-view: add-mode header (shared by Cook, Water, Exercise, Log meal) ——— */
+.add-mode-view {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.add-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-mode-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+
+.add-mode-back:hover {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.add-mode-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* ——— Full-view: Log meal (FAB-triggered) ——— */
+.add-meal-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.add-meal-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.04);
+  transition: all 0.15s;
+  min-height: 32px;
+}
+
+.add-meal-chip:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.add-meal-chip--active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.add-meal-chip--active:hover {
+  background: var(--color-primary);
 }
 
 /* Alternative add methods */
@@ -212,42 +202,6 @@
 .add-alt-btn svg {
   flex-shrink: 0;
   opacity: 0.6;
-}
-
-/* Shared mode view */
-.add-mode-view {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.add-mode-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.add-mode-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  color: var(--color-text-secondary);
-  transition: all 0.15s;
-}
-
-.add-mode-back:hover {
-  color: var(--color-text);
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.add-mode-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text);
-  font-family: var(--font-sans);
 }
 
 /* Inline manual form */
@@ -293,13 +247,4 @@
 .add-manual-submit:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.meal-entries {
-  display: flex;
-  flex-direction: column;
-}
-
-.meal-entries > *:not(:last-child) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }

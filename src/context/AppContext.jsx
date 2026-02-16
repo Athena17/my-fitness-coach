@@ -1,5 +1,5 @@
 import { useReducer, useEffect } from 'react';
-import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, loadWaterLogs, saveWaterLogs, runMigrations } from '../utils/storage.js';
+import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, loadWaterLogs, saveWaterLogs, loadRecipes, saveRecipes, loadLeftovers, saveLeftovers, runMigrations } from '../utils/storage.js';
 import { VIEWS } from './constants.js';
 import { AppContext } from './context.js';
 
@@ -10,7 +10,9 @@ function init() {
     entries: loadEntries(),
     exerciseLogs: loadExerciseLogs(),
     waterLogs: loadWaterLogs(),
-    currentView: VIEWS.TODAY,
+    recipes: loadRecipes(),
+    leftovers: loadLeftovers(),
+    currentView: VIEWS.DASHBOARD,
     editingEntry: null,
   };
 }
@@ -59,11 +61,43 @@ function reducer(state, action) {
         waterLogs: state.waterLogs.filter((e) => e.id !== action.payload),
       };
 
+    case 'ADD_RECIPE':
+      return { ...state, recipes: [...state.recipes, action.payload] };
+
+    case 'UPDATE_RECIPE':
+      return {
+        ...state,
+        recipes: state.recipes.map((r) => (r.id === action.payload.id ? action.payload : r)),
+      };
+
+    case 'DELETE_RECIPE':
+      return {
+        ...state,
+        recipes: state.recipes.filter((r) => r.id !== action.payload),
+      };
+
+    case 'ADD_LEFTOVER':
+      return { ...state, leftovers: [...state.leftovers, action.payload] };
+
+    case 'UPDATE_LEFTOVER':
+      return {
+        ...state,
+        leftovers: state.leftovers.map((l) => (l.id === action.payload.id ? action.payload : l)),
+      };
+
+    case 'DELETE_LEFTOVER':
+      return {
+        ...state,
+        leftovers: state.leftovers.filter((l) => l.id !== action.payload),
+      };
+
     case 'IMPORT_DATA':
       return {
         ...state,
         targets: action.payload.targets,
         entries: action.payload.entries,
+        recipes: action.payload.recipes || state.recipes,
+        leftovers: action.payload.leftovers || state.leftovers,
       };
 
     default:
@@ -89,6 +123,14 @@ export function AppProvider({ children }) {
   useEffect(() => {
     saveWaterLogs(state.waterLogs);
   }, [state.waterLogs]);
+
+  useEffect(() => {
+    saveRecipes(state.recipes);
+  }, [state.recipes]);
+
+  useEffect(() => {
+    saveLeftovers(state.leftovers);
+  }, [state.leftovers]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

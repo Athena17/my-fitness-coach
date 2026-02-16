@@ -4,6 +4,8 @@ const ENTRIES_KEY = 'nt_entries';
 const EXERCISE_LOGS_KEY = 'nt_exercise_logs';
 const WATER_LOGS_KEY = 'nt_water_logs';
 const CUSTOM_MEALS_KEY = 'nt_custom_meals';
+const RECIPES_KEY = 'nt_recipes';
+const LEFTOVERS_KEY = 'nt_leftovers';
 const CURRENT_SCHEMA = 3;
 
 function safeGet(key) {
@@ -94,6 +96,22 @@ export function saveCustomMeals(meals) {
   safeSet(CUSTOM_MEALS_KEY, meals);
 }
 
+export function loadRecipes() {
+  return safeGet(RECIPES_KEY) || [];
+}
+
+export function saveRecipes(recipes) {
+  safeSet(RECIPES_KEY, recipes);
+}
+
+export function loadLeftovers() {
+  return safeGet(LEFTOVERS_KEY) || [];
+}
+
+export function saveLeftovers(leftovers) {
+  safeSet(LEFTOVERS_KEY, leftovers);
+}
+
 export function clearAllData() {
   try {
     localStorage.removeItem(TARGETS_KEY);
@@ -101,6 +119,8 @@ export function clearAllData() {
     localStorage.removeItem(EXERCISE_LOGS_KEY);
     localStorage.removeItem(WATER_LOGS_KEY);
     localStorage.removeItem(CUSTOM_MEALS_KEY);
+    localStorage.removeItem(RECIPES_KEY);
+    localStorage.removeItem(LEFTOVERS_KEY);
     localStorage.removeItem(SCHEMA_KEY);
   } catch (e) {
     console.error('Failed to clear data:', e);
@@ -112,6 +132,8 @@ export function exportData() {
     schemaVersion: CURRENT_SCHEMA,
     targets: loadTargets(),
     entries: loadEntries(),
+    recipes: loadRecipes(),
+    leftovers: loadLeftovers(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
@@ -123,6 +145,13 @@ export function importData(jsonString) {
   }
   safeSet(TARGETS_KEY, data.targets);
   safeSet(ENTRIES_KEY, data.entries);
+  if (Array.isArray(data.recipes)) safeSet(RECIPES_KEY, data.recipes);
+  if (Array.isArray(data.leftovers)) safeSet(LEFTOVERS_KEY, data.leftovers);
   safeSet(SCHEMA_KEY, data.schemaVersion || CURRENT_SCHEMA);
-  return { targets: data.targets, entries: data.entries };
+  return {
+    targets: data.targets,
+    entries: data.entries,
+    recipes: data.recipes || [],
+    leftovers: data.leftovers || [],
+  };
 }

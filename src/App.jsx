@@ -1,6 +1,7 @@
 import { useApp } from './context/useApp.js';
 import { VIEWS } from './context/constants.js';
 import Onboarding from './views/Onboarding.jsx';
+import Dashboard from './views/Dashboard.jsx';
 import Today from './views/Today.jsx';
 import History from './views/History.jsx';
 import Settings from './views/Settings.jsx';
@@ -17,22 +18,23 @@ function App() {
 
   const renderView = () => {
     switch (state.currentView) {
+      case VIEWS.DASHBOARD:
+        return <Dashboard />;
+      case VIEWS.DAILY_LOG:
+        return <Today />;
       case VIEWS.HISTORY:
         return <History />;
       case VIEWS.SETTINGS:
         return <Settings />;
-      case VIEWS.TODAY:
       default:
-        return <Today />;
+        return <Dashboard />;
     }
   };
-
-  const isToday = state.currentView === VIEWS.TODAY;
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <GoalBar variant={isToday ? 'full' : 'compact'} />
+        <GoalBar />
       </header>
       <main className="app-main">{renderView()}</main>
       <NavBar />
