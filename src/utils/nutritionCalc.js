@@ -39,3 +39,40 @@ export function calcPercentage(current, target) {
   if (!target || target <= 0) return 0;
   return Math.min(Math.round((current / target) * 100), 100);
 }
+
+const CAL_PER_KG = 7700;
+
+export function calcWeightChange(entries, exerciseLogs, targets) {
+  const maintenance = targets.maintenanceKcal || targets.kcal;
+  const goal = targets.goal || 'maintain'; // 'lose' | 'gain' | 'maintain'
+  const goalKg = targets.weightLossTarget || 5;
+  if (!maintenance || maintenance <= 0) return { deltaKcal: 0, deltaKg: 0, goalKg, goal, pct: 0, daysTracked: 0, firstDate: null };
+
+  const dayMap = {};
+  for (const e of entries) {
+    if (!dayMap[e.dateKey]) dayMap[e.dateKey] = [];
+    dayMap[e.dateKey].push(e);
+  }
+  const burnMap = {};
+  for (const e of (exerciseLogs || [])) {
+    burnMap[e.dateKey] = (burnMap[e.dateKey] || 0) + (e.caloriesBurned || 0);
+  }
+
+  let totalDeficit = 0;
+  let daysTracked = 0;
+  let firstDate = null;
+  for (const [dateKey, dayEntries] of Object.entries(dayMap)) {
+    const totals = sumNutrition(dayEntries);
+    const burn = burnMap[dateKey] || 0;
+    totalDeficit += maintenance - (totals.kcal - burn);
+    daysTracked++;
+    if (!firstDate || dateKey < firstDate) firstDate = dateKey;
+  }
+
+  // deltaKg: positive = weight lost, negative = weight gained
+  const deltaKg = totalDeficit / CAL_PER_KG;
+  let pct = 0;
+  if (goal === 'lose' && goalKg > 0) pct = Math.min(Math.max(deltaKg, 0) / goalKg, 1);
+  else if (goal === 'gain' && goalKg > 0) pct = Math.min(Math.max(-deltaKg, 0) / goalKg, 1);
+  return { deltaKcal: Math.round(totalDeficit), deltaKg, goalKg, goal, pct, daysTracked, firstDate };
+}

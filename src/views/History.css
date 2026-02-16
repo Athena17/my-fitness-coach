@@ -1,26 +1,26 @@
-.history {
+.progress {
   display: flex;
   flex-direction: column;
   gap: 10px;
   font-family: var(--font-sans);
 }
 
-/* Month navigation header */
-.history-header {
+/* Month navigation */
+.progress-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
 }
 
-.history-month-label {
-  font-size: 1rem;
+.progress-month-label {
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-text);
   font-family: var(--font-sans);
 }
 
-.history-nav-btn {
+.progress-nav-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,137 +33,183 @@
   transition: color 0.15s, background 0.15s;
 }
 
-.history-nav-btn:hover {
+.progress-nav-btn:hover {
   color: var(--color-text);
   background: rgba(0, 0, 0, 0.04);
 }
 
-/* Calendar card */
-.history-calendar {
-  background: var(--color-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 12px 8px;
-  box-shadow: var(--shadow-md);
-}
-
-/* Weekday header row */
-.history-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  margin-bottom: 6px;
-}
-
-.history-weekday {
-  text-align: center;
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  font-family: var(--font-sans);
-  padding: 2px 0;
-}
-
-/* Calendar grid */
-.history-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.history-cell {
-  position: relative;
+/* Month summary strip */
+.progress-summary {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 3px 2px;
-  min-height: 40px;
-  border-radius: 8px;
-  transition: background 0.15s;
-}
-
-.history-cell--empty {
-  min-height: 0;
-}
-
-.history-cell--today {
-  background: var(--color-surface-highlight);
-}
-
-.history-cell--today .history-cell-day {
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.history-cell-day {
-  font-size: 0.6rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-family: var(--font-sans);
-  line-height: 1;
-}
-
-.history-cell-day--below {
-  font-size: 0.55rem;
-}
-
-/* Water indicator drop */
-.history-water-drop {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-}
-
-/* Day ring */
-.day-ring {
-  display: block;
-}
-
-/* Legend — 2 rows */
-.history-legend {
-  display: flex;
-  flex-direction: column;
   gap: 10px;
-  padding: 6px 4px;
+  padding: 6px 0;
 }
 
-.history-legend-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.history-legend-title {
+.progress-stat {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  white-space: nowrap;
-  min-width: 80px;
+  color: var(--color-text-secondary);
 }
 
-.history-legend-items {
+.progress-stat-value {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.progress-stat-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  opacity: 0.25;
+}
+
+/* Scorecard grid */
+.progress-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Week row */
+.progress-week-row {
+  display: flex;
+  gap: 4px;
+}
+
+/* Weekday header labels */
+.progress-weekday-row {
+  margin-bottom: 2px;
+}
+
+.progress-weekday {
+  flex: 1;
+  text-align: center;
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  padding: 2px 0;
+}
+
+/* Day card — matches dashboard ov-card */
+.progress-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 0 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 52px;
+}
+
+.progress-card--empty {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.03);
+}
+
+.progress-card--future {
+  opacity: 0.4;
+}
+
+.progress-card--pad {
+  background: transparent;
+  border-color: transparent;
+  min-height: 0;
+}
+
+.progress-card--today {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: scale(1.04);
+  z-index: 1;
+}
+
+/* Day number */
+.progress-card-day {
+  font-size: 0.52rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.progress-card-day--today {
+  color: var(--color-text);
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* Icon stack */
+.progress-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 28px;
+  justify-content: center;
+}
+
+.progress-card-body svg {
+  display: block;
+}
+
+.progress-card-divider {
+  width: 12px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 1px;
+}
+
+/* Legend — two rows */
+.progress-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+.progress-legend-row {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.history-legend-item {
+.progress-legend-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 52px;
+}
+
+.progress-legend-pair {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-legend-item {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--color-text-secondary);
-  font-family: var(--font-sans);
 }
 
-.history-legend-item svg {
+.progress-legend-item svg {
   flex-shrink: 0;
 }

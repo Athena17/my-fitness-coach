@@ -21,18 +21,7 @@ function DailyLogIcon() {
   );
 }
 
-function HistoryIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <line x1="9" y1="4" x2="9" y2="10" />
-      <line x1="15" y1="4" x2="15" y2="10" />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
+function ProfileIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />
@@ -44,8 +33,7 @@ function SettingsIcon() {
 const tabs = [
   { view: VIEWS.DASHBOARD, label: 'Dashboard', icon: <DashboardIcon /> },
   { view: VIEWS.DAILY_LOG, label: 'Daily Log', icon: <DailyLogIcon /> },
-  { view: VIEWS.HISTORY, label: 'History', icon: <HistoryIcon /> },
-  { view: VIEWS.SETTINGS, label: 'Settings', icon: <SettingsIcon /> },
+  { view: VIEWS.PROFILE, label: 'Profile', icon: <ProfileIcon /> },
 ];
 
 export default function NavBar() {

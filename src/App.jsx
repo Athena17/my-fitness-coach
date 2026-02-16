@@ -3,8 +3,7 @@ import { VIEWS } from './context/constants.js';
 import Onboarding from './views/Onboarding.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Today from './views/Today.jsx';
-import History from './views/History.jsx';
-import Settings from './views/Settings.jsx';
+import Profile from './views/Profile.jsx';
 import NavBar from './components/NavBar.jsx';
 import GoalBar from './components/GoalBar.jsx';
 import './App.css';
@@ -22,10 +21,8 @@ function App() {
         return <Dashboard />;
       case VIEWS.DAILY_LOG:
         return <Today />;
-      case VIEWS.HISTORY:
-        return <History />;
-      case VIEWS.SETTINGS:
-        return <Settings />;
+      case VIEWS.PROFILE:
+        return <Profile />;
       default:
         return <Dashboard />;
     }
