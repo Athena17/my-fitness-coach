@@ -1,80 +1,96 @@
-.food-entry-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  font-family: var(--font-sans);
-}
-
-.food-entry-info {
-  flex: 1;
+/* Logged food card — bright surface dropped onto the muted row */
+.fec-card {
+  position: relative;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
+  padding: 10px 16px;
+  min-width: 110px;
+  max-width: 160px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-lg);
+  box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.06);
+  text-align: left;
+  scroll-snap-align: start;
+  animation: fec-pop-in 0.25s ease-out both;
 }
 
-.food-entry-name {
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.fec-card:active {
+  transform: scale(0.96);
+  transition: transform 0.1s;
 }
 
-.food-entry-nutrition {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.food-entry-kcal {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--color-kcal);
-}
-
-.food-entry-protein {
-  font-size: 0.65rem;
-  color: var(--color-protein);
-}
-
-.food-entry-actions {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-  opacity: 0.4;
-  transition: opacity 0.2s;
-}
-
-.food-entry-card:hover .food-entry-actions {
-  opacity: 1;
-}
-
-/* On touch devices, keep actions visible but subtle */
-@media (hover: none) {
-  .food-entry-actions {
-    opacity: 0.5;
+@keyframes fec-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
-.food-entry-btn {
+/* × delete — hidden until hover / touch hold */
+.fec-delete {
+  position: absolute;
+  top: 5px;
+  right: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  min-height: 36px;
-  min-width: 36px;
-  padding: 0;
-  border-radius: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
   color: var(--color-text-secondary);
-  transition: color 0.15s, background 0.15s;
+  opacity: 0;
+  transition: all 0.2s;
+  cursor: pointer;
 }
 
-.food-entry-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
+.fec-card:hover .fec-delete {
+  opacity: 0.6;
+}
+
+.fec-delete:hover,
+.fec-delete:active {
+  opacity: 1 !important;
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* On touch — always slightly visible */
+@media (hover: none) {
+  .fec-delete {
+    opacity: 0.35;
+  }
+}
+
+.fec-emoji {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.fec-name {
+  font-size: 0.74rem;
+  font-weight: 600;
   color: var(--color-text);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.fec-macros {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  opacity: 0.8;
 }

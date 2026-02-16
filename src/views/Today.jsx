@@ -7,13 +7,12 @@ import NaturalInput from '../components/NaturalInput.jsx';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import Modal from '../components/Modal.jsx';
 import FoodLog from './FoodLog.jsx';
-import FoodSearch from '../components/FoodSearch.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
 import WaterPanel from '../components/WaterPanel.jsx';
 import MealBuilder from '../components/MealBuilder.jsx';
-import CookFlow from '../components/CookFlow.jsx';
-import FloatingActionButton from '../components/FloatingActionButton.jsx';
+import QuickAddRow from '../components/QuickAddRow.jsx';
+import ScrollStrip from '../components/ScrollStrip.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -27,130 +26,24 @@ export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
   const [activeTab, setActiveTab] = useState('food');
-  const [addingMeal, setAddingMeal] = useState(null);
-  const [naturalPrefill, setNaturalPrefill] = useState(null);
-  const [showManualForm, setShowManualForm] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
   const [customMealPrefill, setCustomMealPrefill] = useState(null);
-  const [addMode, setAddMode] = useState(null);
-  const [showCookFlow, setShowCookFlow] = useState(false);
-  const [manualName, setManualName] = useState('');
-  const [manualKcal, setManualKcal] = useState('');
-  const [manualProtein, setManualProtein] = useState('');
+  const [quickAddPending, setQuickAddPending] = useState(null);
 
-  // --- Handlers ---
+  // Custom add flow
+  const [customStep, setCustomStep] = useState(null);
+  const [customDraft, setCustomDraft] = useState(null);
+  const [customMealSlot, setCustomMealSlot] = useState(null);
 
-  function handleInlineSearchSelect(food) {
-    if (food.isLeftover) {
-      dispatch({
-        type: 'ADD_ENTRY',
-        payload: {
-          id: generateId(), name: food.name, kcal: food.serving.kcal, protein: food.serving.protein,
-          meal: addingMeal || 'Snack', servingSize: 1, servingUnit: 'serving',
-          timestamp: Date.now(), dateKey: getToday(), recipeId: food.recipeId, fromLeftoverId: food.leftoverId,
-        },
-      });
-      const newRemaining = food.remainingServings - 1;
-      if (newRemaining <= 0) {
-        dispatch({ type: 'DELETE_LEFTOVER', payload: food.leftoverId });
-      } else {
-        const leftover = state.leftovers.find((l) => l.id === food.leftoverId);
-        if (leftover) dispatch({ type: 'UPDATE_LEFTOVER', payload: { ...leftover, remainingServings: newRemaining } });
-      }
-      setAddingMeal(null);
-      return;
-    }
-    if (food.isRecipe) {
-      setNaturalPrefill({ name: food.name, kcal: food.serving.kcal, protein: food.serving.protein, meal: addingMeal || 'Snack', recipeId: food.recipeId });
-      setShowManualForm(true);
-      return;
-    }
-    if (food.isCustomMeal && food.ingredients) {
-      setCustomMealPrefill({ name: food.name, kcal: food.serving.kcal, protein: food.serving.protein, ingredients: food.ingredients });
-      return;
-    }
-    setNaturalPrefill({ name: food.name, kcal: food.serving.kcal, protein: food.serving.protein, meal: addingMeal || 'Snack' });
-    setShowManualForm(true);
-  }
-
-  function handleNaturalAdd(parsed) {
-    dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: parsed.name, kcal: parsed.kcal, protein: parsed.protein, meal: addingMeal || 'Snack', servingSize: 1, servingUnit: 'g', timestamp: Date.now(), dateKey: getToday() } });
-    setAddingMeal(null);
-  }
-
-  function handleNaturalEdit(parsed) {
-    setNaturalPrefill({ ...parsed, meal: addingMeal || 'Snack' });
-    setShowManualForm(true);
-  }
+  // --- Editing handlers ---
 
   function handleFoodLogDone() {
-    setShowManualForm(false);
-    setAddingMeal(null);
-    setNaturalPrefill(null);
     setCustomMealPrefill(null);
     dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
   }
 
   function handleCustomMealSelect(food) {
-    setShowManualForm(false);
     setCustomMealPrefill({ name: food.name, kcal: food.serving.kcal, protein: food.serving.protein, ingredients: food.ingredients });
   }
-
-  function handleManualSubmit() {
-    const k = Number(manualKcal), p = Number(manualProtein);
-    if (!manualName.trim() || isNaN(k) || isNaN(p)) return;
-    dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: manualName.trim(), kcal: k, protein: p, meal: addingMeal || 'Snack', servingSize: 1, servingUnit: 'g', timestamp: Date.now(), dateKey: getToday() } });
-    setManualName(''); setManualKcal(''); setManualProtein('');
-    setAddMode(null); setAddingMeal(null);
-  }
-
-  function handleBackToSearch() {
-    setAddMode(null); setManualName(''); setManualKcal(''); setManualProtein('');
-  }
-
-  function handleCloseAddMeal() {
-    setAddingMeal(null); setAddMode(null); setManualName(''); setManualKcal(''); setManualProtein('');
-  }
-
-  function handleMealBuilderSave(built) {
-    dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: built.name, kcal: built.totalKcal, protein: built.totalProtein, ingredients: built.ingredients, meal: addingMeal || 'Snack', servingSize: 1, servingUnit: 'g', timestamp: Date.now(), dateKey: getToday() } });
-    setAddMode(null); setAddingMeal(null);
-  }
-
-  function handleCookComplete(result) {
-    const { recipe, servingsEaten, saveLeftovers: doSaveLeftovers, remainingServings, perServing, meal } = result;
-    const recipeId = generateId();
-    const existingRecipe = state.recipes.find((r) => r.name.toLowerCase() === recipe.name.toLowerCase());
-    if (existingRecipe) {
-      dispatch({ type: 'UPDATE_RECIPE', payload: { ...existingRecipe, ...recipe, id: existingRecipe.id, updatedAt: Date.now() } });
-    } else {
-      dispatch({ type: 'ADD_RECIPE', payload: { ...recipe, id: recipeId, createdAt: Date.now(), updatedAt: Date.now() } });
-    }
-    const usedRecipeId = existingRecipe ? existingRecipe.id : recipeId;
-    if (servingsEaten > 0) {
-      dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: recipe.name, kcal: Math.round(perServing.kcal * servingsEaten), protein: Math.round(perServing.protein * servingsEaten * 10) / 10, meal: meal || 'Snack', servingSize: servingsEaten, servingUnit: 'serving', timestamp: Date.now(), dateKey: getToday(), recipeId: usedRecipeId } });
-    }
-    if (doSaveLeftovers && remainingServings > 0) {
-      dispatch({ type: 'ADD_LEFTOVER', payload: { id: generateId(), recipeId: usedRecipeId, name: recipe.name, perServing, remainingServings, totalServings: recipe.servingsYield, dateCooked: getToday(), timestamp: Date.now() } });
-    }
-    setShowCookFlow(false);
-  }
-
-  function getDefaultMeal() {
-    const h = new Date().getHours();
-    if (h < 11) return 'Breakfast';
-    if (h < 15) return 'Lunch';
-    if (h < 20) return 'Dinner';
-    return 'Snack';
-  }
-
-  function confirmDelete() {
-    dispatch({ type: 'DELETE_ENTRY', payload: deleteId });
-    setDeleteId(null);
-  }
-
-  const isEditing = !!state.editingEntry;
-  const isEditingBuiltMeal = isEditing && state.editingEntry.ingredients;
 
   function handleMealBuilderUpdate(built) {
     dispatch({ type: 'UPDATE_ENTRY', payload: { ...state.editingEntry, name: built.name, kcal: built.totalKcal, protein: built.totalProtein, ingredients: built.ingredients } });
@@ -161,86 +54,260 @@ export default function Today() {
     dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
   }
 
+  // --- Delete handler ---
+
+  function handleDeleteEntry(entry) {
+    dispatch({ type: 'DELETE_ENTRY', payload: entry.id });
+    if (entry.fromLeftoverId) {
+      const existing = state.leftovers.find((l) => l.id === entry.fromLeftoverId);
+      if (existing) {
+        dispatch({ type: 'UPDATE_LEFTOVER', payload: { ...existing, remainingServings: existing.remainingServings + 1 } });
+      } else {
+        dispatch({ type: 'ADD_LEFTOVER', payload: { id: entry.fromLeftoverId, recipeId: entry.recipeId, name: entry.name, perServing: { kcal: entry.kcal, protein: entry.protein }, remainingServings: 1, totalServings: 1, dateCooked: entry.dateKey, timestamp: Date.now() } });
+      }
+    }
+  }
+
+  // --- Quick add handler ---
+
+  function handleQuickAddSlot(slot, pending, ts) {
+    if (pending.type === 'leftover') {
+      const lo = pending.leftover;
+      dispatch({
+        type: 'ADD_ENTRY',
+        payload: {
+          id: generateId(), name: lo.name, kcal: Math.round(lo.perServing.kcal),
+          protein: Math.round(lo.perServing.protein * 10) / 10, meal: slot,
+          servingSize: 1, servingUnit: 'serving', timestamp: ts,
+          dateKey: getToday(), recipeId: lo.recipeId, fromLeftoverId: lo.id,
+        },
+      });
+      const newRemaining = lo.remainingServings - 1;
+      if (newRemaining <= 0) {
+        dispatch({ type: 'DELETE_LEFTOVER', payload: lo.id });
+      } else {
+        dispatch({ type: 'UPDATE_LEFTOVER', payload: { ...lo, remainingServings: newRemaining } });
+      }
+    } else {
+      dispatch({
+        type: 'ADD_ENTRY',
+        payload: {
+          id: generateId(), name: pending.name, kcal: pending.kcal, protein: pending.protein,
+          meal: slot, servingSize: 1, servingUnit: 'serving', timestamp: ts,
+          dateKey: getToday(), ...(pending.ingredients ? { ingredients: pending.ingredients } : {}),
+        },
+      });
+    }
+    setQuickAddPending(null);
+  }
+
+  // --- Custom add flow ---
+
+  function getDefaultMeal() {
+    const h = new Date().getHours();
+    if (h < 11) return 'Breakfast';
+    if (h < 15) return 'Lunch';
+    if (h < 20) return 'Dinner';
+    return 'Snack';
+  }
+
+  const mealLabel = MEAL_CONFIG.find((m) => m.key === customMealSlot)?.label || customMealSlot;
+
+  function handleDescribeDone(parsed) {
+    setCustomDraft({
+      name: parsed.name, kcal: parsed.kcal, protein: parsed.protein,
+      servingsYield: 1, servingsConsumed: 1,
+    });
+    setCustomStep('confirm');
+  }
+
+  function handleBuildDone(built) {
+    setCustomDraft({
+      name: built.name, kcal: built.totalKcal, protein: built.totalProtein,
+      ingredients: built.ingredients,
+      servingsYield: 1, servingsConsumed: 1,
+    });
+    setCustomStep('confirm');
+  }
+
+  function handleConfirmSave() {
+    if (!customDraft || !customMealSlot) return;
+    const { name, kcal, protein, ingredients, servingsYield, servingsConsumed } = customDraft;
+    const yieldN = Math.max(1, servingsYield);
+    const consumed = Math.min(Math.max(0, servingsConsumed), yieldN);
+    const perServing = { kcal: Math.round(kcal / yieldN), protein: Math.round(protein / yieldN * 10) / 10 };
+
+    if (consumed > 0) {
+      dispatch({
+        type: 'ADD_ENTRY',
+        payload: {
+          id: generateId(), name,
+          kcal: Math.round(perServing.kcal * consumed),
+          protein: Math.round(perServing.protein * consumed * 10) / 10,
+          meal: customMealSlot, servingSize: consumed, servingUnit: 'serving',
+          timestamp: Date.now(), dateKey: getToday(),
+          ...(ingredients ? { ingredients } : {}),
+        },
+      });
+    }
+
+    const remaining = yieldN - consumed;
+    if (remaining > 0) {
+      dispatch({
+        type: 'ADD_LEFTOVER',
+        payload: {
+          id: generateId(), name, perServing,
+          remainingServings: remaining, totalServings: yieldN,
+          dateCooked: getToday(), timestamp: Date.now(),
+        },
+      });
+    }
+
+    setCustomStep(null);
+    setCustomDraft(null);
+    setCustomMealSlot(null);
+  }
+
+  function handleCustomClose() {
+    setCustomStep(null);
+    setCustomDraft(null);
+    setCustomMealSlot(null);
+  }
+
   // --- Full-view takeovers ---
+
+  const isEditing = !!state.editingEntry;
+  const isEditingBuiltMeal = isEditing && state.editingEntry.ingredients;
 
   if (isEditingBuiltMeal) {
     return (<div className="today"><MealBuilder meal={state.editingEntry.meal} editingEntry={state.editingEntry} onSave={handleMealBuilderUpdate} onCancel={handleMealBuilderEditCancel} /></div>);
   }
 
   if (customMealPrefill) {
-    return (<div className="today"><MealBuilder meal={addingMeal || 'Snack'} editingEntry={customMealPrefill} onSave={(built) => { handleMealBuilderSave(built); setCustomMealPrefill(null); }} onCancel={() => setCustomMealPrefill(null)} /></div>);
-  }
-
-  if (showCookFlow) {
+    const prefillSlot = state.editingEntry?.meal || 'Snack';
     return (
       <div className="today">
-        <div className="add-mode-header">
-          <button className="add-mode-back" onClick={() => setShowCookFlow(false)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <span className="add-mode-title">Cook</span>
-        </div>
-        <CookFlow onComplete={handleCookComplete} onCancel={() => setShowCookFlow(false)} />
+        <MealBuilder
+          meal={prefillSlot}
+          editingEntry={customMealPrefill}
+          onSave={(built) => {
+            dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: built.name, kcal: built.totalKcal, protein: built.totalProtein, ingredients: built.ingredients, meal: prefillSlot, servingSize: 1, servingUnit: 'g', timestamp: Date.now(), dateKey: getToday() } });
+            setCustomMealPrefill(null);
+          }}
+          onCancel={() => setCustomMealPrefill(null)}
+        />
       </div>
     );
   }
 
-  if (showManualForm || isEditing) {
-    return (<div className="today"><FoodLog prefill={naturalPrefill} defaultMeal={addingMeal} onDone={handleFoodLogDone} onCustomMealSelect={handleCustomMealSelect} /></div>);
+  if (isEditing) {
+    return (<div className="today"><FoodLog defaultMeal={state.editingEntry.meal} onDone={handleFoodLogDone} onCustomMealSelect={handleCustomMealSelect} /></div>);
   }
 
-  if (addingMeal) {
+  if (customStep) {
     return (
       <div className="today">
-        <div className="add-mode-header">
-          <button className="add-mode-back" onClick={handleCloseAddMeal}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <span className="add-mode-title">Log meal</span>
-        </div>
-
-        <div className="add-meal-picker">
-          {MEAL_CONFIG.map(({ key, label }) => (
-            <button key={key} className={`add-meal-chip ${addingMeal === key ? 'add-meal-chip--active' : ''}`} onClick={() => setAddingMeal(key)}>{label}</button>
-          ))}
-        </div>
-
-        {!addMode && (
-          <>
-            <FoodSearch onSelect={handleInlineSearchSelect} />
-            <div className="add-alt-row">
-              <span className="add-alt-label">or</span>
-              <button className="add-alt-btn" onClick={() => setAddMode('describe')}>Describe</button>
-              <button className="add-alt-btn" onClick={() => setAddMode('manual')}>Enter Manually</button>
-              <button className="add-alt-btn" onClick={() => setAddMode('build')}>Build Meal</button>
-            </div>
-          </>
-        )}
-
-        {addMode && (
+        {customStep === 'choose' && (
           <div className="add-mode-view">
             <div className="add-mode-header">
-              <button className="add-mode-back" onClick={handleBackToSearch}>
+              <button className="add-mode-back" onClick={handleCustomClose}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
-              <span className="add-mode-title">
-                {addMode === 'describe' && 'Describe'}
-                {addMode === 'manual' && 'Enter Manually'}
-                {addMode === 'build' && 'Build Meal'}
-              </span>
+              <span className="add-mode-title">Add to {mealLabel}</span>
             </div>
-            {addMode === 'describe' && <NaturalInput onAdd={handleNaturalAdd} onEdit={handleNaturalEdit} />}
-            {addMode === 'manual' && (
-              <div className="add-manual-form">
-                <input type="text" className="add-manual-input" value={manualName} onChange={(e) => setManualName(e.target.value)} placeholder="Food name" />
-                <div className="add-manual-row">
-                  <input type="number" inputMode="decimal" className="add-manual-input" value={manualKcal} onChange={(e) => setManualKcal(e.target.value)} placeholder="Calories" />
-                  <input type="number" inputMode="decimal" className="add-manual-input" value={manualProtein} onChange={(e) => setManualProtein(e.target.value)} placeholder="Protein (g)" />
-                </div>
-                <button className="add-manual-submit" onClick={handleManualSubmit} disabled={!manualName.trim() || !manualKcal}>Add Entry</button>
+            <div className="add-method-row">
+              <button className="add-method-btn" onClick={() => setCustomStep('describe')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span className="add-method-label">Describe</span>
+                <span className="add-method-hint">Tell us what you ate</span>
+              </button>
+              <button className="add-method-btn" onClick={() => setCustomStep('build')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+                <span className="add-method-label">Build</span>
+                <span className="add-method-hint">Select ingredients</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {customStep === 'describe' && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={() => setCustomStep('choose')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <span className="add-mode-title">Describe — {mealLabel}</span>
+            </div>
+            <NaturalInput onAdd={handleDescribeDone} onEdit={handleDescribeDone} />
+          </div>
+        )}
+
+        {customStep === 'build' && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={() => setCustomStep('choose')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <span className="add-mode-title">Build — {mealLabel}</span>
+            </div>
+            <MealBuilder meal={customMealSlot} onSave={handleBuildDone} onCancel={() => setCustomStep('choose')} submitLabel="Next" />
+          </div>
+        )}
+
+        {customStep === 'confirm' && customDraft && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={() => setCustomStep('choose')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <span className="add-mode-title">Add to {mealLabel}</span>
+            </div>
+
+            <div className="confirm-summary">
+              <span className="confirm-name">{customDraft.name}</span>
+              <span className="confirm-macros">{Math.round(customDraft.kcal)} cal · {Math.round(customDraft.protein)}g protein</span>
+            </div>
+
+            <div className="confirm-field">
+              <label className="confirm-label">How many servings does this make?</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                className="confirm-input"
+                min="1"
+                value={customDraft.servingsYield}
+                onChange={(e) => setCustomDraft((d) => {
+                  const newYield = Math.max(1, Number(e.target.value) || 1);
+                  return { ...d, servingsYield: newYield, servingsConsumed: Math.min(d.servingsConsumed, newYield) };
+                })}
+              />
+            </div>
+
+            <div className="confirm-field">
+              <label className="confirm-label">How many did you eat?</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                className="confirm-input"
+                min="0"
+                max={customDraft.servingsYield}
+                value={customDraft.servingsConsumed}
+                onChange={(e) => setCustomDraft((d) => ({ ...d, servingsConsumed: Math.min(Math.max(0, Number(e.target.value) || 0), d.servingsYield) }))}
+              />
+            </div>
+
+            {customDraft.servingsYield > 1 && (
+              <div className="confirm-hint">
+                {Math.round(customDraft.kcal / customDraft.servingsYield)} cal per serving
+                {customDraft.servingsYield - customDraft.servingsConsumed > 0 && (
+                  <> · {customDraft.servingsYield - customDraft.servingsConsumed} serving{customDraft.servingsYield - customDraft.servingsConsumed !== 1 ? 's' : ''} → kitchen</>
+                )}
               </div>
             )}
-            {addMode === 'build' && <MealBuilder meal={addingMeal} onSave={handleMealBuilderSave} onCancel={handleBackToSearch} />}
+
+            <button className="btn-primary btn-submit" onClick={handleConfirmSave}>
+              Save
+            </button>
           </div>
         )}
       </div>
@@ -275,41 +342,67 @@ export default function Today() {
       </div>
 
       {/* Food tab */}
-      {activeTab === 'food' && (
-        <>
-          <div className="meals-section">
-            {MEAL_CONFIG.map(({ key: meal, label }) => {
-              const entries = todayEntries.filter((e) => e.meal === meal);
-              const totals = sumNutrition(entries);
+      {activeTab === 'food' && (() => {
+        const activeMealKey = getDefaultMeal();
+        const dailyTotals = sumNutrition(todayEntries);
+        const calTarget = state.targets?.calories || 2000;
+        const protTarget = state.targets?.protein || 120;
 
-              return (
-                <div key={meal} className="meal-row">
-                  <div className="meal-row-header">
-                    <span className="meal-label">{label}</span>
-                    {entries.length > 0 && (
-                      <span className="meal-totals-compact">{Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g</span>
+        return (
+          <>
+            {/* Daily summary */}
+            <div className="daily-summary">
+              <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
+              <span className="daily-summary-sep" />
+              <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g protein</span>
+            </div>
+
+            <QuickAddRow onSelect={setQuickAddPending} />
+
+            {/* Meals */}
+            <div className="meals-section">
+              {MEAL_CONFIG.map(({ key: meal, label }) => {
+                const entries = todayEntries.filter((e) => e.meal === meal);
+                const totals = sumNutrition(entries);
+                const isActive = meal === activeMealKey;
+                const isFilled = entries.length > 0;
+                const isCollapsed = !isFilled && !isActive;
+
+                const classes = [
+                  'meal-row',
+                  isFilled && 'meal-row--filled',
+                  isActive && 'meal-row--active',
+                  isCollapsed && 'meal-row--collapsed',
+                ].filter(Boolean).join(' ');
+
+                return (
+                  <div key={meal} className={classes}>
+                    <div className="meal-row-header">
+                      <span className="meal-label">{label}</span>
+                      {isFilled && (
+                        <span className="meal-totals-compact">{Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g</span>
+                      )}
+                      <button className="meal-add-btn" onClick={() => { setCustomMealSlot(meal); setCustomStep('choose'); }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      </button>
+                    </div>
+                    {isFilled && (
+                      <ScrollStrip className="meal-entries-scroll">
+                        {entries.map((entry) => (
+                          <FoodEntryCard key={entry.id} entry={entry} onDelete={handleDeleteEntry} />
+                        ))}
+                      </ScrollStrip>
+                    )}
+                    {!isFilled && isActive && (
+                      <p className="meal-empty-prompt">What did you have for {label.toLowerCase()}?</p>
                     )}
                   </div>
-                  {entries.length > 0 && (
-                    <div className="meal-entries">
-                      {entries.map((entry) => (
-                        <FoodEntryCard key={entry.id} entry={entry} onDelete={setDeleteId} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <FloatingActionButton
-            onLogMeal={() => { setAddMode(null); setAddingMeal(getDefaultMeal()); }}
-            onCookBatch={() => setShowCookFlow(true)}
-            onLogWater={() => setActiveTab('water')}
-            onLogExercise={() => setActiveTab('exercise')}
-          />
-        </>
-      )}
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Water tab */}
       {activeTab === 'water' && <WaterPanel />}
@@ -317,15 +410,16 @@ export default function Today() {
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel />}
 
-      {deleteId && (
-        <Modal title="Delete Entry" onClose={() => setDeleteId(null)}>
-          <p style={{ marginBottom: 16 }}>Are you sure you want to delete this entry?</p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-danger)', padding: '10px' }} onClick={confirmDelete}>Delete</button>
-            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setDeleteId(null)}>Cancel</button>
+      {quickAddPending && (
+        <Modal title="Choose meal slot" onClose={() => setQuickAddPending(null)}>
+          <div className="slot-picker">
+            {MEAL_CONFIG.map(({ key, label }) => (
+              <button key={key} className="slot-picker-btn" onClick={() => handleQuickAddSlot(key, quickAddPending, Date.now())}>{label}</button>
+            ))}
           </div>
         </Modal>
       )}
+
     </div>
   );
 }

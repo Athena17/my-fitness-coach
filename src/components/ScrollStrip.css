@@ -1,0 +1,35 @@
+.ss-wrap {
+  position: relative;
+}
+
+/* Arrow buttons */
+.ss-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  color: var(--color-text-secondary);
+  opacity: 0.65;
+  transition: opacity 0.2s;
+}
+
+.ss-arrow:hover {
+  opacity: 1;
+}
+
+.ss-arrow--left {
+  left: 2px;
+}
+
+.ss-arrow--right {
+  right: 2px;
+}

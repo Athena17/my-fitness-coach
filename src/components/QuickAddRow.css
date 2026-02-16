@@ -1,0 +1,118 @@
+.qmr {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.qmr-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.qmr-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.qmr-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.qmr-card {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  min-width: 120px;
+  max-width: 180px;
+  border-radius: var(--radius-lg);
+  scroll-snap-align: start;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.qmr-card:active {
+  transform: scale(0.97);
+}
+
+/* Kitchen variant — vivid, solid */
+.qmr-card--kitchen {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(66, 133, 244, 0.05));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(66, 133, 244, 0.35);
+  box-shadow: 0 1px 8px rgba(66, 133, 244, 0.12);
+}
+
+/* Meal variant — faded, dashed */
+.qmr-card--meal {
+  background: linear-gradient(135deg, rgba(105, 114, 131, 0.05), rgba(142, 150, 166, 0.03));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px dashed rgba(105, 114, 131, 0.22);
+  box-shadow: none;
+  opacity: 0.75;
+}
+
+.qmr-card--meal:active {
+  opacity: 1;
+}
+
+/* + button (top-right) */
+.qmr-add-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.qmr-card--meal .qmr-add-btn {
+  background: var(--color-text-secondary);
+}
+
+/* "In Kitchen · X left" tag */
+.qmr-card-tag {
+  font-size: 0.58rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: rgba(66, 133, 244, 0.85);
+}
+
+.qmr-card-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.qmr-card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qmr-card-macros {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}

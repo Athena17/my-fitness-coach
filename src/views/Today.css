@@ -48,55 +48,159 @@
   line-height: 1;
 }
 
+/* ——— Daily summary ——— */
+.daily-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-family: var(--font-sans);
+}
+
+.daily-summary-item {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.daily-summary-value {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.daily-summary-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  opacity: 0.3;
+}
+
 /* ——— Meal log ——— */
 .meals-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
 }
 
 .meal-row {
-  background: var(--color-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
 }
 
 .meal-row-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
+  gap: 6px;
+  padding: 8px 14px;
+}
+
+.meal-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+
+.meal-add-btn:active {
+  background: var(--color-primary);
+  color: #fff;
+  transform: scale(0.9);
 }
 
 .meal-label {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-text);
   font-family: var(--font-sans);
+  flex: 1;
 }
 
 .meal-totals-compact {
-  font-size: 0.65rem;
-  font-weight: 500;
+  font-size: 0.62rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
+  opacity: 0.7;
 }
 
-.meal-entries {
+.meal-entries-scroll {
   display: flex;
-  flex-direction: column;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 14px;
+  padding: 6px 0 10px;
 }
 
-.meal-entries > *:not(:last-child) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.meal-entries-scroll::-webkit-scrollbar {
+  display: none;
 }
 
-/* ——— Full-view: add-mode header (shared by Cook, Water, Exercise, Log meal) ——— */
+.meal-entries-scroll > :first-child {
+  margin-left: 14px;
+}
+
+.meal-entries-scroll > :last-child {
+  margin-right: 14px;
+}
+
+/* ——— Collapsed rows (empty + not active) ——— */
+.meal-row--collapsed .meal-label {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.meal-row--collapsed .meal-add-btn {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+.meal-row--collapsed .meal-add-btn:active {
+  opacity: 1;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ——— Active row (current time-of-day meal) ——— */
+.meal-row--active:not(.meal-row--filled) {
+  background: rgba(105, 114, 131, 0.04);
+  border: 1px dashed rgba(105, 114, 131, 0.12);
+}
+
+.meal-row--active .meal-label {
+  color: var(--color-text);
+}
+
+.meal-empty-prompt {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  text-align: center;
+  padding: 2px 14px 8px;
+  margin: 0;
+}
+
+/* ——— Filled rows ——— */
+.meal-row--filled {
+  background: rgba(105, 114, 131, 0.07);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(105, 114, 131, 0.1);
+}
+
+
+/* ——— Full-view: add-mode header ——— */
 .add-mode-view {
   display: flex;
   flex-direction: column;
@@ -132,92 +236,85 @@
   font-family: var(--font-sans);
 }
 
-/* ——— Full-view: Log meal (FAB-triggered) ——— */
-.add-meal-picker {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.add-meal-chip {
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  font-family: var(--font-sans);
-  color: var(--color-text-secondary);
-  background: rgba(0, 0, 0, 0.04);
-  transition: all 0.15s;
-  min-height: 32px;
-}
-
-.add-meal-chip:hover {
-  background: rgba(0, 0, 0, 0.07);
-}
-
-.add-meal-chip--active {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.add-meal-chip--active:hover {
-  background: var(--color-primary);
-}
-
-/* Alternative add methods */
-.add-alt-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.add-alt-label {
-  font-size: 0.7rem;
-  color: var(--color-text-secondary);
-  font-family: var(--font-sans);
-  flex-shrink: 0;
-}
-
-.add-alt-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 16px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  font-family: var(--font-sans);
-  color: var(--color-text-secondary);
-  background: rgba(0, 0, 0, 0.04);
-  transition: all 0.15s;
-  white-space: nowrap;
-  min-height: 32px;
-}
-
-.add-alt-btn:hover {
-  color: var(--color-text);
-  background: rgba(0, 0, 0, 0.07);
-}
-
-.add-alt-btn svg {
-  flex-shrink: 0;
-  opacity: 0.6;
-}
-
-/* Inline manual form */
-.add-manual-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.add-manual-row {
+/* Add method chooser (Describe / Build) */
+.add-method-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.add-manual-input {
+.add-method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.add-method-btn:active {
+  transform: scale(0.97);
+  background: var(--color-surface-highlight);
+}
+
+.add-method-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.add-method-hint {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+/* ——— Confirm step ——— */
+.confirm-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-highlight);
+}
+
+.confirm-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.confirm-macros {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.confirm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.confirm-input {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--color-border);
@@ -226,25 +323,44 @@
   font-family: var(--font-sans);
   color: var(--color-text);
   min-height: 40px;
+  width: 80px;
 }
 
-.add-manual-input:focus {
+.confirm-input:focus {
   outline: none;
   border-color: var(--color-primary-light);
 }
 
-.add-manual-submit {
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 600;
+.confirm-hint {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
   font-family: var(--font-sans);
-  min-height: 40px;
+  padding: 4px 0;
 }
 
-.add-manual-submit:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* ——— Slot picker (quick-add modal) ——— */
+.slot-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slot-picker-btn {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-surface-highlight);
+  border: 1px solid var(--glass-border);
+  transition: all 0.15s;
+  min-height: 44px;
+  text-align: center;
+}
+
+.slot-picker-btn:active {
+  background: var(--color-primary);
+  color: #fff;
 }

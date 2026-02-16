@@ -2,7 +2,8 @@
 .fab {
   position: fixed;
   bottom: 72px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -17,15 +18,15 @@
 }
 
 .fab:active {
-  transform: scale(0.95);
+  transform: translateX(-50%) scale(0.95);
 }
 
 .fab--open {
-  transform: rotate(45deg);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .fab--open:active {
-  transform: rotate(45deg) scale(0.95);
+  transform: translateX(-50%) rotate(45deg) scale(0.95);
 }
 
 /* Backdrop */
@@ -41,7 +42,8 @@
 .fab-sheet {
   position: fixed;
   bottom: 128px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
@@ -91,10 +93,10 @@
 @keyframes fab-slide-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(-50%) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 }
