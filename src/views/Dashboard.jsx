@@ -23,14 +23,14 @@ function WeekScorecard({ weekData, targets }) {
       {/* ——— Calories row ——— */}
       <div className="ov-bar-section">
         <div className="ov-bar-header">
-          <span className="ov-bar-label" style={{ color: '#ff9500' }}>
-            <svg width="9" height="9" viewBox="0 0 16 16" fill="#ff9500"><path d="M8 16c-3.3 0-6-1.8-6-4 0-2.3 2.1-5 4-7 .3-.3.7-.4 1-.1.2.2.2.5.1.8-.2.6-.1 1.2.1 1.7.3.6.9 1 1.6 1 .9 0 1.5-.6 1.5-1.5 0-.9-.4-1.7-.8-2.3-.2-.3-.1-.7.2-.9.2-.1.5-.1.7.1C12.3 5.5 14 8 14 10.5c0 2.7-2.7 5.5-6 5.5z"/></svg>
+          <span className="ov-bar-label" style={{ color: '#ff6b2b' }}>
+            <svg width="9" height="9" viewBox="0 0 16 16" fill="#ff6b2b"><path d="M8 16c-3.3 0-6-1.8-6-4 0-2.3 2.1-5 4-7 .3-.3.7-.4 1-.1.2.2.2.5.1.8-.2.6-.1 1.2.1 1.7.3.6.9 1 1.6 1 .9 0 1.5-.6 1.5-1.5 0-.9-.4-1.7-.8-2.3-.2-.3-.1-.7.2-.9.2-.1.5-.1.7.1C12.3 5.5 14 8 14 10.5c0 2.7-2.7 5.5-6 5.5z"/></svg>
             Calories
           </span>
         </div>
         <div className="ov-bar-chart-wrap">
           <div className="ov-bar-chart">
-            <div className="ov-bar-goal" style={{ bottom: `${goalKcalPct}%`, borderColor: 'rgba(255,149,0,0.45)' }} />
+            <div className="ov-bar-goal" style={{ bottom: `${goalKcalPct}%`, borderColor: 'rgba(255,107,43,0.45)' }} />
             {weekData.map((d) => {
               const h = d.hasData ? (d.kcalPct / maxKcal) * 100 : 0;
               const met = d.hasData && d.kcalPct > 0 && d.kcalPct <= 1;
@@ -38,13 +38,13 @@ function WeekScorecard({ weekData, targets }) {
                 <div key={d.dateKey} className="ov-bar-col">
                   <div className="ov-bar" style={{
                     height: `${Math.max(h, d.hasData ? 5 : 0)}%`,
-                    background: d.hasData ? (met ? '#ff9500' : 'rgba(255,149,0,0.35)') : 'transparent',
+                    background: d.hasData ? (met ? '#ff6b2b' : 'rgba(255,107,43,0.35)') : 'transparent',
                   }} />
                 </div>
               );
             })}
           </div>
-          <div className="ov-bar-goal-label" style={{ bottom: `${goalKcalPct}%`, color: '#ff9500' }}>
+          <div className="ov-bar-goal-label" style={{ bottom: `${goalKcalPct}%`, color: '#ff6b2b' }}>
             <span>Goal</span>
             <span>{targets.kcal}</span>
           </div>
@@ -54,14 +54,14 @@ function WeekScorecard({ weekData, targets }) {
       {/* ——— Protein row ——— */}
       <div className="ov-bar-section">
         <div className="ov-bar-header">
-          <span className="ov-bar-label" style={{ color: '#0a84ff' }}>
-            <svg width="9" height="9" viewBox="0 0 32 32" fill="#0a84ff"><path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/><circle cx="5.5" cy="27" r="2"/></svg>
+          <span className="ov-bar-label" style={{ color: '#9575cd' }}>
+            <svg width="9" height="9" viewBox="0 0 32 32" fill="#9575cd"><path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/><circle cx="5.5" cy="27" r="2"/></svg>
             Protein
           </span>
         </div>
         <div className="ov-bar-chart-wrap">
           <div className="ov-bar-chart">
-            <div className="ov-bar-goal" style={{ bottom: `${goalProtPct}%`, borderColor: 'rgba(10,132,255,0.45)' }} />
+            <div className="ov-bar-goal" style={{ bottom: `${goalProtPct}%`, borderColor: 'rgba(149,117,205,0.45)' }} />
             {weekData.map((d) => {
               const h = d.hasData ? (d.proteinPct / maxProt) * 100 : 0;
               const met = d.hasData && d.proteinPct >= 1;
@@ -69,13 +69,13 @@ function WeekScorecard({ weekData, targets }) {
                 <div key={d.dateKey} className="ov-bar-col">
                   <div className="ov-bar" style={{
                     height: `${Math.max(h, d.hasData ? 5 : 0)}%`,
-                    background: d.hasData ? (met ? '#0a84ff' : 'rgba(10,132,255,0.35)') : 'transparent',
+                    background: d.hasData ? (met ? '#9575cd' : 'rgba(149,117,205,0.35)') : 'transparent',
                   }} />
                 </div>
               );
             })}
           </div>
-          <div className="ov-bar-goal-label" style={{ bottom: `${goalProtPct}%`, color: '#0a84ff' }}>
+          <div className="ov-bar-goal-label" style={{ bottom: `${goalProtPct}%`, color: '#9575cd' }}>
             <span>Goal</span>
             <span>{Math.round(targets.protein)}g</span>
           </div>
@@ -129,11 +129,15 @@ export default function Dashboard() {
   const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
   const [mounted, setMounted] = useState(false);
   const [waterSplash, setWaterSplash] = useState(false);
+  const [waterFlood, setWaterFlood] = useState(false);
   const [lastWaterAmt, setLastWaterAmt] = useState(null);
 
   useEffect(() => { requestAnimationFrame(() => setMounted(true)); }, []);
 
+  const waterTarget = targets.waterTargetLiters || 2.5;
+
   const handleWaterAdd = useCallback((liters) => {
+    const isFlooding = todayWaterTotal >= waterTarget;
     dispatch({
       type: 'ADD_WATER',
       payload: {
@@ -145,12 +149,13 @@ export default function Dashboard() {
     });
     setLastWaterAmt(liters);
     setWaterSplash(true);
-    setTimeout(() => { setWaterSplash(false); setLastWaterAmt(null); }, 700);
-  }, [dispatch]);
+    if (isFlooding) setWaterFlood(true);
+    const dur = isFlooding ? 1400 : 700;
+    setTimeout(() => { setWaterSplash(false); setWaterFlood(false); setLastWaterAmt(null); }, dur);
+  }, [dispatch, todayWaterTotal, waterTarget]);
 
   const kcalEaten = Math.round(todayTotals.kcal);
   const isOver = kcalEaten > targets.kcal;
-  const waterTarget = targets.waterTargetLiters || 2.5;
   const kcalPct = Math.min(kcalEaten / targets.kcal, 1);
 
   const proteinEaten = Math.round(todayTotals.protein);
@@ -158,10 +163,10 @@ export default function Dashboard() {
   const proteinPct = Math.min(proteinEaten / proteinTarget, 1);
 
   // Gradient colors — vibrant, state-aware
-  const kcalGradStart = isOver ? '#ff3b30' : kcalPct > 0.85 ? '#ff6b3d' : '#ff9500';
-  const kcalGradEnd = isOver ? '#ff2d55' : kcalPct > 0.85 ? '#ff3b30' : '#ff6b3d';
-  const protGradStart = proteinPct >= 1 ? '#34c759' : '#0a84ff';
-  const protGradEnd = proteinPct >= 1 ? '#30d158' : '#007aff';
+  const kcalGradStart = isOver ? '#e55a5a' : kcalPct > 0.85 ? '#ff6b2b' : '#ff6b2b';
+  const kcalGradEnd = isOver ? '#e55a5a' : kcalPct > 0.85 ? '#e55a5a' : '#e8a840';
+  const protGradStart = proteinPct >= 1 ? '#34b87a' : '#9575cd';
+  const protGradEnd = proteinPct >= 1 ? '#34b87a' : '#b39ddb';
 
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -378,10 +383,10 @@ export default function Dashboard() {
         }
 
         const msData = [
-          { pct: 25, label: 'Started', color: '#0a84ff' },
-          { pct: 50, label: 'Halfway', color: '#007aff' },
-          { pct: 75, label: 'Almost', color: '#00b4d8' },
-          { pct: 100, label: 'Goal', color: '#34c759', isGoal: true },
+          { pct: 25, label: 'Started', color: '#2e8bc0' },
+          { pct: 50, label: 'Halfway', color: '#1a6fa0' },
+          { pct: 75, label: 'Almost', color: '#4db8d9' },
+          { pct: 100, label: 'Goal', color: '#34b87a', isGoal: true },
         ];
         const nextMs = msData.find(m => pctNum < m.pct);
 
@@ -465,7 +470,7 @@ export default function Dashboard() {
       </div>
       {isPerfectDay && (
         <div className="ov-perfect ov-enter ov-enter--4">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34c759" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34b87a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
           <span>All targets hit</span>
         </div>
       )}
@@ -480,9 +485,9 @@ export default function Dashboard() {
         // Tier-aware colors — grey → light blue → vivid blue → celebratory blue
         const waterColors = {
           low:  { top: '#b0b8c1', bot: '#8e99a4', wave1: 'rgba(176,184,193,0.3)', wave2: 'rgba(142,153,164,0.2)', stroke: '#8e99a4' },
-          mid:  { top: '#7ec8e3', bot: '#4ba3d4', wave1: 'rgba(126,200,227,0.3)', wave2: 'rgba(75,163,212,0.2)', stroke: '#4ba3d4' },
-          good: { top: '#3db4f2', bot: '#0a84ff', wave1: 'rgba(61,180,242,0.35)', wave2: 'rgba(10,132,255,0.25)', stroke: '#0a84ff' },
-          done: { top: '#3db4f2', bot: '#0a84ff', wave1: 'rgba(61,180,242,0.35)', wave2: 'rgba(10,132,255,0.25)', stroke: '#0a84ff' },
+          mid:  { top: '#78d0ee', bot: '#50bfe8', wave1: 'rgba(120,208,238,0.3)', wave2: 'rgba(80,191,232,0.2)', stroke: '#50bfe8' },
+          good: { top: '#50bfe8', bot: '#3aacd4', wave1: 'rgba(80,191,232,0.35)', wave2: 'rgba(58,172,212,0.25)', stroke: '#3aacd4' },
+          done: { top: '#50bfe8', bot: '#3aacd4', wave1: 'rgba(80,191,232,0.35)', wave2: 'rgba(58,172,212,0.25)', stroke: '#3aacd4' },
         }[tier];
 
         const hoverMsg = {
@@ -493,7 +498,7 @@ export default function Dashboard() {
         }[tier];
 
         return (
-          <div className={`ov-water-wrap${waterSplash ? ' ov-water-wrap--splash' : ''}`}>
+          <div className={`ov-water-wrap${waterSplash ? ' ov-water-wrap--splash' : ''}${waterFlood ? ' ov-water-wrap--flood' : ''}`}>
             <div className={`ov-water-float ov-water-float--${tier}`}>
               {/* Left column: glass + controls */}
               <div className="ov-water-left">
@@ -535,7 +540,19 @@ export default function Dashboard() {
                   {/* Glass shine */}
                   <line x1="7.5" y1="7" x2="7.5" y2="25"
                     stroke="rgba(255,255,255,0.4)" strokeWidth="1.2" strokeLinecap="round"/>
+                  {/* Overflow bulge when flooding */}
+                  {waterFlood && (
+                    <path d="M5 4 Q8 0.5 12 2 Q16 0.5 19 4" fill="url(#water-grad)" className="ov-water-overflow"/>
+                  )}
                 </svg>
+                {/* Flood droplets */}
+                {waterFlood && <>
+                  <span className="ov-flood-drop ov-flood-drop--1" />
+                  <span className="ov-flood-drop ov-flood-drop--2" />
+                  <span className="ov-flood-drop ov-flood-drop--3" />
+                  <span className="ov-flood-drop ov-flood-drop--4" />
+                  <span className="ov-flood-drop ov-flood-drop--5" />
+                </>}
                 <div className="ov-water-controls">
                   <button className="ov-water-ctrl" aria-label="Add 0.25L"
                     onClick={() => handleWaterAdd(0.25)}>
@@ -555,17 +572,17 @@ export default function Dashboard() {
               <div className="ov-water-right">
                 <div className={`ov-water-hint ov-water-hint--${tier}`} aria-label={hoverMsg}>
                   {done ? (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0a84ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#50bfe8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
                   ) : tier === 'good' ? (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0a84ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#50bfe8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2c-5.33 8-10 11.33-10 16a10 10 0 0 0 20 0C22 13.33 17.33 8 12 2z"/>
                     </svg>
                   ) : tier === 'mid' ? (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ba3d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#78d0ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2c-5.33 8-10 11.33-10 16a10 10 0 0 0 20 0C22 13.33 17.33 8 12 2z"/>
                     </svg>
                   ) : (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#e55a5a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/>
                       <line x1="12" y1="8" x2="12" y2="13"/>
                       <line x1="12" y1="16" x2="12.01" y2="16"/>

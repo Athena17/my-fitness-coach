@@ -5,28 +5,31 @@
 }
 
 :root {
-  --color-primary: #697283;
-  --color-primary-light: #8e96a6;
-  --color-primary-dark: #4d5566;
-  --color-success: #6d9483;
-  --color-warning: #c09268;
-  --color-danger: #b5716e;
-  --color-surface: rgba(255, 255, 255, 0.35);
-  --color-surface-highlight: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.5);
+  --color-primary: #2e8bc0;
+  --color-primary-light: #4db8d9;
+  --color-primary-dark: #1a6fa0;
+  --color-success: #2fb882;
+  --color-warning: #e8a840;
+  --color-danger: #e55a5a;
+  --color-surface: rgba(255, 255, 255, 0.40);
+  --color-surface-highlight: rgba(255, 255, 255, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.45);
   --glass-blur: blur(24px);
-  --color-text: #2c3340;
-  --color-text-secondary: #697283;
-  --color-border: rgba(0, 0, 0, 0.07);
-  --color-kcal: #907a66;
-  --color-protein: #6e8fad;
-  --color-water: #5b9bd5;
+  --color-text: #0a1628;
+  --color-text-secondary: #4e6a8a;
+  --color-border: rgba(0, 40, 80, 0.07);
+  --color-kcal: #ff6b2b;
+  --color-protein: #9575cd;
+  --color-water: #38b6e6;
+  --color-ocean-deep: #1a6fa0;
+  --color-ocean-mid: #2e9ec5;
+  --color-ocean-foam: rgba(255, 255, 255, 0.6);
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --shadow-sm: 0 1px 4px rgba(14, 60, 100, 0.06);
+  --shadow-md: 0 4px 16px rgba(14, 60, 100, 0.08), 0 1px 3px rgba(0,0,0,0.04);
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html {
@@ -34,8 +37,18 @@ html {
   font-size: 16px;
   line-height: 1.5;
   color: var(--color-text);
-  background: #e8e4df;
-  background: linear-gradient(155deg, #ede9e4 0%, #e3dfe6 30%, #e8e5e0 55%, #dfe2e8 80%, #e6e3de 100%);
+  background: #c9dff0;
+  background:
+    linear-gradient(
+      155deg,
+      #c4dff5 0%,
+      #d0e5f4 18%,
+      #d8ecf8 35%,
+      #c8e0f2 52%,
+      #b8d8ef 70%,
+      #c2ddf3 85%,
+      #d2e6f6 100%
+    );
   background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -47,37 +60,199 @@ body {
   position: relative;
 }
 
-/* Subtle colored blobs for glass to blur against */
+/* Animated ocean blobs for glass morphism depth */
 body::before,
 body::after {
   content: '';
   position: fixed;
   border-radius: 50%;
   z-index: -1;
-  filter: blur(80px);
-  opacity: 0.5;
+  pointer-events: none;
+  will-change: transform;
 }
 
 body::before {
-  width: 320px;
-  height: 320px;
-  background: #c4b8a8;
-  top: -80px;
-  right: -80px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle at center,
+    rgba(46, 142, 192, 0.35) 0%,
+    rgba(56, 182, 230, 0.20) 40%,
+    rgba(46, 158, 197, 0.08) 65%,
+    transparent 80%
+  );
+  top: -140px;
+  right: -100px;
+  filter: blur(50px);
+  animation: bg-float-1 16s ease-in-out infinite;
 }
 
 body::after {
-  width: 360px;
-  height: 360px;
-  background: #9ab0c4;
-  bottom: 8%;
-  left: -90px;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle at center,
+    rgba(26, 111, 160, 0.30) 0%,
+    rgba(46, 142, 192, 0.18) 35%,
+    rgba(56, 182, 230, 0.06) 60%,
+    transparent 80%
+  );
+  bottom: -60px;
+  left: -120px;
+  filter: blur(55px);
+  animation: bg-float-2 20s ease-in-out infinite;
+}
+
+@keyframes bg-float-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  15% { transform: translate(20px, 16px) scale(1.04); }
+  35% { transform: translate(35px, 28px) scale(1.08); }
+  55% { transform: translate(14px, 35px) scale(1.03); }
+  75% { transform: translate(-12px, 10px) scale(0.96); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes bg-float-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(-24px, -10px) scale(1.05); }
+  45% { transform: translate(-14px, -22px) scale(0.97); }
+  70% { transform: translate(18px, -8px) scale(1.04); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 #root {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+/* Third accent blob — ocean center glow */
+#root::before {
+  content: '';
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    rgba(56, 182, 230, 0.25) 0%,
+    rgba(46, 142, 192, 0.12) 40%,
+    rgba(47, 184, 130, 0.05) 65%,
+    transparent 80%
+  );
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: blur(60px);
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
+  animation: bg-float-3 22s ease-in-out infinite;
+}
+
+@keyframes bg-float-3 {
+  0% { transform: translateX(-50%) translate(0, 0) scale(1); }
+  25% { transform: translateX(-50%) translate(14px, -18px) scale(1.06); }
+  50% { transform: translateX(-50%) translate(-8px, -24px) scale(1.10); }
+  75% { transform: translateX(-50%) translate(-16px, -6px) scale(1.03); }
+  100% { transform: translateX(-50%) translate(0, 0) scale(1); }
+}
+
+/* ——— Ocean waves at screen bottom (3 layers) ——— */
+#root::after {
+  content: '';
+  position: fixed;
+  bottom: -6px;
+  left: -8%;
+  width: 116%;
+  height: 170px;
+  background:
+    linear-gradient(to top,
+      rgba(46, 142, 192, 0.24) 0%,
+      rgba(56, 182, 230, 0.16) 22%,
+      rgba(56, 182, 230, 0.09) 48%,
+      rgba(46, 158, 197, 0.03) 72%,
+      transparent 100%
+    );
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: bottom-wave-1 4s ease-in-out infinite;
+  box-shadow: 0 -14px 45px rgba(46, 142, 192, 0.12);
+}
+
+/* Second wave layer — offset rhythm */
+.app-shell::before {
+  content: '';
+  position: fixed;
+  bottom: -10px;
+  left: -6%;
+  width: 112%;
+  height: 130px;
+  background:
+    linear-gradient(to top,
+      rgba(56, 182, 230, 0.18) 0%,
+      rgba(46, 158, 197, 0.10) 30%,
+      rgba(46, 142, 192, 0.04) 60%,
+      transparent 100%
+    );
+  border-radius: 45% 55% 0 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: bottom-wave-2 5.5s ease-in-out infinite;
+}
+
+/* Third wave layer — subtle, slow */
+.app-shell::after {
+  content: '';
+  position: fixed;
+  bottom: -4px;
+  left: -10%;
+  width: 120%;
+  height: 100px;
+  background:
+    linear-gradient(to top,
+      rgba(46, 142, 192, 0.14) 0%,
+      rgba(56, 182, 230, 0.06) 40%,
+      transparent 100%
+    );
+  border-radius: 55% 45% 0 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: bottom-wave-3 7s ease-in-out infinite;
+}
+
+@keyframes bottom-wave-1 {
+  0%, 100% { transform: translateY(0) scaleX(1) scaleY(1); }
+  30% { transform: translateY(-8px) scaleX(1.01) scaleY(1.08); }
+  60% { transform: translateY(-3px) scaleX(1.02) scaleY(0.96); }
+}
+
+@keyframes bottom-wave-2 {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  40% { transform: translateY(-6px) scaleX(0.99); }
+  70% { transform: translateY(-10px) scaleX(1.01); }
+}
+
+@keyframes bottom-wave-3 {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  50% { transform: translateY(-5px) scaleX(1.02); }
+}
+
+/* ——— Ocean shimmer shared keyframe ——— */
+@keyframes water-shimmer {
+  0%, 70%, 100% { transform: translateX(-120%); }
+  30% { transform: translateX(220%); }
+}
+
+/* ——— Gentle ocean sway for floating elements ——— */
+@keyframes ocean-sway {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ——— Ocean caustic light effect ——— */
+@keyframes caustic-drift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 input, button, select, textarea {

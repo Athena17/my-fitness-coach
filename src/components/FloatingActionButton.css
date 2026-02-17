@@ -7,12 +7,12 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 14px rgba(46, 142, 192, 0.30), 0 1px 4px rgba(0, 0, 0, 0.08);
   z-index: 40;
   transition: transform 0.2s, box-shadow 0.2s;
 }

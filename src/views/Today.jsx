@@ -9,7 +9,6 @@ import Modal from '../components/Modal.jsx';
 import FoodLog from './FoodLog.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
-import WaterPanel from '../components/WaterPanel.jsx';
 import MealBuilder from '../components/MealBuilder.jsx';
 import QuickAddRow from '../components/QuickAddRow.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
@@ -326,12 +325,6 @@ export default function Today() {
           </svg>
           Food
         </button>
-        <button className={`today-tab ${activeTab === 'water' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('water')}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
-          </svg>
-          Water
-        </button>
         <button className={`today-tab ${activeTab === 'exercise' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('exercise')}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
@@ -366,13 +359,11 @@ export default function Today() {
                 const totals = sumNutrition(entries);
                 const isActive = meal === activeMealKey;
                 const isFilled = entries.length > 0;
-                const isCollapsed = !isFilled && !isActive;
 
                 const classes = [
                   'meal-row',
                   isFilled && 'meal-row--filled',
                   isActive && 'meal-row--active',
-                  isCollapsed && 'meal-row--collapsed',
                 ].filter(Boolean).join(' ');
 
                 return (
@@ -393,7 +384,7 @@ export default function Today() {
                         ))}
                       </ScrollStrip>
                     )}
-                    {!isFilled && isActive && (
+                    {!isFilled && (
                       <p className="meal-empty-prompt">What did you have for {label.toLowerCase()}?</p>
                     )}
                   </div>
@@ -403,9 +394,6 @@ export default function Today() {
           </>
         );
       })()}
-
-      {/* Water tab */}
-      {activeTab === 'water' && <WaterPanel />}
 
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel />}
