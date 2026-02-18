@@ -642,3 +642,140 @@
 .qm-card-btn--delete:hover {
   color: var(--color-danger);
 }
+
+/* ——— Step 5: Tutorial intro ——— */
+.tut-intro {
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tut-tagline {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.tut-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tut-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tut-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(46, 142, 192, 0.25);
+}
+
+.tut-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 3px;
+}
+
+.tut-step-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.tut-step-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.tut-build-btn {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* ——— Step 5: Tutorial success ——— */
+.tut-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px 16px;
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
+  animation: tut-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tut-pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.tut-success-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.tut-success-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.tut-success-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  max-width: 240px;
+  line-height: 1.4;
+}
+
+.tut-add-more {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1.5px dashed var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: rgba(46, 142, 192, 0.05);
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tut-add-more:hover {
+  background: rgba(46, 142, 192, 0.10);
+}
+
+.tut-add-more:active {
+  transform: scale(0.98);
+}

@@ -806,3 +806,30 @@
   color: var(--color-danger);
   background: rgba(0, 0, 0, 0.03);
 }
+
+/* Multi-button actions row (consume + delete) */
+.settings-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.settings-list-consume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  opacity: 0.7;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.settings-list-consume:hover {
+  opacity: 1;
+  background: rgba(46, 142, 192, 0.08);
+}

@@ -3,6 +3,7 @@ import { VIEWS } from './context/constants.js';
 import Onboarding from './views/Onboarding.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Today from './views/Today.jsx';
+import Kitchen from './views/Kitchen.jsx';
 import Profile from './views/Profile.jsx';
 import NavBar from './components/NavBar.jsx';
 import GoalBar from './components/GoalBar.jsx';
@@ -21,6 +22,8 @@ function App() {
         return <Dashboard />;
       case VIEWS.DAILY_LOG:
         return <Today />;
+      case VIEWS.KITCHEN:
+        return <Kitchen />;
       case VIEWS.PROFILE:
         return <Profile />;
       default:

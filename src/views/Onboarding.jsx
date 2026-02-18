@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { calculateMaintenance } from '../utils/nutritionCalc.js';
 import { recommendedWaterLiters } from '../utils/waterCalc.js';
-import { loadCustomMeals, saveCustomMeals } from '../utils/storage.js';
-import MealBuilder from '../components/MealBuilder.jsx';
+import { loadCustomMeals } from '../utils/storage.js';
+import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import './Onboarding.css';
 
 /* ——— SVG icon helpers ——— */
@@ -92,13 +92,9 @@ export default function Onboarding() {
   const [proteinOverride, setProteinOverride] = useState('');
   const [waterOverride, setWaterOverride] = useState('');
 
-  // Step 5: Quick meals
-  const [quickMeals, setQuickMeals] = useState([]);
-  const [qmName, setQmName] = useState('');
-  const [qmKcal, setQmKcal] = useState('');
-  const [qmProtein, setQmProtein] = useState('');
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [showMealBuilder, setShowMealBuilder] = useState(false);
+  // Step 5: Tutorial + meal building
+  const [tutorialPhase, setTutorialPhase] = useState('intro'); // 'intro' | 'build' | 'done'
+  const [savedMeals, setSavedMeals] = useState([]);
 
   const maintenance = useMemo(() => {
     const w = Number(weight), h = Number(height), a = Number(age);
@@ -167,50 +163,21 @@ export default function Onboarding() {
 
   function handleBack() {
     setErrors({});
-    if (step === 5 && showMealBuilder) {
-      setShowMealBuilder(false);
+    if (step === 5 && tutorialPhase === 'build') {
+      setTutorialPhase('intro');
+      return;
+    }
+    if (step === 5 && tutorialPhase === 'done') {
+      setTutorialPhase('intro');
       return;
     }
     setStep(step - 1);
   }
 
-  function handleAddQuickMeal() {
-    const k = Number(qmKcal), p = Number(qmProtein);
-    if (!qmName.trim() || isNaN(k) || k <= 0) return;
-    const meal = { name: qmName.trim(), kcal: k, protein: isNaN(p) ? 0 : p };
-    if (editingIndex !== null) {
-      setQuickMeals((prev) => prev.map((m, i) => i === editingIndex ? meal : m));
-      setEditingIndex(null);
-    } else {
-      setQuickMeals((prev) => [...prev, meal]);
-    }
-    setQmName(''); setQmKcal(''); setQmProtein('');
-  }
-
-  function handleEditQuickMeal(index) {
-    const m = quickMeals[index];
-    setQmName(m.name);
-    setQmKcal(String(m.kcal));
-    setQmProtein(String(m.protein));
-    setEditingIndex(index);
-  }
-
-  function handleDeleteQuickMeal(index) {
-    setQuickMeals((prev) => prev.filter((_, i) => i !== index));
-    if (editingIndex === index) {
-      setEditingIndex(null);
-      setQmName(''); setQmKcal(''); setQmProtein('');
-    }
-  }
-
-  function handleMealBuilderAdd(built) {
-    setQuickMeals((prev) => [...prev, {
-      name: built.name,
-      kcal: built.totalKcal,
-      protein: built.totalProtein,
-      ingredients: built.ingredients,
-    }]);
-    setShowMealBuilder(false);
+  function handleMealBuilt() {
+    // ILF already saved to My Meals — just refresh the list
+    setSavedMeals(loadCustomMeals());
+    setTutorialPhase('done');
   }
 
   function handleSubmit() {
@@ -220,11 +187,6 @@ export default function Onboarding() {
     const gw = Number(goalWeight);
     const cw = Number(weight);
     const weightLossTarget = goal !== 'maintain' && gw > 0 && cw > 0 ? Math.abs(cw - gw) : 0;
-
-    if (quickMeals.length > 0) {
-      const existing = loadCustomMeals();
-      saveCustomMeals([...quickMeals, ...existing]);
-    }
 
     dispatch({
       type: 'SET_TARGETS',
@@ -504,91 +466,95 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 5: Quick meals */}
+        {/* Step 5: Tutorial + meal building */}
         {step === 5 && (
           <div className="onboarding-step">
-            {showMealBuilder ? (
+            {tutorialPhase === 'intro' && (
               <>
-                <div className="qm-builder-header">
-                  <button type="button" className="btn-back qm-builder-back" onClick={() => setShowMealBuilder(false)}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                  </button>
-                  <span className="ob-hero-title" style={{ margin: 0, fontSize: '0.85rem' }}>Build with Ingredients</span>
-                </div>
-                <MealBuilder meal="Snack" onSave={handleMealBuilderAdd} onCancel={() => setShowMealBuilder(false)} skipCustomMealSave />
-              </>
-            ) : (
-              <>
-                <p className="form-hint" style={{ marginBottom: 12, textAlign: 'center' }}>Add meals you eat often for one-tap logging. You can skip this.</p>
+                <div className="tut-intro">
+                  <p className="tut-tagline">Here is how you will log meals</p>
 
-                <div className="ob-card">
-                  <div className="onboarding-form">
-                    <div className="form-group">
-                      <label htmlFor="qm-name">Meal name</label>
-                      <input
-                        id="qm-name" type="text" value={qmName}
-                        onChange={(e) => setQmName(e.target.value)}
-                        placeholder="e.g. Oatmeal with banana"
-                      />
-                    </div>
-                    <div className="form-row-2">
-                      <div className="form-group">
-                        <label htmlFor="qm-kcal">Calories</label>
-                        <input
-                          id="qm-kcal" type="number" inputMode="numeric"
-                          value={qmKcal} onChange={(e) => setQmKcal(e.target.value)}
-                          placeholder="350"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="qm-protein">Protein (g)</label>
-                        <input
-                          id="qm-protein" type="number" inputMode="numeric"
-                          value={qmProtein} onChange={(e) => setQmProtein(e.target.value)}
-                          placeholder="12"
-                        />
+                  <div className="tut-steps">
+                    <div className="tut-step">
+                      <span className="tut-step-num">1</span>
+                      <div className="tut-step-text">
+                        <span className="tut-step-title">Name your meal</span>
+                        <span className="tut-step-desc">Give it a name like &ldquo;Morning Omelette&rdquo;</span>
                       </div>
                     </div>
-
-                    <button
-                      type="button" className="btn-primary"
-                      onClick={handleAddQuickMeal}
-                      disabled={!qmName.trim() || !qmKcal}
-                    >
-                      {editingIndex !== null ? 'Update Meal' : 'Add Meal'}
-                    </button>
-
-                    <button type="button" className="qm-build-link" onClick={() => setShowMealBuilder(true)}>
-                      or Build with Ingredients
-                    </button>
+                    <div className="tut-step">
+                      <span className="tut-step-num">2</span>
+                      <div className="tut-step-text">
+                        <span className="tut-step-title">Add ingredients</span>
+                        <span className="tut-step-desc">Tap a suggestion or type your own</span>
+                      </div>
+                    </div>
+                    <div className="tut-step">
+                      <span className="tut-step-num">3</span>
+                      <div className="tut-step-text">
+                        <span className="tut-step-title">Set amounts</span>
+                        <span className="tut-step-desc">Pick a unit (g, tbsp, cup...) and enter how much</span>
+                      </div>
+                    </div>
+                    <div className="tut-step">
+                      <span className="tut-step-num">4</span>
+                      <div className="tut-step-text">
+                        <span className="tut-step-title">Done!</span>
+                        <span className="tut-step-desc">We calculate calories & protein automatically</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {quickMeals.length > 0 && (
+                <button type="button" className="btn-primary tut-build-btn" onClick={() => setTutorialPhase('build')}>
+                  Build my first meal
+                </button>
+
+                <div className="form-nav">
+                  <button type="button" className="btn-back" onClick={handleBack}>Back</button>
+                  <button type="button" className="btn-primary" onClick={handleSubmit}>
+                    Skip & Start
+                  </button>
+                </div>
+              </>
+            )}
+
+            {tutorialPhase === 'build' && (
+              <IngredientListFlow
+                onSave={handleMealBuilt}
+                onCancel={() => setTutorialPhase('intro')}
+              />
+            )}
+
+            {tutorialPhase === 'done' && (
+              <>
+                <div className="tut-success">
+                  <span className="tut-success-emoji">🎉</span>
+                  <span className="tut-success-title">Meal saved!</span>
+                  <span className="tut-success-desc">You can find it in your Happy Kitchen anytime</span>
+                </div>
+
+                {savedMeals.length > 0 && (
                   <div className="qm-list">
-                    {quickMeals.map((m, i) => (
+                    {savedMeals.map((m, i) => (
                       <div key={i} className="qm-card">
                         <div className="qm-card-info">
                           <span className="qm-card-name">{m.name}</span>
-                          <span className="qm-card-macros">{m.kcal} cal {'\u00B7'} {m.protein}g</span>
-                        </div>
-                        <div className="qm-card-actions">
-                          <button type="button" className="qm-card-btn" onClick={() => handleEditQuickMeal(i)} aria-label="Edit">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                          </button>
-                          <button type="button" className="qm-card-btn qm-card-btn--delete" onClick={() => handleDeleteQuickMeal(i)} aria-label="Delete">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
+                          <span className="qm-card-macros">{m.kcal} cal · {m.protein}g protein{m.ingredients ? ` · ${m.ingredients.length} ingredients` : ''}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
 
+                <button type="button" className="tut-add-more" onClick={() => setTutorialPhase('build')}>
+                  + Add another meal
+                </button>
+
                 <div className="form-nav">
                   <button type="button" className="btn-back" onClick={handleBack}>Back</button>
                   <button type="button" className="btn-primary" onClick={handleSubmit}>
-                    {quickMeals.length > 0 ? 'Start Tracking' : 'Skip & Start'}
+                    Start Tracking
                   </button>
                 </div>
               </>

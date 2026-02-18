@@ -261,7 +261,7 @@ export default function Profile() {
             </span>
             <span className="progress-stat-sep" />
             <span className="progress-stat">
-              <svg width="10" height="10" viewBox="0 0 32 32" fill="var(--color-success)" stroke="none"><path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/><circle cx="5.5" cy="27" r="2"/></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--color-success)" stroke="var(--color-success)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
               <span className="progress-stat-value">{monthStats.protOkDays}</span>
             </span>
           </div>
@@ -304,9 +304,9 @@ export default function Profile() {
                         <path d="M8 16c-3.3 0-6-1.8-6-4 0-2.3 2.1-5 4-7 .3-.3.7-.4 1-.1.2.2.2.5.1.8-.2.6-.1 1.2.1 1.7.3.6.9 1 1.6 1 .9 0 1.5-.6 1.5-1.5 0-.9-.4-1.7-.8-2.3-.2-.3-.1-.7.2-.9.2-.1.5-.1.7.1C12.3 5.5 14 8 14 10.5c0 2.7-2.7 5.5-6 5.5z"/>
                       </svg>
                       <span className="progress-card-divider" />
-                      <svg width="12" height="12" viewBox="0 0 32 32" fill={protColor} opacity={protOk ? 0.85 : 0.45}>
-                        <path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/>
-                        <circle cx="5.5" cy="27" r="2" fill={protColor}/>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill={protColor} stroke={protColor} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity={protOk ? 0.85 : 0.45}>
+                        <path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/>
+                        <path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/>
                       </svg>
                     </div>
                   </div>
@@ -335,11 +335,11 @@ export default function Profile() {
             <span className="progress-legend-label">Protein</span>
             <div className="progress-legend-pair">
               <div className="progress-legend-item">
-                <svg width="10" height="10" viewBox="0 0 32 32" fill="var(--color-success)" stroke="none"><path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/><circle cx="5.5" cy="27" r="2"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--color-success)" stroke="var(--color-success)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
                 <span>Goal met</span>
               </div>
               <div className="progress-legend-item">
-                <svg width="10" height="10" viewBox="0 0 32 32" fill="var(--color-danger)" stroke="none" opacity="0.45"><path d="M20 2c-5 0-9 4-9 9 0 1.2.2 2.3.7 3.3L5.3 20.7c-.8.8-1.3 2-1.3 3 0 .8.3 1.4.8 1.8l.7.7c.4.4 1 .8 1.8.8 1 0 2.2-.5 3-1.3l6.4-6.4c1 .5 2.1.7 3.3.7 5 0 9-4 9-9s-4-9-9-9z"/><circle cx="5.5" cy="27" r="2"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--color-danger)" stroke="var(--color-danger)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.45"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
                 <span>Under target</span>
               </div>
             </div>
@@ -547,49 +547,6 @@ export default function Profile() {
         {importMessage && <p className="settings-message">{importMessage}</p>}
       </div>
 
-      {/* ——— Recipe Book ——— */}
-      <div className="settings-section">
-        <h2>Recipe Book</h2>
-        {state.recipes.length === 0 ? (
-          <p className="settings-empty">No recipes yet. Use the Cook flow to create one.</p>
-        ) : (
-          <div className="settings-list">
-            {state.recipes.map((recipe) => (
-              <div key={recipe.id} className="settings-list-item">
-                <div className="settings-list-info">
-                  <span className="settings-list-name">{recipe.name}</span>
-                  <span className="settings-list-meta">{recipe.servingsYield} servings · {recipe.perServing.kcal} cal / {recipe.perServing.protein}g per serving</span>
-                </div>
-                <button type="button" className="settings-list-delete" onClick={() => dispatch({ type: 'DELETE_RECIPE', payload: recipe.id })} aria-label="Delete recipe">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ——— Active Leftovers ——— */}
-      <div className="settings-section">
-        <h2>Active Leftovers</h2>
-        {state.leftovers.filter((l) => l.remainingServings > 0).length === 0 ? (
-          <p className="settings-empty">No active leftovers.</p>
-        ) : (
-          <div className="settings-list">
-            {state.leftovers.filter((l) => l.remainingServings > 0).map((leftover) => (
-              <div key={leftover.id} className="settings-list-item">
-                <div className="settings-list-info">
-                  <span className="settings-list-name">{leftover.name}</span>
-                  <span className="settings-list-meta">{leftover.remainingServings} / {leftover.totalServings} servings left · cooked {leftover.dateCooked}</span>
-                </div>
-                <button type="button" className="settings-list-delete" onClick={() => dispatch({ type: 'DELETE_LEFTOVER', payload: leftover.id })} aria-label="Delete leftover">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="settings-section settings-about">
         <p>myfitnesscoach v1.2 — All data stored locally on your device.</p>

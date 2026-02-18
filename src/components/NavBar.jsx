@@ -21,6 +21,16 @@ function DailyLogIcon() {
   );
 }
 
+function KitchenIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10.5V21a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V10.5" />
+      <path d="m2 9 10-7 10 7" />
+      <path d="M12 14.5c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z" />
+    </svg>
+  );
+}
+
 function ProfileIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -33,6 +43,7 @@ function ProfileIcon() {
 const tabs = [
   { view: VIEWS.DASHBOARD, label: 'Dashboard', icon: <DashboardIcon /> },
   { view: VIEWS.DAILY_LOG, label: 'Daily Log', icon: <DailyLogIcon /> },
+  { view: VIEWS.KITCHEN, label: 'Kitchen', icon: <KitchenIcon /> },
   { view: VIEWS.PROFILE, label: 'Profile', icon: <ProfileIcon /> },
 ];
 

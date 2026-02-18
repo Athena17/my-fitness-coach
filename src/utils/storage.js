@@ -6,6 +6,7 @@ const WATER_LOGS_KEY = 'nt_water_logs';
 const CUSTOM_MEALS_KEY = 'nt_custom_meals';
 const RECIPES_KEY = 'nt_recipes';
 const LEFTOVERS_KEY = 'nt_leftovers';
+const PERSONAL_INGREDIENTS_KEY = 'nt_personal_ingredients';
 const CURRENT_SCHEMA = 3;
 
 function safeGet(key) {
@@ -112,6 +113,14 @@ export function saveLeftovers(leftovers) {
   safeSet(LEFTOVERS_KEY, leftovers);
 }
 
+export function loadPersonalIngredients() {
+  return safeGet(PERSONAL_INGREDIENTS_KEY) || [];
+}
+
+export function savePersonalIngredients(list) {
+  safeSet(PERSONAL_INGREDIENTS_KEY, list);
+}
+
 export function clearAllData() {
   try {
     localStorage.removeItem(TARGETS_KEY);
@@ -121,6 +130,7 @@ export function clearAllData() {
     localStorage.removeItem(CUSTOM_MEALS_KEY);
     localStorage.removeItem(RECIPES_KEY);
     localStorage.removeItem(LEFTOVERS_KEY);
+    localStorage.removeItem(PERSONAL_INGREDIENTS_KEY);
     localStorage.removeItem(SCHEMA_KEY);
   } catch (e) {
     console.error('Failed to clear data:', e);
