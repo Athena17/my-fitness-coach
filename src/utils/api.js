@@ -49,6 +49,11 @@ function profileToApp(row) {
     goal: row.goal,
     intensity: row.intensity,
     waterTargetLiters: row.water_target_liters,
+    cyclingEnabled: row.cycling_enabled ?? false,
+    cyclingTrainingKcal: row.cycling_training_kcal ?? 0,
+    cyclingTrainingProtein: row.cycling_training_protein ?? 0,
+    cyclingRestKcal: row.cycling_rest_kcal ?? 0,
+    cyclingRestProtein: row.cycling_rest_protein ?? 0,
   };
 }
 
@@ -69,6 +74,11 @@ function profileToDB(userId, p) {
     goal: p.goal,
     intensity: p.intensity,
     water_target_liters: p.waterTargetLiters,
+    cycling_enabled: p.cyclingEnabled ?? false,
+    cycling_training_kcal: p.cyclingTrainingKcal ?? 0,
+    cycling_training_protein: p.cyclingTrainingProtein ?? 0,
+    cycling_rest_kcal: p.cyclingRestKcal ?? 0,
+    cycling_rest_protein: p.cyclingRestProtein ?? 0,
   };
 }
 
@@ -447,4 +457,26 @@ function customMealToDB(userId, m) {
   if (m.id) row.id = m.id;
   if (userId) row.user_id = userId;
   return row;
+}
+
+// ─── Day Types (calorie cycling) ─────────────────────
+
+export async function fetchDayTypes(userId) {
+  const { data, error } = await supabase
+    .from('day_types')
+    .select('*')
+    .eq('user_id', userId);
+  if (error) { console.error('fetchDayTypes:', error); return {}; }
+  const map = {};
+  for (const row of data) {
+    map[row.date_key] = row.day_type;
+  }
+  return map;
+}
+
+export async function upsertDayType(userId, dateKey, dayType) {
+  const { error } = await supabase
+    .from('day_types')
+    .upsert({ user_id: userId, date_key: dateKey, day_type: dayType }, { onConflict: 'user_id,date_key' });
+  if (error) console.error('upsertDayType:', error);
 }

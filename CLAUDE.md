@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**NutriTrack** — a mobile-first calorie & macro tracking PWA. React 19 + Vite 7, JavaScript (JSX), no TypeScript. Deployed to GitHub Pages via `gh-pages`.
+**Irada** (Arabic for "willpower") — a mobile-first calorie & macro tracking PWA. React 19 + Vite 7, JavaScript (JSX), no TypeScript. Deployed to GitHub Pages via `gh-pages`.
 
 ## Commands
 

@@ -116,3 +116,48 @@
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
 }
+
+/* ——— Drag hint ——— */
+.qmr-drag-hint {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  animation: qmr-hint-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes qmr-hint-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Source card faded while dragging */
+.qmr-card--dragging {
+  opacity: 0.3;
+  transform: scale(0.95);
+}
+
+/* ——— Ghost element (appended to body) ——— */
+.qmr-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  min-width: 120px;
+  max-width: 180px;
+  border-radius: var(--radius-lg, 14px);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--color-primary, #4a8fe7);
+  box-shadow:
+    0 8px 32px rgba(46, 142, 192, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.06);
+  opacity: 0.92;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}

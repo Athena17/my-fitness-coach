@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
+import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
@@ -22,7 +23,13 @@ const MEAL_CONFIG = [
 export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
+  const { kcal: effectiveKcal, protein: effectiveProtein } = useEffectiveTargets();
   const [activeTab, setActiveTab] = useState('food');
+
+  // Drag-and-drop state (Quick Add + entry reorder)
+  const [dragItem, setDragItem] = useState(null);
+  const [dragEntryId, setDragEntryId] = useState(null);
+  const [dragOverMeal, setDragOverMeal] = useState(null);
 
   // Custom add flow
   const [customStep, setCustomStep] = useState(null);
@@ -73,6 +80,53 @@ export default function Today() {
     setCustomStep('confirm');
   }
 
+  // --- Drop handler (drag-and-drop from Quick Add) ---
+
+  function handleDrop(item, mealKey) {
+    if (!item || !mealKey) return;
+
+    if (item.type === 'leftover') {
+      // Leftovers → open confirm step with meal pre-set
+      setCustomDraft({
+        name: item.name,
+        kcal: item.kcal,
+        protein: item.protein,
+        servingsYield: item.remaining,
+        servingsConsumed: 1,
+        mealSlot: mealKey,
+        isLeftover: true,
+        leftover: item.leftover,
+      });
+      setCustomStep('confirm');
+    } else {
+      // Meals (1 serving) → directly add entry
+      dispatch({
+        type: 'ADD_ENTRY',
+        payload: {
+          id: generateId(),
+          name: item.name,
+          kcal: Math.round(item.kcal),
+          protein: Math.round(item.protein * 10) / 10,
+          meal: mealKey,
+          servingSize: 1,
+          servingUnit: 'serving',
+          timestamp: Date.now(),
+          dateKey: getToday(),
+          ...(item.ingredients ? { ingredients: item.ingredients } : {}),
+        },
+      });
+    }
+    setDragItem(null);
+    setDragOverMeal(null);
+  }
+
+  // --- Entry reorder drop handler ---
+
+  function handleEntryDrop(entry, newMealKey) {
+    if (!entry || !newMealKey || entry.meal === newMealKey) return;
+    dispatch({ type: 'UPDATE_ENTRY', payload: { ...entry, meal: newMealKey } });
+  }
+
   // --- Custom add flow ---
 
   function getDefaultMeal() {
@@ -84,12 +138,13 @@ export default function Today() {
   }
 
   function handleListDone(result) {
-    setCustomDraft({
+    setCustomDraft((d) => ({
+      ...d,
       name: result.name, kcal: result.kcal, protein: result.protein,
       ingredients: result.ingredients,
       servingsYield: 1, servingsConsumed: 1,
-      mealSlot: getDefaultMeal(),
-    });
+      mealSlot: d?.mealSlot || getDefaultMeal(),
+    }));
     setCustomStep('confirm');
   }
 
@@ -152,6 +207,19 @@ export default function Today() {
       }
     }
 
+    // Save to My Meals if toggled
+    if (customDraft.saveToMyMeals && name) {
+      const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === name.toLowerCase());
+      const customMeal = {
+        ...(existing ? { id: existing.id } : { id: generateId() }),
+        name,
+        kcal: Math.round(kcal),
+        protein: Math.round(protein * 10) / 10,
+        ingredients: ingredients || [],
+      };
+      dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
+    }
+
     setCustomStep(null);
     setCustomDraft(null);
   }
@@ -161,11 +229,12 @@ export default function Today() {
     const kcal = Number(customDraft?.kcal);
     const protein = Number(customDraft?.protein) || 0;
     if (!name || !kcal || kcal <= 0) return;
-    setCustomDraft({
+    setCustomDraft((d) => ({
+      ...d,
       name, kcal, protein,
       servingsYield: 1, servingsConsumed: 1,
-      mealSlot: getDefaultMeal(),
-    });
+      mealSlot: d?.mealSlot || getDefaultMeal(),
+    }));
     setCustomStep('confirm');
   }
 
@@ -268,6 +337,14 @@ export default function Today() {
                   />
                 </div>
               </div>
+              <button
+                type="button"
+                className={`ilf-my-meals-toggle ${customDraft?.saveToMyMeals ? 'ilf-my-meals-toggle--on' : ''}`}
+                onClick={() => setCustomDraft((d) => ({ ...d, saveToMyMeals: !d.saveToMyMeals }))}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill={customDraft?.saveToMyMeals ? '#fff' : 'none'} stroke={customDraft?.saveToMyMeals ? '#fff' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <span>{customDraft?.saveToMyMeals ? 'Saved to My Meals' : 'Save to My Meals'}</span>
+              </button>
               <button
                 className="confirm-log-btn"
                 onClick={handleDirectNext}
@@ -385,22 +462,6 @@ export default function Today() {
                 )}
               </div>
 
-              <div className="confirm-field">
-                <label className="confirm-label">Meal</label>
-                <div className="confirm-meal-picker">
-                  {MEAL_CONFIG.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      className={`confirm-meal-btn${customDraft.mealSlot === key ? ' confirm-meal-btn--active' : ''}`}
-                      onClick={() => setCustomDraft((d) => ({ ...d, mealSlot: key }))}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <button className="confirm-log-btn" onClick={handleConfirmSave}>
                 Log it
               </button>
@@ -436,8 +497,8 @@ export default function Today() {
       {activeTab === 'food' && (() => {
         const activeMealKey = getDefaultMeal();
         const dailyTotals = sumNutrition(todayEntries);
-        const calTarget = state.targets?.calories || 2000;
-        const protTarget = state.targets?.protein || 120;
+        const calTarget = effectiveKcal || state.targets?.kcal || 2000;
+        const protTarget = effectiveProtein || state.targets?.protein || 120;
 
         return (
           <>
@@ -448,7 +509,14 @@ export default function Today() {
               <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g protein</span>
             </div>
 
-            <QuickAddRow onSelect={handleQuickAddSelect} />
+            <QuickAddRow
+              onSelect={handleQuickAddSelect}
+              dragItem={dragItem}
+              setDragItem={setDragItem}
+              dragOverMeal={dragOverMeal}
+              setDragOverMeal={setDragOverMeal}
+              onDrop={handleDrop}
+            />
 
             {/* Meals */}
             <div className="meals-section">
@@ -458,29 +526,60 @@ export default function Today() {
                 const isActive = meal === activeMealKey;
                 const isFilled = entries.length > 0;
 
+                const anyDragging = dragItem || dragEntryId;
                 const classes = [
                   'meal-row',
                   isFilled && 'meal-row--filled',
                   isActive && 'meal-row--active',
+                  anyDragging && 'meal-row--drag-active',
+                  dragOverMeal === meal && 'meal-row--drop-target',
                 ].filter(Boolean).join(' ');
 
                 return (
-                  <div key={meal} className={classes}>
+                  <div key={meal} className={classes} data-meal={meal}>
                     <div className="meal-row-header">
                       <span className="meal-label">{label}</span>
                       {isFilled && (
                         <span className="meal-totals-compact">{Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g</span>
                       )}
+                      {isFilled && (
+                        <button
+                          className="meal-add-btn"
+                          onClick={() => {
+                            setCustomDraft((d) => ({ ...d, mealSlot: meal }));
+                            setCustomStep('choose');
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                      )}
                     </div>
                     {isFilled && (
                       <ScrollStrip className="meal-entries-scroll">
                         {entries.map((entry) => (
-                          <FoodEntryCard key={entry.id} entry={entry} onDelete={handleDeleteEntry} />
+                          <FoodEntryCard
+                            key={entry.id}
+                            entry={entry}
+                            onDelete={handleDeleteEntry}
+                            dragEntryId={dragEntryId}
+                            setDragEntryId={setDragEntryId}
+                            setDragOverMeal={setDragOverMeal}
+                            onEntryDrop={handleEntryDrop}
+                          />
                         ))}
                       </ScrollStrip>
                     )}
                     {!isFilled && (
-                      <p className="meal-empty-prompt">What did you have for {label.toLowerCase()}?</p>
+                      <button
+                        className="meal-empty-prompt"
+                        onClick={() => {
+                          setCustomDraft((d) => ({ ...d, mealSlot: meal }));
+                          setCustomStep('choose');
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        What did you have for {label.toLowerCase()}?
+                      </button>
                     )}
                   </div>
                 );
@@ -490,11 +589,6 @@ export default function Today() {
         );
       })()}
 
-      {activeTab === 'food' && (
-        <button className="food-fab" onClick={() => setCustomStep('choose')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-      )}
 
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel />}

@@ -213,7 +213,7 @@ export default function Onboarding() {
   return (
     <div className="onboarding">
       <div className="onboarding-content">
-        <h1 className="onboarding-title">myfitnesscoach</h1>
+        <h1 className="onboarding-title">Irada</h1>
 
         {/* Progress bar */}
         <div className="ob-progress">

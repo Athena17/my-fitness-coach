@@ -88,7 +88,9 @@ export function WeekStrip({ entries, targets }) {
 export default function GoalBar() {
   return (
     <div className="goal-bar goal-bar--compact">
-      <span className="goal-bar-brand">myfitnesscoach</span>
+      <span className="goal-bar-brand">
+Irada
+      </span>
     </div>
   );
 }

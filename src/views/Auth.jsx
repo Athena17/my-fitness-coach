@@ -40,7 +40,7 @@ export default function Auth() {
   return (
     <div className="auth">
       <div className="auth-content">
-        <h1 className="auth-title">myfitnesscoach</h1>
+        <h1 className="auth-title">Irada</h1>
         <p className="auth-subtitle">
           {mode === 'signin' ? 'Welcome back' : 'Create your account'}
         </p>

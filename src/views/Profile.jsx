@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useAuth } from '../context/useAuth.js';
+import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData, clearAllData } from '../utils/storage.js';
@@ -59,6 +60,7 @@ function TargetIcon({ type }) {
 export default function Profile() {
   const { state, dispatch } = useApp();
   const { signOut } = useAuth();
+  const [cyclingConfig, setCyclingConfig] = useCyclingConfig();
   const { entries, targets } = state;
   const today = getToday();
   const fileInputRef = useRef(null);
@@ -97,6 +99,17 @@ export default function Profile() {
     else setViewMonth(viewMonth + 1);
   }
 
+  const dayTypes = state.dayTypes;
+
+  function getTargetsForDay(dateKey) {
+    if (!cyclingConfig.enabled) return { kcal: targets.kcal, protein: targets.protein };
+    const dt = (dayTypes && dayTypes[dateKey]) || 'rest';
+    return {
+      kcal: dt === 'training' ? cyclingConfig.trainingKcal : cyclingConfig.restKcal,
+      protein: dt === 'training' ? cyclingConfig.trainingProtein : cyclingConfig.restProtein,
+    };
+  }
+
   function getDayData(dayNum) {
     if (!dayNum) return null;
     const dateKey = formatDateKey(new Date(viewYear, viewMonth, dayNum));
@@ -105,11 +118,12 @@ export default function Profile() {
     const totals = sumNutrition(dayEntries);
     const burn = burnByDay[dateKey] || 0;
     const net = totals.kcal - burn;
+    const dayTargets = getTargetsForDay(dateKey);
     return {
       dateKey,
       hasData: true,
-      kcalPct: targets.kcal > 0 ? net / targets.kcal : 0,
-      proteinPct: targets.protein > 0 ? totals.protein / targets.protein : 0,
+      kcalPct: dayTargets.kcal > 0 ? net / dayTargets.kcal : 0,
+      proteinPct: dayTargets.protein > 0 ? totals.protein / dayTargets.protein : 0,
     };
   }
 
@@ -123,11 +137,16 @@ export default function Profile() {
       tracked++;
       const totals = sumNutrition(dayEntries);
       const burn = burnByDay[dateKey] || 0;
-      if (targets.kcal > 0 && (totals.kcal - burn) <= targets.kcal) calOkDays++;
-      if (targets.protein > 0 && totals.protein >= targets.protein) protOkDays++;
+      const dt = (dayTypes && dayTypes[dateKey]) || 'rest';
+      const dayTargets = cyclingConfig.enabled
+        ? { kcal: dt === 'training' ? cyclingConfig.trainingKcal : cyclingConfig.restKcal,
+            protein: dt === 'training' ? cyclingConfig.trainingProtein : cyclingConfig.restProtein }
+        : targets;
+      if (dayTargets.kcal > 0 && (totals.kcal - burn) <= dayTargets.kcal) calOkDays++;
+      if (dayTargets.protein > 0 && totals.protein >= dayTargets.protein) protOkDays++;
     }
     return { tracked, calOkDays, protOkDays };
-  }, [viewYear, viewMonth, dayMap, burnByDay, targets]);
+  }, [viewYear, viewMonth, dayMap, burnByDay, targets, cyclingConfig, dayTypes]);
 
   /* ——— Weight change ——— */
   const wc = useMemo(
@@ -142,6 +161,11 @@ export default function Profile() {
   const [kcal, setKcal] = useState(String(targets.kcal));
   const [protein, setProtein] = useState(String(targets.protein));
   const [water, setWater] = useState(String(targets.waterTargetLiters || 2.5));
+  const [cyclingEnabled, setCyclingEnabled] = useState(cyclingConfig.enabled);
+  const [trainingKcal, setTrainingKcal] = useState(String(cyclingConfig.trainingKcal || ''));
+  const [trainingProtein, setTrainingProtein] = useState(String(cyclingConfig.trainingProtein || ''));
+  const [restKcal, setRestKcal] = useState(String(cyclingConfig.restKcal || ''));
+  const [restProtein, setRestProtein] = useState(String(cyclingConfig.restProtein || ''));
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -159,6 +183,11 @@ export default function Profile() {
     setKcal(String(targets.kcal));
     setProtein(String(targets.protein));
     setWater(String(targets.waterTargetLiters || 2.5));
+    setCyclingEnabled(cyclingConfig.enabled);
+    setTrainingKcal(String(cyclingConfig.trainingKcal || targets.kcal));
+    setTrainingProtein(String(cyclingConfig.trainingProtein || targets.protein));
+    setRestKcal(String(cyclingConfig.restKcal || targets.kcal));
+    setRestProtein(String(cyclingConfig.restProtein || targets.protein));
     setErrors({});
     setEditing(true);
   }
@@ -174,6 +203,14 @@ export default function Profile() {
     if (!p || p < 10 || p > 500) errs.protein = '10–500';
     if (!w || w < 0.5 || w > 100) errs.weightLossTarget = '0.5–100';
     if (!wt || wt < 0.5 || wt > 15) errs.water = '0.5–15';
+    if (cyclingEnabled) {
+      const tk = Number(trainingKcal), tp = Number(trainingProtein);
+      const rk = Number(restKcal), rp = Number(restProtein);
+      if (!tk || tk < 500 || tk > 10000) errs.trainingKcal = '500–10,000';
+      if (!tp || tp < 10 || tp > 500) errs.trainingProtein = '10–500';
+      if (!rk || rk < 500 || rk > 10000) errs.restKcal = '500–10,000';
+      if (!rp || rp < 10 || rp > 500) errs.restProtein = '10–500';
+    }
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
@@ -183,6 +220,13 @@ export default function Profile() {
         userName: userName.trim(), kcal: k, protein: p, waterTargetLiters: wt,
         maintenanceKcal: targets.maintenanceKcal || targets.kcal, weightLossTarget: w,
       },
+    });
+    setCyclingConfig({
+      enabled: cyclingEnabled,
+      trainingKcal: cyclingEnabled ? Number(trainingKcal) : 0,
+      trainingProtein: cyclingEnabled ? Number(trainingProtein) : 0,
+      restKcal: cyclingEnabled ? Number(restKcal) : 0,
+      restProtein: cyclingEnabled ? Number(restProtein) : 0,
     });
     setEditing(false);
     setSaved(true);
@@ -195,7 +239,7 @@ export default function Profile() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `myfitnesscoach-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `irada-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -614,6 +658,50 @@ export default function Profile() {
               <input id="settings-protein" type="number" inputMode="numeric" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="e.g. 120" />
               {errors.protein && <span className="form-error">{errors.protein}</span>}
             </div>
+
+            {/* Calorie Cycling */}
+            <div className="cycling-toggle-row">
+              <span className="cycling-toggle-label">Calorie cycling</span>
+              <div className="cycling-toggle-pills">
+                <button type="button" className={`cycling-pill${!cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => setCyclingEnabled(false)}>Off</button>
+                <button type="button" className={`cycling-pill${cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => setCyclingEnabled(true)}>On</button>
+              </div>
+            </div>
+            {cyclingEnabled && (
+              <div className="cycling-fields">
+                <div className="cycling-day-group">
+                  <span className="cycling-day-label">Training day</span>
+                  <div className="cycling-day-inputs">
+                    <div className="form-group">
+                      <label htmlFor="settings-training-kcal">Calories</label>
+                      <input id="settings-training-kcal" type="number" inputMode="numeric" value={trainingKcal} onChange={(e) => setTrainingKcal(e.target.value)} placeholder="e.g. 2500" />
+                      {errors.trainingKcal && <span className="form-error">{errors.trainingKcal}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="settings-training-protein">Protein (g)</label>
+                      <input id="settings-training-protein" type="number" inputMode="numeric" value={trainingProtein} onChange={(e) => setTrainingProtein(e.target.value)} placeholder="e.g. 180" />
+                      {errors.trainingProtein && <span className="form-error">{errors.trainingProtein}</span>}
+                    </div>
+                  </div>
+                </div>
+                <div className="cycling-day-group">
+                  <span className="cycling-day-label">Rest day</span>
+                  <div className="cycling-day-inputs">
+                    <div className="form-group">
+                      <label htmlFor="settings-rest-kcal">Calories</label>
+                      <input id="settings-rest-kcal" type="number" inputMode="numeric" value={restKcal} onChange={(e) => setRestKcal(e.target.value)} placeholder="e.g. 1800" />
+                      {errors.restKcal && <span className="form-error">{errors.restKcal}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="settings-rest-protein">Protein (g)</label>
+                      <input id="settings-rest-protein" type="number" inputMode="numeric" value={restProtein} onChange={(e) => setRestProtein(e.target.value)} placeholder="e.g. 120" />
+                      {errors.restProtein && <span className="form-error">{errors.restProtein}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="settings-water">Water target (L / day)</label>
               <input id="settings-water" type="number" inputMode="decimal" step="0.1" value={water} onChange={(e) => setWater(e.target.value)} placeholder="e.g. 2.5" />
@@ -645,6 +733,32 @@ export default function Profile() {
               <div className="target-row-left"><span className="target-icon"><TargetIcon type="water" /></span><span className="target-label">Water target</span></div>
               <span className="target-value">{targets.waterTargetLiters || 2.5} L / day</span>
             </div>
+            {cyclingConfig.enabled && (
+              <>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left">
+                    <span className="target-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M20.5 18a2.5 2.5 0 0 0 0-5H16v5h4.5z"/><path d="M20.5 6a2.5 2.5 0 0 1 0 5H16V6h4.5z"/>
+                      </svg>
+                    </span>
+                    <span className="target-label">Calorie cycling</span>
+                  </div>
+                  <span className="target-value cycling-on-badge">On</span>
+                </div>
+                <div className="cycling-display">
+                  <div className="cycling-display-row">
+                    <span className="cycling-display-label">Training day</span>
+                    <span className="cycling-display-value">{cyclingConfig.trainingKcal} cal · {cyclingConfig.trainingProtein}g</span>
+                  </div>
+                  <div className="cycling-display-row">
+                    <span className="cycling-display-label">Rest day</span>
+                    <span className="cycling-display-value">{cyclingConfig.restKcal} cal · {cyclingConfig.restProtein}g</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
         {saved && <p className="settings-message">Saved!</p>}
@@ -741,7 +855,7 @@ export default function Profile() {
       </div>
 
       <div className="settings-section settings-about">
-        <p>myfitnesscoach v1.3 — Data synced to cloud.</p>
+        <p>Irada v1.3 — Data synced to cloud.</p>
       </div>
 
       {showClearConfirm && (

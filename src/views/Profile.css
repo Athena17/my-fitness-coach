@@ -951,3 +951,116 @@
   color: var(--color-text-secondary);
   opacity: 0.5;
 }
+
+/* ——— Calorie Cycling ——— */
+.cycling-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.cycling-toggle-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.cycling-toggle-pills {
+  display: flex;
+  gap: 0;
+  background: rgba(46, 142, 192, 0.06);
+  border-radius: 8px;
+  padding: 2px;
+  border: 0.5px solid rgba(46, 142, 192, 0.08);
+}
+
+.cycling-pill {
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cycling-pill--active {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-text);
+  font-weight: 700;
+  box-shadow: 0 1px 6px rgba(46, 142, 192, 0.12);
+}
+
+.cycling-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(46, 142, 192, 0.03);
+  border: 1px solid rgba(46, 142, 192, 0.08);
+  animation: cycling-reveal 0.25s ease-out;
+}
+
+@keyframes cycling-reveal {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cycling-day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cycling-day-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.cycling-day-inputs {
+  display: flex;
+  gap: 10px;
+}
+
+.cycling-day-inputs .form-group {
+  flex: 1;
+}
+
+/* Display mode */
+.cycling-on-badge {
+  color: var(--color-success) !important;
+  font-size: 0.75rem !important;
+}
+
+.cycling-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0 4px 26px;
+}
+
+.cycling-display-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.cycling-display-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.cycling-display-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}

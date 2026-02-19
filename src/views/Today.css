@@ -177,6 +177,25 @@
   margin-right: 14px;
 }
 
+/* ——— Drag-and-drop: all meal rows hint when dragging ——— */
+.meal-row--drag-active {
+  border: 1.5px dashed rgba(46, 142, 192, 0.2);
+  transition: all 0.2s ease;
+}
+
+/* ——— Drag-and-drop: hovered drop target ——— */
+.meal-row--drop-target {
+  border: 2px solid var(--color-primary, #4a8fe7);
+  background: rgba(46, 142, 192, 0.08);
+  transform: scale(1.015);
+  box-shadow: 0 0 0 3px rgba(46, 142, 192, 0.12), 0 2px 12px rgba(46, 142, 192, 0.1);
+}
+
+.meal-row--drop-target .meal-label {
+  color: var(--color-primary, #4a8fe7);
+  font-weight: 700;
+}
+
 /* ——— Active row (current time-of-day meal) ——— */
 
 .meal-row--active .meal-label {
@@ -184,12 +203,29 @@
 }
 
 .meal-empty-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
   font-size: 0.7rem;
   color: var(--color-text-secondary);
   font-family: var(--font-sans);
   text-align: center;
-  padding: 2px 14px 8px;
+  padding: 6px 14px 10px;
   margin: 0;
+  border-radius: 8px;
+  background: none;
+  border: 1px dashed rgba(46, 142, 192, 0.2);
+  margin: 0 14px 8px;
+  width: calc(100% - 28px);
+  transition: all 0.15s;
+}
+
+.meal-empty-prompt:active {
+  background: rgba(46, 142, 192, 0.06);
+  border-color: rgba(46, 142, 192, 0.35);
+  color: var(--color-primary);
 }
 
 /* ——— Filled rows ——— */
@@ -1175,29 +1211,6 @@
   box-shadow: none;
 }
 
-/* ——— Floating add button (sticky bottom-right) ——— */
-.food-fab {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(min(180px, 45vw));
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: #fff;
-  box-shadow: 0 4px 18px rgba(46, 142, 192, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-}
-
-.food-fab:active {
-  transform: translateX(min(180px, 45vw)) scale(0.9);
-  box-shadow: 0 2px 8px rgba(46, 142, 192, 0.3);
-}
 
 /* ——— Quick-add confirm overlay ——— */
 .quick-add-confirm-overlay {

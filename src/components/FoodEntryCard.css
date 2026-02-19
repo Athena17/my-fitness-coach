@@ -94,3 +94,33 @@
   font-family: var(--font-sans);
   opacity: 0.8;
 }
+
+/* Source card faded while dragging */
+.fec-card--dragging {
+  opacity: 0.25;
+  transform: scale(0.94);
+}
+
+/* Ghost element (appended to body during drag) */
+.fec-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  min-width: 110px;
+  max-width: 160px;
+  border-radius: var(--radius-lg, 14px);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--color-primary, #4a8fe7);
+  box-shadow:
+    0 8px 32px rgba(46, 142, 192, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.06);
+  opacity: 0.92;
+}

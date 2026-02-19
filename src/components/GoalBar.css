@@ -28,11 +28,14 @@
 }
 
 .goal-bar-brand {
-  font-size: 0.95rem;
+  font-family: 'Seaford', 'Segoe UI', var(--font-sans), sans-serif;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: var(--color-text);
-  letter-spacing: -0.02em;
-  font-family: var(--font-sans);
+  background: linear-gradient(135deg, #4a8fe7, #50bfe8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
 }
 
 /* Weight loss progress bar */

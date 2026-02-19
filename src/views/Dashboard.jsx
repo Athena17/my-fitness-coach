@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
+import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { getWeekRange, getToday } from '../utils/dateUtils.js';
 import { generateId } from '../utils/idGenerator.js';
@@ -129,6 +130,7 @@ export default function Dashboard() {
   const { state, dispatch } = useApp();
   const { targets, entries } = state;
   const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
+  const { kcal: effectiveKcal, protein: effectiveProtein, dayType, setDayType, cyclingEnabled } = useEffectiveTargets();
   const [mounted, setMounted] = useState(false);
   const [waterSplash, setWaterSplash] = useState(false);
   const [waterFlood, setWaterFlood] = useState(false);
@@ -156,12 +158,15 @@ export default function Dashboard() {
     setTimeout(() => { setWaterSplash(false); setWaterFlood(false); setLastWaterAmt(null); }, dur);
   }, [dispatch, todayWaterTotal, waterTarget]);
 
+  const todayKcalTarget = effectiveKcal || targets.kcal;
+  const todayProteinTarget = effectiveProtein || targets.protein;
+
   const kcalEaten = Math.round(todayTotals.kcal);
-  const isOver = kcalEaten > targets.kcal;
-  const kcalPct = Math.min(kcalEaten / targets.kcal, 1);
+  const isOver = kcalEaten > todayKcalTarget;
+  const kcalPct = Math.min(kcalEaten / todayKcalTarget, 1);
 
   const proteinEaten = Math.round(todayTotals.protein);
-  const proteinTarget = Math.round(targets.protein);
+  const proteinTarget = Math.round(todayProteinTarget);
   const proteinPct = Math.min(proteinEaten / proteinTarget, 1);
 
   // Gradient colors — vibrant, state-aware
@@ -269,9 +274,9 @@ export default function Dashboard() {
       return msgs;
     }
     // Calories
-    const kcalLeft = targets.kcal - kcalEaten;
+    const kcalLeft = todayKcalTarget - kcalEaten;
     if (isOver) msgs.push({ tag: 'Calories', text: 'You\'ve gone a bit over on calories — no stress, just be mindful.', level: 'alert' });
-    else if (kcalLeft < targets.kcal * 0.15) msgs.push({ tag: 'Calories', text: 'Almost at your calorie limit — you\'re doing great.', level: 'good' });
+    else if (kcalLeft < todayKcalTarget * 0.15) msgs.push({ tag: 'Calories', text: 'Almost at your calorie limit — you\'re doing great.', level: 'good' });
     else msgs.push({ tag: 'Calories', text: `${kcalLeft.toLocaleString()} kcal left — good calorie control so far.`, level: 'good' });
     // Protein
     if (proteinPct >= 1) msgs.push({ tag: 'Protein', text: 'Protein target hit — nice work!', level: 'good' });
@@ -303,7 +308,7 @@ export default function Dashboard() {
       }
     }
     return msgs;
-  }, [todayTotals, isOver, kcalEaten, targets, proteinPct, proteinEaten, proteinTarget, todayWaterTotal, waterTarget, hour, caloriesBurned, weekData, wc]);
+  }, [todayTotals, isOver, kcalEaten, todayKcalTarget, targets, proteinPct, proteinEaten, proteinTarget, todayWaterTotal, waterTarget, hour, caloriesBurned, weekData, wc]);
 
   // Insight swipe state
   const [insightIdx, setInsightIdx] = useState(0);
@@ -445,7 +450,7 @@ export default function Dashboard() {
         <span className="ov-today-label">Today</span>
         {todayLogged ? (
           <span className="ov-today-remaining">
-            {isOver ? 'Over target' : `${(targets.kcal - kcalEaten).toLocaleString()} cal`}
+            {isOver ? 'Over target' : `${(todayKcalTarget - kcalEaten).toLocaleString()} cal`}
             {' · '}
             {proteinPct >= 1 ? 'Protein hit' : `${proteinTarget - proteinEaten}g protein`}
             <span className="ov-today-suffix"> left</span>
@@ -455,13 +460,27 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Day type toggle (calorie cycling) */}
+      {cyclingEnabled && (
+        <div className="ov-day-type-toggle ov-enter ov-enter--3">
+          <button
+            className={`ov-day-type-btn${dayType === 'rest' ? ' ov-day-type-btn--active' : ''}`}
+            onClick={() => setDayType('rest')}
+          >Rest</button>
+          <button
+            className={`ov-day-type-btn${dayType === 'training' ? ' ov-day-type-btn--active' : ''}`}
+            onClick={() => setDayType('training')}
+          >Training</button>
+        </div>
+      )}
+
       {/* 5. Two hero rings + celebration */}
       <div className={`ov-heroes ov-enter ov-enter--3${isPerfectDay ? ' ov-heroes--perfect' : ''}`}>
         <HeroRing
           pct={kcalPct} gradId="kcal-grad" gradStart={kcalGradStart} gradEnd={kcalGradEnd}
           label="Calories" mounted={mounted} isOver={isOver}
           value={`${kcalEaten.toLocaleString()}`}
-          unit={`/ ${targets.kcal.toLocaleString()}`}
+          unit={`/ ${todayKcalTarget.toLocaleString()}`}
           icon={<svg width="12" height="12" viewBox="0 0 16 16" fill={kcalGradStart} stroke="none"><path d="M8 16c-3.3 0-6-1.8-6-4 0-2.3 2.1-5 4-7 .3-.3.7-.4 1-.1.2.2.2.5.1.8-.2.6-.1 1.2.1 1.7.3.6.9 1 1.6 1 .9 0 1.5-.6 1.5-1.5 0-.9-.4-1.7-.8-2.3-.2-.3-.1-.7.2-.9.2-.1.5-.1.7.1C12.3 5.5 14 8 14 10.5c0 2.7-2.7 5.5-6 5.5z"/></svg>}
         />
         <HeroRing

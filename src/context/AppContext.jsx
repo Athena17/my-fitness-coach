@@ -10,6 +10,7 @@ import {
   fetchRecipes, insertRecipe as apiInsertRecipe, updateRecipe as apiUpdateRecipe, deleteRecipe as apiDeleteRecipe,
   fetchLeftovers, insertLeftover as apiInsertLeftover, updateLeftover as apiUpdateLeftover, deleteLeftover as apiDeleteLeftover,
   fetchCustomMeals, insertCustomMeal as apiInsertCustomMeal, updateCustomMeal as apiUpdateCustomMeal, deleteCustomMeal as apiDeleteCustomMeal,
+  fetchDayTypes, upsertDayType,
 } from '../utils/api.js';
 
 const DEFAULT_TARGETS = {
@@ -30,6 +31,7 @@ function init() {
     recipes: [],
     leftovers: [],
     customMeals: [],
+    dayTypes: {},
     currentView: VIEWS.DASHBOARD,
     editingEntry: null,
   };
@@ -47,6 +49,7 @@ function reducer(state, action) {
         recipes: action.payload.recipes || [],
         leftovers: action.payload.leftovers || [],
         customMeals: action.payload.customMeals || [],
+        dayTypes: action.payload.dayTypes || {},
         currentView: VIEWS.DASHBOARD,
         editingEntry: null,
       };
@@ -141,6 +144,12 @@ function reducer(state, action) {
         customMeals: state.customMeals.filter((m) => m.id !== action.payload),
       };
 
+    case 'SET_DAY_TYPE':
+      return {
+        ...state,
+        dayTypes: { ...state.dayTypes, [action.payload.dateKey]: action.payload.dayType },
+      };
+
     case 'IMPORT_DATA':
       return {
         ...state,
@@ -177,7 +186,7 @@ export function AppProvider({ children }) {
       }
 
       setLoading(true);
-      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals] = await Promise.all([
+      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes] = await Promise.all([
         fetchProfile(user.id),
         fetchEntries(user.id),
         fetchExerciseLogs(user.id),
@@ -185,11 +194,12 @@ export function AppProvider({ children }) {
         fetchRecipes(user.id),
         fetchLeftovers(user.id),
         fetchCustomMeals(user.id),
+        fetchDayTypes(user.id),
       ]);
       if (cancelled) return;
       rawDispatch({
         type: 'INIT_DATA',
-        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals },
+        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes },
       });
       setLoading(false);
     })();
@@ -297,6 +307,12 @@ export function AppProvider({ children }) {
       case 'DELETE_CUSTOM_MEAL': {
         rawDispatch(action);
         apiDeleteCustomMeal(action.payload);
+        break;
+      }
+
+      case 'SET_DAY_TYPE': {
+        rawDispatch(action);
+        upsertDayType(user.id, action.payload.dateKey, action.payload.dayType);
         break;
       }
 

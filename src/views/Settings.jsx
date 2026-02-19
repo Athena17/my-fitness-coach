@@ -96,7 +96,7 @@ export default function Settings() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `myfitnesscoach-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `irada-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -372,7 +372,7 @@ export default function Settings() {
       </div>
 
       <div className="settings-section settings-about">
-        <p>myfitnesscoach v1.2 — All data stored locally on your device.</p>
+        <p>Irada v1.2 — All data stored locally on your device.</p>
       </div>
 
       {showClearConfirm && (
