@@ -568,6 +568,15 @@
   box-shadow: 0 0 0 3px rgba(46, 142, 192, 0.12);
 }
 
+.confirm-input--static {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: solid;
+  border-color: rgba(46, 142, 192, 0.15);
+  opacity: 0.7;
+}
+
 .confirm-log-btn {
   padding: 14px 24px;
   border-radius: 14px;
@@ -708,6 +717,15 @@
   background: var(--color-primary);
   color: #fff;
   transform: scale(0.95);
+}
+
+.ilf-chips--locked .ilf-chip {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ilf-compact--locked {
+  opacity: 0.5;
 }
 
 /* Rows */
@@ -1231,4 +1249,110 @@
   background: var(--color-text-secondary);
   opacity: 0.4;
   margin: 0 2px;
+}
+
+/* ——— Add meal chooser ——— */
+.add-choose-options {
+  display: flex;
+  gap: 10px;
+  padding: 20px 0;
+}
+
+.add-choose-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 12px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 2px 12px rgba(46, 142, 192, 0.06);
+  transition: all 0.2s;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.add-choose-card:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 6px rgba(46, 142, 192, 0.1);
+}
+
+.add-choose-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(46, 142, 192, 0.1), rgba(56, 182, 230, 0.08));
+  color: var(--color-primary);
+}
+
+.add-choose-card-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.add-choose-card-desc {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.65;
+}
+
+/* ——— Direct add form ——— */
+.direct-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 0;
+}
+
+.direct-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.direct-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.direct-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.direct-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(46, 142, 192, 0.12);
+}
+
+.direct-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+.confirm-log-btn:disabled {
+  opacity: 0.35;
+  pointer-events: none;
 }

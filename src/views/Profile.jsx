@@ -1,8 +1,10 @@
 import { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/useApp.js';
+import { useAuth } from '../context/useAuth.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData, clearAllData } from '../utils/storage.js';
+import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
 
@@ -56,6 +58,7 @@ function TargetIcon({ type }) {
 
 export default function Profile() {
   const { state, dispatch } = useApp();
+  const { signOut } = useAuth();
   const { entries, targets } = state;
   const today = getToday();
   const fileInputRef = useRef(null);
@@ -143,6 +146,12 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [importMessage, setImportMessage] = useState('');
+  const [showHistorical, setShowHistorical] = useState(false);
+  const [historicalText, setHistoricalText] = useState('');
+  const [historicalMsg, setHistoricalMsg] = useState('');
+  const [showExport, setShowExport] = useState(false);
+  const [exportText, setExportText] = useState('');
+  const [exportMsg, setExportMsg] = useState('');
 
   function startEditing() {
     setUserName(targets.userName || '');
@@ -211,6 +220,112 @@ export default function Profile() {
   }
 
   function handleClearData() { clearAllData(); window.location.reload(); }
+
+  function handleHistoricalImport() {
+    const lines = historicalText.trim().split('\n').filter((l) => l.trim());
+    if (lines.length === 0) {
+      setHistoricalMsg('No data found');
+      return;
+    }
+    const newEntries = [];
+    let skipped = 0;
+    for (const line of lines) {
+      // Split by tab, comma, pipe, or 2+ spaces
+      const parts = line.trim().split(/[\t,|]|\s{2,}/).map((p) => p.trim()).filter(Boolean);
+      if (parts.length < 3) { skipped++; continue; }
+
+      // Find the date part (try each part)
+      let dateKey = null;
+      let numParts = [];
+      for (const p of parts) {
+        // Try parsing as date
+        if (!dateKey) {
+          // Handle formats: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, "Jan 20", "20 Jan", etc.
+          const isoMatch = p.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+          if (isoMatch) {
+            dateKey = `${isoMatch[1]}-${isoMatch[2].padStart(2, '0')}-${isoMatch[3].padStart(2, '0')}`;
+            continue;
+          }
+          const slashMatch = p.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{2,4})$/);
+          if (slashMatch) {
+            const yr = slashMatch[3].length === 2 ? `20${slashMatch[3]}` : slashMatch[3];
+            dateKey = `${yr}-${slashMatch[2].padStart(2, '0')}-${slashMatch[1].padStart(2, '0')}`;
+            continue;
+          }
+          // Try native Date parsing as last resort
+          const parsed = new Date(p);
+          if (!isNaN(parsed.getTime()) && p.length > 4) {
+            dateKey = formatDateKey(parsed);
+            continue;
+          }
+        }
+        // Otherwise collect as number candidate
+        const num = parseFloat(p.replace(/[^\d.]/g, ''));
+        if (!isNaN(num)) numParts.push(num);
+      }
+
+      if (!dateKey || numParts.length < 2) { skipped++; continue; }
+
+      const kcalVal = Math.round(numParts[0]);
+      const proteinVal = Math.round(numParts[1] * 10) / 10;
+      if (kcalVal <= 0) { skipped++; continue; }
+
+      newEntries.push({
+        id: generateId(),
+        name: 'Daily Total',
+        kcal: kcalVal,
+        protein: proteinVal,
+        meal: 'Breakfast',
+        servingSize: 1,
+        servingUnit: 'serving',
+        timestamp: new Date(dateKey + 'T12:00:00').getTime(),
+        dateKey,
+      });
+    }
+
+    if (newEntries.length === 0) {
+      setHistoricalMsg(`Could not parse any rows.${skipped > 0 ? ` ${skipped} skipped.` : ''} Check the format.`);
+      return;
+    }
+
+    // Remove existing "Daily Total" entries for imported dates to prevent duplicates
+    const importedDates = new Set(newEntries.map((e) => e.dateKey));
+    for (const existing of entries) {
+      if (existing.name === 'Daily Total' && importedDates.has(existing.dateKey)) {
+        dispatch({ type: 'DELETE_ENTRY', payload: existing.id });
+      }
+    }
+
+    for (const entry of newEntries) {
+      dispatch({ type: 'ADD_ENTRY', payload: entry });
+    }
+    setHistoricalMsg(`Imported ${newEntries.length} day${newEntries.length !== 1 ? 's' : ''}${skipped > 0 ? `, ${skipped} skipped` : ''}`);
+    setHistoricalText('');
+    setTimeout(() => { setHistoricalMsg(''); setShowHistorical(false); }, 3000);
+  }
+
+  function handleHistoricalExport() {
+    const dayMap = {};
+    for (const e of entries) {
+      if (!dayMap[e.dateKey]) dayMap[e.dateKey] = { kcal: 0, protein: 0 };
+      dayMap[e.dateKey].kcal += e.kcal || 0;
+      dayMap[e.dateKey].protein += e.protein || 0;
+    }
+    const lines = Object.keys(dayMap)
+      .sort()
+      .map((dk) => `${dk}, ${Math.round(dayMap[dk].kcal)}, ${Math.round(dayMap[dk].protein * 10) / 10}`)
+      .join('\n');
+    setExportText(lines || 'No data to export.');
+    setShowExport(true);
+    setShowHistorical(false);
+  }
+
+  function handleCopyExport() {
+    navigator.clipboard.writeText(exportText).then(() => {
+      setExportMsg('Copied!');
+      setTimeout(() => setExportMsg(''), 2000);
+    });
+  }
 
   const maintenanceKcal = targets.maintenanceKcal || targets.kcal;
 
@@ -538,9 +653,80 @@ export default function Profile() {
       {/* ——— Data ——— */}
       <div className="settings-section">
         <h2>Data</h2>
+
+        {/* Historical logs — import / export cards */}
+        <div className="historical-cards">
+          <button
+            className={`historical-card${showHistorical ? ' historical-card--active' : ''}`}
+            onClick={() => { setShowHistorical(!showHistorical); setShowExport(false); }}
+          >
+            <span className="historical-card-icon historical-card-icon--import">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </span>
+            <span className="historical-card-title">Import Logs</span>
+            <span className="historical-card-desc">Paste day-by-day data</span>
+          </button>
+          <button
+            className={`historical-card${showExport ? ' historical-card--active' : ''}`}
+            onClick={handleHistoricalExport}
+          >
+            <span className="historical-card-icon historical-card-icon--export">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </span>
+            <span className="historical-card-title">Export Logs</span>
+            <span className="historical-card-desc">Copy your daily totals</span>
+          </button>
+        </div>
+
+        {/* Import panel */}
+        {showHistorical && (
+          <div className="historical-import">
+            <p className="historical-hint">Paste your data below — one line per day.<br />Format: <strong>date, calories, protein</strong></p>
+            <p className="historical-example">2025-01-20, 1500, 120<br />2025-01-21, 1800, 95<br />Jan 22 2025, 1650, 110</p>
+            <textarea
+              className="historical-textarea"
+              rows={6}
+              value={historicalText}
+              onChange={(e) => setHistoricalText(e.target.value)}
+              placeholder="2025-01-20, 1500, 120&#10;2025-01-21, 1800, 95"
+            />
+            <div className="form-actions">
+              <button type="button" className="btn-primary settings-save-btn" onClick={handleHistoricalImport} disabled={!historicalText.trim()}>
+                Import
+              </button>
+              <button type="button" className="btn-cancel" onClick={() => { setShowHistorical(false); setHistoricalMsg(''); }}>Cancel</button>
+            </div>
+            {historicalMsg && <p className="settings-message">{historicalMsg}</p>}
+          </div>
+        )}
+
+        {/* Export panel */}
+        {showExport && (
+          <div className="historical-import">
+            <p className="historical-hint">Your daily totals — <strong>date, calories, protein</strong></p>
+            <textarea
+              className="historical-textarea"
+              rows={6}
+              value={exportText}
+              readOnly
+            />
+            <div className="form-actions">
+              <button type="button" className="btn-primary settings-save-btn" onClick={handleCopyExport}>
+                Copy to clipboard
+              </button>
+              <button type="button" className="btn-cancel" onClick={() => { setShowExport(false); setExportMsg(''); }}>Close</button>
+            </div>
+            {exportMsg && <p className="settings-message">{exportMsg}</p>}
+          </div>
+        )}
+
         <div className="settings-actions">
           <button type="button" className="btn-secondary" onClick={handleExport}>Export (JSON)</button>
-          <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import</button>
+          <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import (JSON)</button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
           <button type="button" className="btn-secondary btn-danger-outline" onClick={() => setShowClearConfirm(true)}>Clear all data</button>
         </div>
@@ -548,8 +734,14 @@ export default function Profile() {
       </div>
 
 
+      <div className="settings-section">
+        <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={signOut}>
+          Sign Out
+        </button>
+      </div>
+
       <div className="settings-section settings-about">
-        <p>myfitnesscoach v1.2 — All data stored locally on your device.</p>
+        <p>myfitnesscoach v1.3 — Data synced to cloud.</p>
       </div>
 
       {showClearConfirm && (

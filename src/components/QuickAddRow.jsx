@@ -1,37 +1,34 @@
-import { useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
-import { loadCustomMeals } from '../utils/storage.js';
 import { getEmoji } from '../utils/foodEmoji.js';
 import ScrollStrip from './ScrollStrip.jsx';
 import './QuickAddRow.css';
 
 export default function QuickAddRow({ onSelect }) {
   const { state } = useApp();
+  const customMeals = state.customMeals || [];
 
-  const items = useMemo(() => {
-    const kitchenItems = (state.leftovers || [])
-      .filter((l) => l.remainingServings > 0)
-      .map((l) => ({
-        type: 'leftover',
-        id: l.id,
-        name: l.name,
-        kcal: l.perServing.kcal,
-        protein: l.perServing.protein,
-        remaining: l.remainingServings,
-        leftover: l,
-      }));
-
-    const mealItems = loadCustomMeals().map((m, i) => ({
-      type: 'meal',
-      id: `meal-${i}`,
-      name: m.name,
-      kcal: m.kcal,
-      protein: m.protein,
-      ingredients: m.ingredients,
+  const kitchenItems = (state.leftovers || [])
+    .filter((l) => l.remainingServings > 0)
+    .map((l) => ({
+      type: 'leftover',
+      id: l.id,
+      name: l.name,
+      kcal: l.perServing.kcal,
+      protein: l.perServing.protein,
+      remaining: l.remainingServings,
+      leftover: l,
     }));
 
-    return [...kitchenItems, ...mealItems];
-  }, [state.leftovers]);
+  const mealItems = customMeals.map((m, i) => ({
+    type: 'meal',
+    id: m.id || `meal-${i}`,
+    name: m.name,
+    kcal: m.kcal,
+    protein: m.protein,
+    ingredients: m.ingredients,
+  }));
+
+  const items = [...kitchenItems, ...mealItems];
 
   if (items.length === 0) return null;
 

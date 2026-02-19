@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
-import { loadCustomMeals, saveCustomMeals, loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
+import { loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import './Kitchen.css';
 
@@ -37,13 +37,10 @@ function getGreeting() {
   return { text: 'Cozy evening snack?', emoji: '🍵' };
 }
 
-function MyMealsSection({ onEditMeal, onAddMeal }) {
-  const [meals, setMeals] = useState(() => loadCustomMeals());
-
+function MyMealsSection({ onEditMeal, onAddMeal, meals, onDeleteMeal }) {
   function handleDelete(index) {
-    const updated = meals.filter((_, i) => i !== index);
-    saveCustomMeals(updated);
-    setMeals(updated);
+    const meal = meals[index];
+    if (meal?.id) onDeleteMeal(meal.id);
   }
 
   return (
@@ -250,7 +247,7 @@ function MyIngredientsSection() {
                   <button type="button" className="kitchen-list-info kitchen-list-info--tap" onClick={() => startEdit(i)}>
                     <span className="kitchen-list-name">{ing.name}</span>
                     <span className="kitchen-list-meta">
-                      {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal || 0} cal · {ing.refProtein || 0}g protein
+                      {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal ?? 0} cal · {ing.refProtein ?? 0}g protein
                     </span>
                   </button>
                   <div className="kitchen-list-actions">
@@ -275,7 +272,6 @@ export default function Kitchen() {
   const { state, dispatch } = useApp();
   const activeLeftovers = (state.leftovers || []).filter((l) => l.remainingServings > 0);
   const [editingMeal, setEditingMeal] = useState(null); // { index, meal } or { index: -1, meal: null } for new
-  const [mealsKey, setMealsKey] = useState(0);
   const [editingLeftover, setEditingLeftover] = useState(null);
   const [leftoverForm, setLeftoverForm] = useState({ name: '', remainingServings: '', kcal: '', protein: '' });
   const greeting = getGreeting();
@@ -285,22 +281,19 @@ export default function Kitchen() {
   }
 
   function handleMealSave(built) {
-    // IngredientListFlow already saves to My Meals when the toggle is on.
+    // IngredientListFlow dispatches ADD/UPDATE_CUSTOM_MEAL when toggle is on.
     // For edits where the name changed, clean up the old entry.
     if (editingMeal.index >= 0) {
-      const meals = loadCustomMeals();
       const oldName = editingMeal.meal?.name?.toLowerCase();
       const newName = built.name.toLowerCase();
       if (oldName && oldName !== newName) {
-        const oldIdx = meals.findIndex((m) => m.name.toLowerCase() === oldName);
-        if (oldIdx >= 0) {
-          meals.splice(oldIdx, 1);
-          saveCustomMeals(meals);
+        const oldMeal = (state.customMeals || []).find((m) => m.name.toLowerCase() === oldName);
+        if (oldMeal?.id) {
+          dispatch({ type: 'DELETE_CUSTOM_MEAL', payload: oldMeal.id });
         }
       }
     }
     setEditingMeal(null);
-    setMealsKey((k) => k + 1);
   }
 
   function startEditLeftover(leftover) {
@@ -352,9 +345,10 @@ export default function Kitchen() {
       </div>
 
       <MyMealsSection
-        key={mealsKey}
+        meals={state.customMeals || []}
         onEditMeal={handleEditMeal}
         onAddMeal={() => setEditingMeal({ index: -1, meal: null })}
+        onDeleteMeal={(id) => dispatch({ type: 'DELETE_CUSTOM_MEAL', payload: id })}
       />
       <MyIngredientsSection />
 

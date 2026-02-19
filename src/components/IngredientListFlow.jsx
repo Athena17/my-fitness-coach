@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
-import { loadPersonalIngredients, savePersonalIngredients, loadCustomMeals, saveCustomMeals } from '../utils/storage.js';
+import { loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
+import { useApp } from '../context/useApp.js';
 import { toGrams } from '../utils/ingredientCalc.js';
 
 const GRAM_PORTION = { label: 'g', grams: 1 };
@@ -167,7 +168,7 @@ function makeMatchedRow(match) {
 
 /* --- Autocomplete dropdown --- */
 
-function NameInput({ value, onChange, onSelect, onConfirm, allDb }) {
+function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled }) {
   const [open, setOpen] = useState(false);
   const results = useMemo(() => searchDb(value, allDb), [value, allDb]);
 
@@ -190,6 +191,7 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb }) {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder="Ingredient name"
+        disabled={disabled}
       />
       {open && value.trim().length >= 2 && (
         <div className="ilf-dropdown">
@@ -223,15 +225,15 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb }) {
 
 /* --- Compact line for confirmed rows --- */
 
-function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove }) {
+function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled }) {
   return (
-    <div className="ilf-compact">
+    <div className={`ilf-compact${disabled ? ' ilf-compact--locked' : ''}`}>
       <span className="ilf-compact-name">{row.name}</span>
       <span className="ilf-compact-detail">
         {row.amount} {row.portionLabel}
         {rowKcal !== null && <> · {rowKcal} cal · {rowProtein}g</>}
       </span>
-      <button type="button" className="ilf-compact-edit" onClick={onEdit} aria-label="Edit">
+      <button type="button" className="ilf-compact-edit" onClick={onEdit} disabled={disabled} aria-label="Edit">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
         </svg>
@@ -246,6 +248,7 @@ function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove }) {
 }
 
 export default function IngredientListFlow({ onSave, onCancel, initialData }) {
+  const { state, dispatch } = useApp();
   const [rows, setRows] = useState(() => {
     if (initialData?.ingredients?.length > 0) {
       const prefilled = initialData.ingredients.map((ing) => ({
@@ -273,6 +276,10 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   const [nameError, setNameError] = useState(false);
   const [saveToMyMeals, setSaveToMyMeals] = useState(true);
   const allDb = useMemo(() => getAllDb(), []);
+
+  // True when any confirmed row is expanded — locks all other interactions
+  const editingRowIndex = rows.findIndex((r) => (r.matched || r.isNew) && r.editing);
+  const locked = editingRowIndex >= 0;
 
   function updateRow(index, updates) {
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...updates } : r)));
@@ -342,6 +349,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   }
 
   function addChip(chipName) {
+    if (locked) return;
     const match = allDb.find((ing) => ing.name.toLowerCase().includes(chipName.toLowerCase()));
     if (match) {
       setRows((prev) => {
@@ -380,14 +388,14 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
     const personal = loadPersonalIngredients();
     for (const r of rows) {
       if (r.isNew && r.saveToDb && (r.totalKcal > 0)) {
-        const g = toGrams(r.amount, r.portionGrams);
-        const per100Kcal = g > 0 ? r.totalKcal / g * 100 : 0;
-        const per100Prot = g > 0 ? r.totalProtein / g * 100 : 0;
         const exists = personal.find((p) => p.name.toLowerCase() === r.name.toLowerCase());
         if (!exists) {
           personal.push({
-            name: r.name, kcalPer100g: Math.round(per100Kcal), proteinPer100g: Math.round(per100Prot * 10) / 10,
-            portions: r.portions.filter((p) => p.label !== 'g'),
+            name: r.name,
+            refAmount: Number(r.amount) || 0,
+            refUnit: r.portionLabel,
+            refKcal: Math.round(r.totalKcal),
+            refProtein: Math.round(r.totalProtein * 10) / 10,
           });
         }
       }
@@ -417,17 +425,14 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
       return;
     }
 
-    // Save to My Meals if toggled
+    // Save to My Meals via dispatch (persists to Supabase through dispatch wrapper)
     if (saveToMyMeals && finalName) {
-      const customMeals = loadCustomMeals();
-      const existing = customMeals.findIndex((m) => m.name.toLowerCase() === finalName.toLowerCase());
-      const customMeal = { name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients };
-      if (existing >= 0) {
-        customMeals[existing] = customMeal;
-      } else {
-        customMeals.unshift(customMeal);
-      }
-      saveCustomMeals(customMeals);
+      const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === finalName.toLowerCase());
+      const customMeal = {
+        ...(existing ? { id: existing.id } : { id: crypto.randomUUID() }),
+        name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients,
+      };
+      dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
     }
 
     onSave({ name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients });
@@ -465,9 +470,9 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
             <span className="ilf-ingredients-hint">Tap or type your own</span>
           </div>
 
-          <div className="ilf-chips">
+          <div className={`ilf-chips${locked ? ' ilf-chips--locked' : ''}`}>
             {SUGGESTED_NAMES.map((name) => (
-              <button key={name} type="button" className="ilf-chip" onClick={() => addChip(name)}>{name}</button>
+              <button key={name} type="button" className="ilf-chip" disabled={locked} onClick={() => addChip(name)}>{name}</button>
             ))}
           </div>
 
@@ -494,6 +499,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                     rowProtein={rowProtein}
                     onEdit={() => updateRow(i, { editing: true })}
                     onRemove={() => removeRow(i)}
+                    disabled={locked}
                   />
                 );
               }
@@ -507,6 +513,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                       onSelect={(ing) => handleSelect(i, ing)}
                       onConfirm={(forceNew) => handleConfirmName(i, forceNew)}
                       allDb={allDb}
+                      disabled={locked && editingRowIndex !== i}
                     />
                     {confirmed && (
                       <button type="button" className="ilf-row-action ilf-row-action--remove" onClick={() => removeRow(i)} aria-label="Remove">

@@ -127,6 +127,7 @@
 
 /* Day column inside chart — dashed right divider */
 .ov-bar-col {
+  position: relative;
   flex: 1;
   height: 100%;
   display: flex;
@@ -136,6 +137,33 @@
 
 .ov-bar-col:last-child {
   border-right: none;
+}
+
+/* Hover tooltip above bar */
+.ov-bar-tip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+
+.ov-bar-col:hover .ov-bar-tip {
+  opacity: 1;
 }
 
 /* Individual bar: narrow, centered in column */

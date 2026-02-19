@@ -40,6 +40,7 @@ function WeekScorecard({ weekData, targets }) {
                     height: `${Math.max(h, d.hasData ? 5 : 0)}%`,
                     background: d.hasData ? (met ? '#ff6b2b' : 'rgba(255,107,43,0.35)') : 'transparent',
                   }} />
+                  {d.hasData && <span className="ov-bar-tip" style={{ color: '#ff6b2b' }}>{d.kcal}</span>}
                 </div>
               );
             })}
@@ -71,6 +72,7 @@ function WeekScorecard({ weekData, targets }) {
                     height: `${Math.max(h, d.hasData ? 5 : 0)}%`,
                     background: d.hasData ? (met ? '#9575cd' : 'rgba(149,117,205,0.35)') : 'transparent',
                   }} />
+                  {d.hasData && <span className="ov-bar-tip" style={{ color: '#9575cd' }}>{d.protein}g</span>}
                 </div>
               );
             })}
@@ -196,6 +198,8 @@ export default function Dashboard() {
         label: date.toLocaleDateString('en-US', { weekday: 'narrow' }),
         kcalPct: targets.kcal > 0 ? net / targets.kcal : 0,
         proteinPct: targets.protein > 0 ? totals.protein / targets.protein : 0,
+        kcal: Math.round(net),
+        protein: Math.round(totals.protein),
         isToday: dateKey === today,
         hasData: dayEntries.length > 0,
       };

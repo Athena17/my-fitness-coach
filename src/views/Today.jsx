@@ -4,10 +4,8 @@ import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
-import FoodLog from './FoodLog.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
-import MealBuilder from '../components/MealBuilder.jsx';
 import QuickAddRow from '../components/QuickAddRow.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
@@ -25,32 +23,10 @@ export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
   const [activeTab, setActiveTab] = useState('food');
-  const [customMealPrefill, setCustomMealPrefill] = useState(null);
-  const [quickAddPrefill, setQuickAddPrefill] = useState(null);
 
   // Custom add flow
   const [customStep, setCustomStep] = useState(null);
   const [customDraft, setCustomDraft] = useState(null);
-
-  // --- Editing handlers ---
-
-  function handleFoodLogDone() {
-    setCustomMealPrefill(null);
-    dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
-  }
-
-  function handleCustomMealSelect(food) {
-    setCustomMealPrefill({ name: food.name, kcal: food.serving.kcal, protein: food.serving.protein, ingredients: food.ingredients });
-  }
-
-  function handleMealBuilderUpdate(built) {
-    dispatch({ type: 'UPDATE_ENTRY', payload: { ...state.editingEntry, name: built.name, kcal: built.totalKcal, protein: built.totalProtein, ingredients: built.ingredients } });
-    dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
-  }
-
-  function handleMealBuilderEditCancel() {
-    dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
-  }
 
   // --- Delete handler ---
 
@@ -69,28 +45,32 @@ export default function Today() {
   // --- Quick add handler ---
 
   function handleQuickAddSelect(item) {
-    // Meals with ingredients → confirm step (servings + ingredients review)
-    if (item.type === 'meal' && item.ingredients) {
+    if (item.type === 'leftover') {
+      // Leftovers → confirm step with remaining servings
       setCustomDraft({
         name: item.name,
         kcal: item.kcal,
         protein: item.protein,
-        ingredients: item.ingredients,
-        servingsYield: 1,
+        servingsYield: item.remaining,
         servingsConsumed: 1,
-        mealSlot: 'Breakfast',
+        mealSlot: getDefaultMeal(),
+        isLeftover: true,
+        leftover: item.leftover,
       });
       setCustomStep('confirm');
       return;
     }
-    // Leftovers / simple items → FoodLog form
-    setQuickAddPrefill({
+    // Meals → confirm step
+    setCustomDraft({
       name: item.name,
       kcal: item.kcal,
       protein: item.protein,
-      meal: getDefaultMeal(),
-      ...(item.type === 'leftover' ? { leftover: item.leftover } : {}),
+      ingredients: item.ingredients,
+      servingsYield: 1,
+      servingsConsumed: 1,
+      mealSlot: getDefaultMeal(),
     });
+    setCustomStep('confirm');
   }
 
   // --- Custom add flow ---
@@ -108,7 +88,7 @@ export default function Today() {
       name: result.name, kcal: result.kcal, protein: result.protein,
       ingredients: result.ingredients,
       servingsYield: 1, servingsConsumed: 1,
-      mealSlot: 'Breakfast',
+      mealSlot: getDefaultMeal(),
     });
     setCustomStep('confirm');
   }
@@ -118,36 +98,75 @@ export default function Today() {
     const { name, kcal, protein, ingredients, servingsYield, servingsConsumed, mealSlot } = customDraft;
     const yieldN = Math.max(1, servingsYield);
     const consumed = Math.min(Math.max(0, servingsConsumed), yieldN);
-    const perServing = { kcal: Math.round(kcal / yieldN), protein: Math.round(protein / yieldN * 10) / 10 };
 
-    if (consumed > 0) {
-      dispatch({
-        type: 'ADD_ENTRY',
-        payload: {
-          id: generateId(), name,
-          kcal: Math.round(perServing.kcal * consumed),
-          protein: Math.round(perServing.protein * consumed * 10) / 10,
-          meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
-          timestamp: Date.now(), dateKey: getToday(),
-          ...(ingredients ? { ingredients } : {}),
-        },
-      });
-    }
+    if (customDraft.isLeftover) {
+      // Eating from existing leftover
+      const lo = customDraft.leftover;
+      if (consumed > 0) {
+        dispatch({
+          type: 'ADD_ENTRY',
+          payload: {
+            id: generateId(), name,
+            kcal: Math.round(kcal * consumed),
+            protein: Math.round(protein * consumed * 10) / 10,
+            meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
+            timestamp: Date.now(), dateKey: getToday(),
+            fromLeftoverId: lo.id,
+          },
+        });
+        const newRemaining = lo.remainingServings - consumed;
+        if (newRemaining > 0) {
+          dispatch({ type: 'UPDATE_LEFTOVER', payload: { ...lo, remainingServings: newRemaining } });
+        } else {
+          dispatch({ type: 'DELETE_LEFTOVER', payload: lo.id });
+        }
+      }
+    } else {
+      // New meal
+      const perServing = { kcal: Math.round(kcal / yieldN), protein: Math.round(protein / yieldN * 10) / 10 };
 
-    const remaining = yieldN - consumed;
-    if (remaining > 0) {
-      dispatch({
-        type: 'ADD_LEFTOVER',
-        payload: {
-          id: generateId(), name, perServing,
-          remainingServings: remaining, totalServings: yieldN,
-          dateCooked: getToday(), timestamp: Date.now(),
-        },
-      });
+      if (consumed > 0) {
+        dispatch({
+          type: 'ADD_ENTRY',
+          payload: {
+            id: generateId(), name,
+            kcal: Math.round(perServing.kcal * consumed),
+            protein: Math.round(perServing.protein * consumed * 10) / 10,
+            meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
+            timestamp: Date.now(), dateKey: getToday(),
+            ...(ingredients ? { ingredients } : {}),
+          },
+        });
+      }
+
+      const remaining = yieldN - consumed;
+      if (remaining > 0) {
+        dispatch({
+          type: 'ADD_LEFTOVER',
+          payload: {
+            id: generateId(), name, perServing,
+            remainingServings: remaining, totalServings: yieldN,
+            dateCooked: getToday(), timestamp: Date.now(),
+          },
+        });
+      }
     }
 
     setCustomStep(null);
     setCustomDraft(null);
+  }
+
+  function handleDirectNext() {
+    const name = customDraft?.name?.trim();
+    const kcal = Number(customDraft?.kcal);
+    const protein = Number(customDraft?.protein) || 0;
+    if (!name || !kcal || kcal <= 0) return;
+    setCustomDraft({
+      name, kcal, protein,
+      servingsYield: 1, servingsConsumed: 1,
+      mealSlot: getDefaultMeal(),
+    });
+    setCustomStep('confirm');
   }
 
   function handleCustomClose() {
@@ -158,54 +177,113 @@ export default function Today() {
   // --- Full-view takeovers ---
 
   const isEditing = !!state.editingEntry;
-  const isEditingBuiltMeal = isEditing && state.editingEntry.ingredients;
-
-  if (isEditingBuiltMeal) {
-    return (<div className="today"><MealBuilder meal={state.editingEntry.meal} editingEntry={state.editingEntry} onSave={handleMealBuilderUpdate} onCancel={handleMealBuilderEditCancel} /></div>);
-  }
-
-  if (customMealPrefill) {
-    const prefillSlot = state.editingEntry?.meal || 'Snack';
-    return (
-      <div className="today">
-        <MealBuilder
-          meal={prefillSlot}
-          editingEntry={customMealPrefill}
-          onSave={(built) => {
-            dispatch({ type: 'ADD_ENTRY', payload: { id: generateId(), name: built.name, kcal: built.totalKcal, protein: built.totalProtein, ingredients: built.ingredients, meal: prefillSlot, servingSize: 1, servingUnit: 'g', timestamp: Date.now(), dateKey: getToday() } });
-            setCustomMealPrefill(null);
-          }}
-          onCancel={() => setCustomMealPrefill(null)}
-        />
-      </div>
-    );
-  }
-
-  if (quickAddPrefill) {
-    return (
-      <div className="today">
-        <FoodLog
-          prefill={quickAddPrefill}
-          defaultMeal={quickAddPrefill.meal}
-          onDone={() => setQuickAddPrefill(null)}
-          onCustomMealSelect={handleCustomMealSelect}
-        />
-      </div>
-    );
-  }
 
   if (isEditing) {
-    return (<div className="today"><FoodLog defaultMeal={state.editingEntry.meal} onDone={handleFoodLogDone} onCustomMealSelect={handleCustomMealSelect} /></div>);
+    const entry = state.editingEntry;
+    return (
+      <div className="today">
+        <IngredientListFlow
+          initialData={entry.ingredients ? entry : { name: entry.name, ingredients: [] }}
+          onSave={(built) => {
+            dispatch({ type: 'UPDATE_ENTRY', payload: { ...entry, name: built.name, kcal: built.kcal, protein: built.protein, ingredients: built.ingredients } });
+            dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
+          }}
+          onCancel={() => dispatch({ type: 'SET_EDITING_ENTRY', payload: null })}
+        />
+      </div>
+    );
   }
 
   if (customStep) {
     return (
       <div className="today">
+        {customStep === 'choose' && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={handleCustomClose}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              <span className="add-mode-title">Add Meal</span>
+            </div>
+            <div className="add-choose-options">
+              <button className="add-choose-card" onClick={() => { setCustomDraft({ name: '', kcal: '', protein: '' }); setCustomStep('direct'); }}>
+                <span className="add-choose-card-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </span>
+                <span className="add-choose-card-title">Direct Add</span>
+                <span className="add-choose-card-desc">Enter name &amp; macros</span>
+              </button>
+              <button className="add-choose-card" onClick={() => setCustomStep('list')}>
+                <span className="add-choose-card-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><circle cx="19" cy="6" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="18" r="1.5" fill="currentColor"/></svg>
+                </span>
+                <span className="add-choose-card-title">Add Ingredients</span>
+                <span className="add-choose-card-desc">Build meal step by step</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {customStep === 'direct' && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={() => setCustomStep('choose')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <span className="add-mode-title">Direct Add</span>
+            </div>
+            <div className="direct-form">
+              <div className="direct-form-group">
+                <label className="confirm-label">Meal name</label>
+                <input
+                  className="direct-input"
+                  type="text"
+                  placeholder="e.g. Chicken rice bowl"
+                  value={customDraft?.name || ''}
+                  onChange={(e) => setCustomDraft((d) => ({ ...d, name: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+              <div className="direct-form-row">
+                <div className="direct-form-group">
+                  <label className="confirm-label">Calories</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.kcal || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, kcal: e.target.value }))}
+                  />
+                </div>
+                <div className="direct-form-group">
+                  <label className="confirm-label">Protein (g)</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.protein || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, protein: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <button
+                className="confirm-log-btn"
+                onClick={handleDirectNext}
+                disabled={!customDraft?.name?.trim() || !Number(customDraft?.kcal)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
         {customStep === 'list' && (
           <IngredientListFlow
             onSave={handleListDone}
-            onCancel={customDraft ? () => setCustomStep('confirm') : handleCustomClose}
-            initialData={customDraft}
+            onCancel={customDraft?.servingsYield ? () => setCustomStep('confirm') : () => setCustomStep('choose')}
+            initialData={customDraft?.servingsYield ? customDraft : undefined}
           />
         )}
 
@@ -263,21 +341,25 @@ export default function Today() {
               <div className="confirm-card">
                 <div className="confirm-servings-row">
                   <div className="confirm-serving-group">
-                    <label className="confirm-label">Servings prepped</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      className="confirm-input"
-                      min="1"
-                      value={customDraft.servingsYield}
-                      onChange={(e) => setCustomDraft((d) => {
-                        const newYield = Math.max(1, Number(e.target.value) || 1);
-                        return { ...d, servingsYield: newYield, servingsConsumed: Math.min(d.servingsConsumed, newYield) };
-                      })}
-                    />
+                    <label className="confirm-label">{customDraft.isLeftover ? 'Available' : 'Servings prepped'}</label>
+                    {customDraft.isLeftover ? (
+                      <span className="confirm-input confirm-input--static">{customDraft.servingsYield}</span>
+                    ) : (
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        className="confirm-input"
+                        min="1"
+                        value={customDraft.servingsYield}
+                        onChange={(e) => setCustomDraft((d) => {
+                          const newYield = Math.max(1, Number(e.target.value) || 1);
+                          return { ...d, servingsYield: newYield, servingsConsumed: Math.min(d.servingsConsumed, newYield) };
+                        })}
+                      />
+                    )}
                   </div>
                   <div className="confirm-serving-group">
-                    <label className="confirm-label">Having now</label>
+                    <label className="confirm-label">{customDraft.isLeftover ? 'Eating now' : 'Having now'}</label>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -293,7 +375,7 @@ export default function Today() {
                 {customDraft.servingsYield > 1 && (
                   <div className="confirm-breakdown">
                     <span className="confirm-breakdown-item">{perServing.kcal} cal · {perServing.protein}g per serving</span>
-                    {leftover > 0 && (
+                    {!customDraft.isLeftover && leftover > 0 && (
                       <span className="confirm-breakdown-kitchen">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/></svg>
                         {leftover} serving{leftover !== 1 ? 's' : ''} saved to kitchen
@@ -409,7 +491,7 @@ export default function Today() {
       })()}
 
       {activeTab === 'food' && (
-        <button className="food-fab" onClick={() => setCustomStep('list')}>
+        <button className="food-fab" onClick={() => setCustomStep('choose')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       )}

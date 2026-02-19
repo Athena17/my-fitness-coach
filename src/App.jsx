@@ -1,5 +1,7 @@
 import { useApp } from './context/useApp.js';
+import { useAuth } from './context/useAuth.js';
 import { VIEWS } from './context/constants.js';
+import Auth from './views/Auth.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Today from './views/Today.jsx';
@@ -10,7 +12,20 @@ import GoalBar from './components/GoalBar.jsx';
 import './App.css';
 
 function App() {
-  const { state } = useApp();
+  const { user, loading: authLoading } = useAuth();
+  const { state, loading: dataLoading } = useApp();
+
+  if (authLoading || dataLoading) {
+    return (
+      <div className="app-loading">
+        <div className="app-loading-spinner" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
 
   if (!state.targets.onboardingComplete) {
     return <Onboarding />;

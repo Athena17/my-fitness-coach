@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import foodDatabase from '../data/foodDatabase.js';
-import { loadCustomMeals, loadLeftovers, loadRecipes } from '../utils/storage.js';
+import { useApp } from '../context/useApp.js';
 import './FoodSearch.css';
 
 export default function FoodSearch({ onSelect }) {
+  const { state } = useApp();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const customMeals = state.customMeals || [];
   const wrapperRef = useRef(null);
 
   useEffect(() => {
@@ -28,8 +30,8 @@ export default function FoodSearch({ onSelect }) {
     }
     const q = value.toLowerCase();
 
-    // Search leftovers first (active batches)
-    const leftovers = loadLeftovers();
+    // Search leftovers from state
+    const leftovers = state.leftovers || [];
     const leftoverMatches = leftovers
       .filter((l) => l.remainingServings > 0 && l.name.toLowerCase().includes(q))
       .slice(0, 3)
@@ -44,8 +46,8 @@ export default function FoodSearch({ onSelect }) {
         remainingServings: l.remainingServings,
       }));
 
-    // Search recipes
-    const recipes = loadRecipes();
+    // Search recipes from state
+    const recipes = state.recipes || [];
     const recipeMatches = recipes
       .filter((r) => r.name.toLowerCase().includes(q))
       .slice(0, 3)
@@ -58,8 +60,7 @@ export default function FoodSearch({ onSelect }) {
         recipeId: r.id,
       }));
 
-    // Search custom meals
-    const customMeals = loadCustomMeals();
+    // Search custom meals (loaded from Supabase)
     const customMatches = customMeals
       .filter((m) => m.name.toLowerCase().includes(q))
       .slice(0, 5)

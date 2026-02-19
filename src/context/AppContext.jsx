@@ -1,17 +1,35 @@
-import { useReducer, useEffect } from 'react';
-import { loadTargets, saveTargets, loadEntries, saveEntries, loadExerciseLogs, saveExerciseLogs, loadWaterLogs, saveWaterLogs, loadRecipes, saveRecipes, loadLeftovers, saveLeftovers, runMigrations } from '../utils/storage.js';
+import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import { VIEWS } from './constants.js';
 import { AppContext } from './context.js';
+import { useAuth } from './useAuth.js';
+import {
+  fetchProfile, upsertProfile,
+  fetchEntries, insertEntry, updateEntry, deleteEntry,
+  fetchExerciseLogs, insertExerciseLog, deleteExerciseLog,
+  fetchWaterLogs, insertWaterLog, deleteWaterLog,
+  fetchRecipes, insertRecipe as apiInsertRecipe, updateRecipe as apiUpdateRecipe, deleteRecipe as apiDeleteRecipe,
+  fetchLeftovers, insertLeftover as apiInsertLeftover, updateLeftover as apiUpdateLeftover, deleteLeftover as apiDeleteLeftover,
+  fetchCustomMeals, insertCustomMeal as apiInsertCustomMeal, updateCustomMeal as apiUpdateCustomMeal, deleteCustomMeal as apiDeleteCustomMeal,
+} from '../utils/api.js';
+
+const DEFAULT_TARGETS = {
+  kcal: 2000,
+  protein: 120,
+  maintenanceKcal: 2000,
+  userName: '',
+  weightLossTarget: 5,
+  onboardingComplete: false,
+};
 
 function init() {
-  runMigrations();
   return {
-    targets: loadTargets(),
-    entries: loadEntries(),
-    exerciseLogs: loadExerciseLogs(),
-    waterLogs: loadWaterLogs(),
-    recipes: loadRecipes(),
-    leftovers: loadLeftovers(),
+    targets: DEFAULT_TARGETS,
+    entries: [],
+    exerciseLogs: [],
+    waterLogs: [],
+    recipes: [],
+    leftovers: [],
+    customMeals: [],
     currentView: VIEWS.DASHBOARD,
     editingEntry: null,
   };
@@ -19,6 +37,20 @@ function init() {
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'INIT_DATA':
+      return {
+        ...state,
+        targets: action.payload.targets || DEFAULT_TARGETS,
+        entries: action.payload.entries || [],
+        exerciseLogs: action.payload.exerciseLogs || [],
+        waterLogs: action.payload.waterLogs || [],
+        recipes: action.payload.recipes || [],
+        leftovers: action.payload.leftovers || [],
+        customMeals: action.payload.customMeals || [],
+        currentView: VIEWS.DASHBOARD,
+        editingEntry: null,
+      };
+
     case 'SET_TARGETS':
       return { ...state, targets: { ...state.targets, ...action.payload } };
 
@@ -91,6 +123,24 @@ function reducer(state, action) {
         leftovers: state.leftovers.filter((l) => l.id !== action.payload),
       };
 
+    case 'SET_CUSTOM_MEALS':
+      return { ...state, customMeals: action.payload };
+
+    case 'ADD_CUSTOM_MEAL':
+      return { ...state, customMeals: [action.payload, ...state.customMeals] };
+
+    case 'UPDATE_CUSTOM_MEAL':
+      return {
+        ...state,
+        customMeals: state.customMeals.map((m) => (m.id === action.payload.id ? action.payload : m)),
+      };
+
+    case 'DELETE_CUSTOM_MEAL':
+      return {
+        ...state,
+        customMeals: state.customMeals.filter((m) => m.id !== action.payload),
+      };
+
     case 'IMPORT_DATA':
       return {
         ...state,
@@ -106,34 +156,157 @@ function reducer(state, action) {
 }
 
 export function AppProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, null, init);
+  const { user } = useAuth();
+  const [state, rawDispatch] = useReducer(reducer, null, init);
+  const [loading, setLoading] = useState(true);
+  const stateRef = useRef(state);
+  const profileTimerRef = useRef(null);
 
   useEffect(() => {
-    saveTargets(state.targets);
-  }, [state.targets]);
+    stateRef.current = state;
+  });
 
+  // Load data from Supabase when user becomes available
   useEffect(() => {
-    saveEntries(state.entries);
-  }, [state.entries]);
+    let cancelled = false;
 
-  useEffect(() => {
-    saveExerciseLogs(state.exerciseLogs);
-  }, [state.exerciseLogs]);
+    (async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-  useEffect(() => {
-    saveWaterLogs(state.waterLogs);
-  }, [state.waterLogs]);
+      setLoading(true);
+      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals] = await Promise.all([
+        fetchProfile(user.id),
+        fetchEntries(user.id),
+        fetchExerciseLogs(user.id),
+        fetchWaterLogs(user.id),
+        fetchRecipes(user.id),
+        fetchLeftovers(user.id),
+        fetchCustomMeals(user.id),
+      ]);
+      if (cancelled) return;
+      rawDispatch({
+        type: 'INIT_DATA',
+        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals },
+      });
+      setLoading(false);
+    })();
 
-  useEffect(() => {
-    saveRecipes(state.recipes);
-  }, [state.recipes]);
+    return () => { cancelled = true; };
+  }, [user]);
 
-  useEffect(() => {
-    saveLeftovers(state.leftovers);
-  }, [state.leftovers]);
+  // Dispatch wrapper that persists to Supabase
+  const dispatch = useCallback((action) => {
+    if (!user) {
+      rawDispatch(action);
+      return;
+    }
+
+    switch (action.type) {
+      case 'SET_TARGETS': {
+        rawDispatch(action);
+        clearTimeout(profileTimerRef.current);
+        profileTimerRef.current = setTimeout(() => {
+          upsertProfile(user.id, stateRef.current.targets);
+        }, 500);
+        break;
+      }
+
+      case 'ADD_ENTRY': {
+        rawDispatch(action);
+        insertEntry(user.id, action.payload);
+        break;
+      }
+      case 'UPDATE_ENTRY': {
+        rawDispatch(action);
+        updateEntry(action.payload);
+        break;
+      }
+      case 'DELETE_ENTRY': {
+        rawDispatch(action);
+        deleteEntry(action.payload);
+        break;
+      }
+
+      case 'ADD_EXERCISE': {
+        rawDispatch(action);
+        insertExerciseLog(user.id, action.payload);
+        break;
+      }
+      case 'DELETE_EXERCISE': {
+        rawDispatch(action);
+        deleteExerciseLog(action.payload);
+        break;
+      }
+
+      case 'ADD_WATER': {
+        rawDispatch(action);
+        insertWaterLog(user.id, action.payload);
+        break;
+      }
+      case 'DELETE_WATER': {
+        rawDispatch(action);
+        deleteWaterLog(action.payload);
+        break;
+      }
+
+      case 'ADD_RECIPE': {
+        rawDispatch(action);
+        apiInsertRecipe(user.id, action.payload);
+        break;
+      }
+      case 'UPDATE_RECIPE': {
+        rawDispatch(action);
+        apiUpdateRecipe(action.payload);
+        break;
+      }
+      case 'DELETE_RECIPE': {
+        rawDispatch(action);
+        apiDeleteRecipe(action.payload);
+        break;
+      }
+
+      case 'ADD_LEFTOVER': {
+        rawDispatch(action);
+        apiInsertLeftover(user.id, action.payload);
+        break;
+      }
+      case 'UPDATE_LEFTOVER': {
+        rawDispatch(action);
+        apiUpdateLeftover(action.payload);
+        break;
+      }
+      case 'DELETE_LEFTOVER': {
+        rawDispatch(action);
+        apiDeleteLeftover(action.payload);
+        break;
+      }
+
+      case 'ADD_CUSTOM_MEAL': {
+        rawDispatch(action);
+        apiInsertCustomMeal(user.id, action.payload);
+        break;
+      }
+      case 'UPDATE_CUSTOM_MEAL': {
+        rawDispatch(action);
+        apiUpdateCustomMeal(action.payload);
+        break;
+      }
+      case 'DELETE_CUSTOM_MEAL': {
+        rawDispatch(action);
+        apiDeleteCustomMeal(action.payload);
+        break;
+      }
+
+      default:
+        rawDispatch(action);
+    }
+  }, [user]);
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch, loading }}>
       {children}
     </AppContext.Provider>
   );

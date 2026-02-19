@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { calculateMealTotals, toGrams } from '../utils/ingredientCalc.js';
-import { loadCustomMeals, saveCustomMeals } from '../utils/storage.js';
+import { useApp } from '../context/useApp.js';
 import './MealBuilder.css';
 
 const GRAM_PORTION = { label: 'g', grams: 1 };
@@ -85,6 +85,7 @@ function buildRowFromIngredient(ing) {
 }
 
 export default function MealBuilder({ meal, editingEntry, onSave, onCancel, submitLabel, skipCustomMealSave }) {
+  const { state, dispatch } = useApp();
   const isEditing = !!editingEntry;
   const [mealName, setMealName] = useState(editingEntry?.name ?? '');
   const [rows, setRows] = useState(() => {
@@ -164,20 +165,15 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
 
     // Save as custom meal for future searches (unless skipped by CookFlow)
     if (!skipCustomMealSave) {
-      const customMeals = loadCustomMeals();
-      const existing = customMeals.findIndex((m) => m.name.toLowerCase() === builtName.toLowerCase());
+      const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === builtName.toLowerCase());
       const customMeal = {
+        ...(existing ? { id: existing.id } : { id: crypto.randomUUID() }),
         name: builtName,
         kcal: totals.kcal,
         protein: totals.protein,
         ingredients,
       };
-      if (existing >= 0) {
-        customMeals[existing] = customMeal;
-      } else {
-        customMeals.unshift(customMeal);
-      }
-      saveCustomMeals(customMeals);
+      dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
     }
 
     onSave({

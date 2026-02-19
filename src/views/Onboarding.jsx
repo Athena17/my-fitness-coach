@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { calculateMaintenance } from '../utils/nutritionCalc.js';
 import { recommendedWaterLiters } from '../utils/waterCalc.js';
-import { loadCustomMeals } from '../utils/storage.js';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import './Onboarding.css';
 
@@ -70,7 +69,8 @@ const STEP_META = [
 ];
 
 export default function Onboarding() {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
+
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
 
@@ -175,8 +175,8 @@ export default function Onboarding() {
   }
 
   function handleMealBuilt() {
-    // ILF already saved to My Meals — just refresh the list
-    setSavedMeals(loadCustomMeals());
+    // ILF dispatches to state — read from there
+    setSavedMeals(state.customMeals || []);
     setTutorialPhase('done');
   }
 
