@@ -429,7 +429,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
     if (saveToMyMeals && finalName) {
       const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === finalName.toLowerCase());
       const customMeal = {
-        ...(existing ? { id: existing.id } : { id: crypto.randomUUID() }),
+        ...(existing ? { id: existing.id, useCount: (existing.useCount || 0) + 1 } : { id: crypto.randomUUID(), useCount: 1 }),
         name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients,
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });

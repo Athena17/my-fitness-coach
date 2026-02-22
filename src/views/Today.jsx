@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
@@ -7,7 +7,6 @@ import { getToday } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
-import QuickAddRow from '../components/QuickAddRow.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import { getEmoji } from '../utils/foodEmoji.js';
@@ -20,16 +19,157 @@ const MEAL_CONFIG = [
   { key: 'Snack', label: 'Snacks' },
 ];
 
+const LONG_PRESS_MS = 300;
+const TAP_THRESHOLD_PX = 8;
+
+function preventTouchScroll(e) { e.preventDefault(); }
+
+function detectMeal(x, y) {
+  for (const el of document.elementsFromPoint(x, y)) {
+    const row = el.closest('[data-meal]');
+    if (row) return row.dataset.meal;
+  }
+  return null;
+}
+
 export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
   const { kcal: effectiveKcal, protein: effectiveProtein } = useEffectiveTargets();
   const [activeTab, setActiveTab] = useState('food');
 
-  // Drag-and-drop state (Quick Add + entry reorder)
+  // FAB menu
+  const [showFabMenu, setShowFabMenu] = useState(false);
+
+  // Drag-and-drop state (sections + entry reorder)
   const [dragItem, setDragItem] = useState(null);
   const [dragEntryId, setDragEntryId] = useState(null);
   const [dragOverMeal, setDragOverMeal] = useState(null);
+
+  // Drag refs
+  const dragRef = useRef(null);
+  const docRef = useRef(null);
+  const dropRef = useRef(null);
+
+  const removeGhost = useCallback(() => {
+    const el = document.querySelector('.qmr-ghost');
+    if (el) el.remove();
+  }, []);
+
+  const cleanupAll = useCallback(() => {
+    if (dragRef.current?.timerId) clearTimeout(dragRef.current.timerId);
+    dragRef.current = null;
+    removeGhost();
+    if (docRef.current) {
+      document.removeEventListener('pointermove', docRef.current.move);
+      document.removeEventListener('pointerup', docRef.current.up);
+      document.removeEventListener('pointercancel', docRef.current.cancel);
+      document.removeEventListener('touchmove', preventTouchScroll);
+      docRef.current = null;
+    }
+  }, [removeGhost]);
+
+  useEffect(() => cleanupAll, [cleanupAll]);
+
+  const handlePointerDown = useCallback((e, item, cardEl) => {
+    if (e.button !== 0) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const timerId = setTimeout(() => {
+      if (!dragRef.current) return;
+      dragRef.current.isDragging = true;
+      dragRef.current.item = item;
+      setDragItem(item);
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      const ghost = cardEl.cloneNode(true);
+      ghost.className = 'qmr-ghost';
+      const rect = cardEl.getBoundingClientRect();
+      ghost.style.width = rect.width + 'px';
+      ghost.style.left = (startX - rect.width / 2) + 'px';
+      ghost.style.top = (startY - rect.height / 2) + 'px';
+      document.body.appendChild(ghost);
+      dragRef.current.ghost = ghost;
+
+      const docMove = (ev) => {
+        ev.preventDefault();
+        const d = dragRef.current;
+        if (!d?.ghost) return;
+        const w = parseFloat(d.ghost.style.width);
+        const h = d.ghost.getBoundingClientRect().height;
+        d.ghost.style.left = (ev.clientX - w / 2) + 'px';
+        d.ghost.style.top = (ev.clientY - h / 2) + 'px';
+        setDragOverMeal(detectMeal(ev.clientX, ev.clientY));
+      };
+
+      const docUp = (ev) => {
+        const droppedItem = dragRef.current?.item;
+        const meal = detectMeal(ev.clientX, ev.clientY);
+        cleanupAll();
+        if (meal && droppedItem) {
+          dropRef.current(droppedItem, meal);
+        } else {
+          setDragItem(null);
+          setDragOverMeal(null);
+        }
+      };
+
+      const docCancel = () => {
+        cleanupAll();
+        setDragItem(null);
+        setDragOverMeal(null);
+      };
+
+      docRef.current = { move: docMove, up: docUp, cancel: docCancel };
+      document.addEventListener('pointermove', docMove);
+      document.addEventListener('pointerup', docUp);
+      document.addEventListener('pointercancel', docCancel);
+      document.addEventListener('touchmove', preventTouchScroll, { passive: false });
+    }, LONG_PRESS_MS);
+
+    dragRef.current = { startX, startY, timerId, isDragging: false, ghost: null, item };
+  }, [cleanupAll]);
+
+  const handlePointerMove = useCallback((e) => {
+    const d = dragRef.current;
+    if (!d || d.isDragging) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (Math.abs(dx) > TAP_THRESHOLD_PX || Math.abs(dy) > TAP_THRESHOLD_PX) {
+      clearTimeout(d.timerId);
+      dragRef.current = null;
+    }
+  }, []);
+
+  const handlePointerUp = useCallback((e, onSelect) => {
+    const d = dragRef.current;
+    if (!d || d.isDragging) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    clearTimeout(d.timerId);
+    const item = d.item;
+    dragRef.current = null;
+    if (Math.abs(dx) < TAP_THRESHOLD_PX && Math.abs(dy) < TAP_THRESHOLD_PX) {
+      onSelect(item);
+    }
+  }, []);
+
+  const handlePointerCancel = useCallback(() => {
+    const d = dragRef.current;
+    if (!d || d.isDragging) return;
+    clearTimeout(d.timerId);
+    dragRef.current = null;
+  }, []);
+
+  // Helper: increment useCount on a custom meal by name
+  function incrementMealUseCount(name) {
+    if (!name) return;
+    const meal = (state.customMeals || []).find((m) => m.name.toLowerCase() === name.toLowerCase());
+    if (meal) {
+      dispatch({ type: 'UPDATE_CUSTOM_MEAL', payload: { ...meal, useCount: (meal.useCount || 0) + 1 } });
+    }
+  }
 
   // Custom add flow
   const [customStep, setCustomStep] = useState(null);
@@ -80,7 +220,7 @@ export default function Today() {
     setCustomStep('confirm');
   }
 
-  // --- Drop handler (drag-and-drop from Quick Add) ---
+  // --- Drop handler (drag-and-drop) ---
 
   function handleDrop(item, mealKey) {
     if (!item || !mealKey) return;
@@ -115,10 +255,12 @@ export default function Today() {
           ...(item.ingredients ? { ingredients: item.ingredients } : {}),
         },
       });
+      incrementMealUseCount(item.name);
     }
     setDragItem(null);
     setDragOverMeal(null);
   }
+  useEffect(() => { dropRef.current = handleDrop; });
 
   // --- Entry reorder drop handler ---
 
@@ -211,13 +353,16 @@ export default function Today() {
     if (customDraft.saveToMyMeals && name) {
       const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === name.toLowerCase());
       const customMeal = {
-        ...(existing ? { id: existing.id } : { id: generateId() }),
+        ...(existing ? { id: existing.id, useCount: (existing.useCount || 0) + 1 } : { id: generateId(), useCount: 1 }),
         name,
         kcal: Math.round(kcal),
         protein: Math.round(protein * 10) / 10,
         ingredients: ingredients || [],
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
+    } else {
+      // Still increment useCount even if not saving
+      incrementMealUseCount(name);
     }
 
     setCustomStep(null);
@@ -266,40 +411,13 @@ export default function Today() {
   if (customStep) {
     return (
       <div className="today">
-        {customStep === 'choose' && (
+        {customStep === 'direct' && (
           <div className="add-mode-view">
             <div className="add-mode-header">
               <button className="add-mode-back" onClick={handleCustomClose}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-              <span className="add-mode-title">Add Meal</span>
-            </div>
-            <div className="add-choose-options">
-              <button className="add-choose-card" onClick={() => { setCustomDraft((d) => ({ ...d, name: '', kcal: '', protein: '' })); setCustomStep('direct'); }}>
-                <span className="add-choose-card-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                </span>
-                <span className="add-choose-card-title">Direct Add</span>
-                <span className="add-choose-card-desc">Enter name &amp; macros</span>
-              </button>
-              <button className="add-choose-card" onClick={() => setCustomStep('list')}>
-                <span className="add-choose-card-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><circle cx="19" cy="6" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="18" r="1.5" fill="currentColor"/></svg>
-                </span>
-                <span className="add-choose-card-title">Add Ingredients</span>
-                <span className="add-choose-card-desc">Build meal step by step</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {customStep === 'direct' && (
-          <div className="add-mode-view">
-            <div className="add-mode-header">
-              <button className="add-mode-back" onClick={() => setCustomStep('choose')}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-              <span className="add-mode-title">Direct Add</span>
+              <span className="add-mode-title">Log Meal</span>
             </div>
             <div className="direct-form">
               <div className="direct-form-group">
@@ -359,7 +477,7 @@ export default function Today() {
         {customStep === 'list' && (
           <IngredientListFlow
             onSave={handleListDone}
-            onCancel={customDraft?.servingsYield ? () => setCustomStep('confirm') : () => setCustomStep('choose')}
+            onCancel={customDraft?.servingsYield ? () => setCustomStep('confirm') : handleCustomClose}
             initialData={customDraft?.servingsYield ? customDraft : undefined}
           />
         )}
@@ -525,16 +643,105 @@ export default function Today() {
               <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g protein</span>
             </div>
 
-            <QuickAddRow
-              onSelect={handleQuickAddSelect}
-              dragItem={dragItem}
-              setDragItem={setDragItem}
-              dragOverMeal={dragOverMeal}
-              setDragOverMeal={setDragOverMeal}
-              onDrop={handleDrop}
-            />
+            {/* My Saved Meals section — hidden when empty */}
+            {(() => {
+              const customMeals = state.customMeals || [];
+              const mealItems = customMeals
+                .map((m, i) => ({
+                  type: 'meal',
+                  id: m.id || `meal-${i}`,
+                  name: m.name,
+                  kcal: m.kcal,
+                  protein: m.protein,
+                  ingredients: m.ingredients,
+                  useCount: m.useCount || 0,
+                }))
+                .sort((a, b) => b.useCount - a.useCount);
+              if (mealItems.length === 0) return null;
+              return (
+                <div className="dl-section">
+                  <div className="dl-section-header">
+                    <span className="dl-section-title">My Saved Meals</span>
+                    {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
+                  </div>
+                  <ScrollStrip className="dl-section-scroll">
+                    {mealItems.map((item) => (
+                      <button
+                        key={item.id}
+                        className={[
+                          'dl-card dl-card--meal',
+                          dragItem?.id === item.id && 'dl-card--dragging',
+                        ].filter(Boolean).join(' ')}
+                        onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
+                        onPointerCancel={handlePointerCancel}
+                        style={{ touchAction: 'pan-x' }}
+                      >
+                        <span className="dl-card-emoji">{getEmoji(item.name)}</span>
+                        <span className="dl-card-name">{item.name}</span>
+                        <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
+                      </button>
+                    ))}
+                  </ScrollStrip>
+                </div>
+              );
+            })()}
 
-            {/* Meals */}
+            {/* My Kitchen section — hidden when empty */}
+            {(() => {
+              const kitchenItems = (state.leftovers || [])
+                .filter((l) => l.remainingServings > 0)
+                .map((l) => ({
+                  type: 'leftover',
+                  id: l.id,
+                  name: l.name,
+                  kcal: l.perServing.kcal,
+                  protein: l.perServing.protein,
+                  remaining: l.remainingServings,
+                  leftover: l,
+                }));
+              if (kitchenItems.length === 0) return null;
+              return (
+                <div className="dl-section">
+                  <div className="dl-section-header">
+                    <span className="dl-section-title">My Kitchen</span>
+                    {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
+                  </div>
+                  <ScrollStrip className="dl-section-scroll">
+                    {kitchenItems.map((item) => (
+                      <div key={item.id} className="dl-card-wrap">
+                        <button
+                          className={[
+                            'dl-card dl-card--kitchen',
+                            dragItem?.id === item.id && 'dl-card--dragging',
+                          ].filter(Boolean).join(' ')}
+                          onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget.closest('.dl-card-wrap').querySelector('.dl-card'))}
+                          onPointerMove={handlePointerMove}
+                          onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
+                          onPointerCancel={handlePointerCancel}
+                          style={{ touchAction: 'pan-x' }}
+                        >
+                          <span className="dl-card-emoji">{getEmoji(item.name)}</span>
+                          <span className="dl-card-name">{item.name}</span>
+                          <span className="dl-card-tag">{item.remaining} left · {Math.round(item.kcal)} cal</span>
+                        </button>
+                        <button
+                          className="dl-card-discard"
+                          onClick={() => dispatch({ type: 'DELETE_LEFTOVER', payload: item.id })}
+                          aria-label="Discard"
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </ScrollStrip>
+                </div>
+              );
+            })()}
+
+            {/* Today's Log */}
+            <div className="meals-section-header">Today&apos;s Log</div>
             <div className="meals-section">
               {MEAL_CONFIG.map(({ key: meal, label }) => {
                 const entries = todayEntries.filter((e) => e.meal === meal);
@@ -558,17 +765,6 @@ export default function Today() {
                       {isFilled && (
                         <span className="meal-totals-compact">{Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g</span>
                       )}
-                      {isFilled && (
-                        <button
-                          className="meal-add-btn"
-                          onClick={() => {
-                            setCustomDraft({ mealSlot: meal });
-                            setCustomStep('choose');
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </button>
-                      )}
                     </div>
                     {isFilled && (
                       <ScrollStrip className="meal-entries-scroll">
@@ -585,18 +781,6 @@ export default function Today() {
                         ))}
                       </ScrollStrip>
                     )}
-                    {!isFilled && (
-                      <button
-                        className="meal-empty-prompt"
-                        onClick={() => {
-                          setCustomDraft({ mealSlot: meal });
-                          setCustomStep('choose');
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        What did you have for {label.toLowerCase()}?
-                      </button>
-                    )}
                   </div>
                 );
               })}
@@ -609,6 +793,33 @@ export default function Today() {
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel />}
 
+      {/* Floating action button + menu */}
+      {activeTab === 'food' && (
+        <>
+          {showFabMenu && <div className="fab-overlay" onClick={() => setShowFabMenu(false)} />}
+          <div className="fab-wrap">
+            {showFabMenu && (
+              <div className="fab-menu">
+                <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  Log Meal
+                </button>
+                <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3m0 0v7"/></svg>
+                  Cook
+                </button>
+              </div>
+            )}
+            <button
+              className={`fab${showFabMenu ? ' fab--open' : ''}`}
+              onClick={() => setShowFabMenu(!showFabMenu)}
+              aria-label="Add"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

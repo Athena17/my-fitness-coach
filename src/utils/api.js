@@ -395,7 +395,7 @@ function leftoverToDB(userId, l) {
 // ─── Custom Meals ─────────────────────────────────────
 // Schema: id UUID PK, user_id UUID NOT NULL, name TEXT NOT NULL,
 //   ingredients JSONB DEFAULT '[]', total_kcal REAL DEFAULT 0,
-//   total_protein REAL DEFAULT 0
+//   total_protein REAL DEFAULT 0, use_count INTEGER DEFAULT 0
 
 export async function fetchCustomMeals(userId) {
   const { data, error } = await supabase
@@ -444,6 +444,7 @@ function customMealToApp(row) {
     ingredients: row.ingredients,
     kcal: row.total_kcal,
     protein: row.total_protein,
+    useCount: row.use_count ?? 0,
   };
 }
 
@@ -453,6 +454,7 @@ function customMealToDB(userId, m) {
     ingredients: m.ingredients || [],
     total_kcal: m.kcal ?? 0,
     total_protein: m.protein ?? 0,
+    use_count: m.useCount ?? 0,
   };
   if (m.id) row.id = m.id;
   if (userId) row.user_id = userId;

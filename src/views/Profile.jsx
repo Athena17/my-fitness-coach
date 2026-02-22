@@ -4,7 +4,7 @@ import { useAuth } from '../context/useAuth.js';
 import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
-import { exportData, importData, clearAllData } from '../utils/storage.js';
+import { exportData, importData, clearAllData, loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
@@ -55,6 +55,201 @@ function TargetIcon({ type }) {
     </svg>
   );
   return null;
+}
+
+/* ——— My Ingredients ——— */
+const UNITS = [
+  { label: 'g', grams: 1 },
+  { label: 'tbsp', grams: 15 },
+  { label: 'tsp', grams: 5 },
+  { label: 'cup', grams: 240 },
+  { label: 'piece', grams: 100 },
+  { label: 'slice', grams: 30 },
+  { label: 'serving', grams: 100 },
+];
+
+function IngredientForm({ form, setForm, onSave, onCancel, saveLabel }) {
+  return (
+    <div className="ing-form ing-form--add">
+      <input
+        className="ing-input"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        placeholder="Ingredient name"
+        autoFocus
+      />
+      <div className="ing-row">
+        <div className="ing-field">
+          <label className="ing-label">Amount</label>
+          <input
+            className="ing-input ing-input--num"
+            type="number"
+            inputMode="decimal"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            placeholder="0"
+          />
+        </div>
+        <div className="ing-field">
+          <label className="ing-label">Unit</label>
+          <select
+            className="ing-select"
+            value={form.unit}
+            onChange={(e) => setForm({ ...form, unit: e.target.value })}
+          >
+            {UNITS.map((u) => (
+              <option key={u.label} value={u.label}>{u.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="ing-field">
+          <label className="ing-label">Calories</label>
+          <input
+            className="ing-input ing-input--num"
+            type="number"
+            inputMode="decimal"
+            value={form.kcal}
+            onChange={(e) => setForm({ ...form, kcal: e.target.value })}
+            placeholder="0"
+          />
+        </div>
+        <div className="ing-field">
+          <label className="ing-label">Protein (g)</label>
+          <input
+            className="ing-input ing-input--num"
+            type="number"
+            inputMode="decimal"
+            value={form.protein}
+            onChange={(e) => setForm({ ...form, protein: e.target.value })}
+            placeholder="0"
+          />
+        </div>
+      </div>
+      <div className="ing-actions">
+        <button type="button" className="ing-save" onClick={onSave}>{saveLabel}</button>
+        <button type="button" className="ing-cancel" onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function MyIngredientsSection() {
+  const [ingredients, setIngredients] = useState(() => loadPersonalIngredients());
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '' };
+  const [form, setForm] = useState(emptyForm);
+
+  function handleDelete(index) {
+    const updated = ingredients.filter((_, i) => i !== index);
+    savePersonalIngredients(updated);
+    setIngredients(updated);
+    if (editingIndex === index) setEditingIndex(null);
+  }
+
+  function startEdit(index) {
+    const ing = ingredients[index];
+    setForm({
+      name: ing.name,
+      amount: String(ing.refAmount || 100),
+      unit: ing.refUnit || 'g',
+      kcal: String(ing.refKcal || 0),
+      protein: String(ing.refProtein || 0),
+    });
+    setEditingIndex(index);
+    setAdding(false);
+    setCollapsed(false);
+  }
+
+  function handleSave() {
+    if (!form.name.trim()) return;
+    const updated = [...ingredients];
+    updated[editingIndex] = {
+      name: form.name.trim(),
+      refAmount: Number(form.amount) || 0, refUnit: form.unit,
+      refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
+    };
+    savePersonalIngredients(updated);
+    setIngredients(updated);
+    setEditingIndex(null);
+  }
+
+  function startAdd() {
+    setForm(emptyForm);
+    setAdding(true);
+    setEditingIndex(null);
+    setCollapsed(false);
+  }
+
+  function handleAddSave() {
+    if (!form.name.trim()) return;
+    const newIng = {
+      name: form.name.trim(),
+      refAmount: Number(form.amount) || 0, refUnit: form.unit,
+      refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
+    };
+    const updated = [newIng, ...ingredients];
+    savePersonalIngredients(updated);
+    setIngredients(updated);
+    setAdding(false);
+  }
+
+  return (
+    <div className="settings-section">
+      <div className="section-header">
+        <button type="button" className="ing-section-toggle" onClick={() => setCollapsed(!collapsed)}>
+          <span className="ing-section-emoji">🫙</span>
+          <h2>My Ingredients</h2>
+          <svg className={`ing-chevron${collapsed ? '' : ' ing-chevron--open'}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button type="button" className="ing-add-btn" onClick={startAdd} aria-label="Add ingredient">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      {!collapsed && (
+        <>
+          {adding && (
+            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />
+          )}
+          {!adding && ingredients.length === 0 ? (
+            <p className="settings-empty">No custom ingredients yet — tap + to add one</p>
+          ) : (
+            <div className="settings-list">
+              {ingredients.map((ing, i) => (
+                <div key={`${ing.name}-${i}`} className="settings-list-item">
+                  {editingIndex === i ? (
+                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingIndex(null)} saveLabel="Save" />
+                  ) : (
+                    <>
+                      <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(i)}>
+                        <span className="settings-list-name">{ing.name}</span>
+                        <span className="settings-list-meta">
+                          {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal ?? 0} cal · {ing.refProtein ?? 0}g protein
+                        </span>
+                      </button>
+                      <div className="settings-list-actions">
+                        <button type="button" className="settings-list-consume" onClick={() => startEdit(i)} aria-label="Edit ingredient">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          </svg>
+                        </button>
+                        <button type="button" className="settings-list-delete" onClick={() => handleDelete(i)} aria-label="Delete ingredient">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function Profile() {
@@ -763,6 +958,9 @@ export default function Profile() {
         )}
         {saved && <p className="settings-message">Saved!</p>}
       </div>
+
+      {/* ——— My Ingredients ——— */}
+      <MyIngredientsSection />
 
       {/* ——— Data ——— */}
       <div className="settings-section">

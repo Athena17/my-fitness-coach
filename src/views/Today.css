@@ -99,6 +99,16 @@
 }
 
 /* ——— Meal log ——— */
+.meals-section-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 2px 0;
+}
+
 .meals-section {
   display: flex;
   flex-direction: column;
@@ -1400,4 +1410,266 @@
 .confirm-log-btn:disabled {
   opacity: 0.35;
   pointer-events: none;
+}
+
+/* ——— Daily Log sections (My Meals / My Kitchen) ——— */
+.dl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dl-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dl-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex: 1;
+}
+
+.dl-section-empty {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  text-align: center;
+  padding: 8px 12px;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.dl-section-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.dl-section-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Card wrapper (for discard button overlay) */
+.dl-card-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.dl-card-discard {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  transition: all 0.15s;
+  z-index: 2;
+}
+
+.dl-card-discard:active {
+  opacity: 1;
+  background: rgba(229, 90, 90, 0.15);
+  color: var(--color-danger);
+  transform: scale(0.9);
+}
+
+/* Cards */
+.dl-card {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px;
+  min-width: 110px;
+  max-width: 160px;
+  border-radius: var(--radius-lg);
+  scroll-snap-align: start;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.dl-card:active {
+  transform: scale(0.97);
+}
+
+.dl-card--kitchen {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(66, 133, 244, 0.05));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(66, 133, 244, 0.35);
+  box-shadow: 0 1px 8px rgba(66, 133, 244, 0.12);
+}
+
+.dl-card--meal {
+  background: linear-gradient(135deg, rgba(105, 114, 131, 0.05), rgba(142, 150, 166, 0.03));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px dashed rgba(105, 114, 131, 0.22);
+  box-shadow: none;
+}
+
+.dl-card--dragging {
+  opacity: 0.3;
+  transform: scale(0.95);
+}
+
+.dl-card-emoji {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.dl-card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dl-card-meta {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.dl-card-tag {
+  font-size: 0.58rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: rgba(66, 133, 244, 0.85);
+}
+
+.dl-drag-hint {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  animation: dl-hint-pulse 1.2s ease-in-out infinite;
+  margin-left: auto;
+}
+
+@keyframes dl-hint-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ——— Floating Action Button ——— */
+.fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--color-primary), #3a7bd5);
+  color: #fff;
+  box-shadow:
+    0 4px 16px rgba(74, 143, 231, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab:active {
+  transform: scale(0.9);
+  box-shadow:
+    0 2px 8px rgba(74, 143, 231, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.fab--open {
+  transform: rotate(45deg);
+}
+
+.fab--open:active {
+  transform: rotate(45deg) scale(0.9);
+}
+
+.fab-wrap {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.fab-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fab-overlay-in 0.15s ease-out;
+}
+
+@keyframes fab-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fab-menu-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fab-menu-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.fab-menu-item:active {
+  transform: scale(0.96);
+  background: rgba(74, 143, 231, 0.08);
+}
+
+.fab-menu-item svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
