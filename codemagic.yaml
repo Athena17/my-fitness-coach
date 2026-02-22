@@ -6,7 +6,6 @@ workflows:
     environment:
       node: 22
       xcode: latest
-      cocoapods: default
       groups:
         - app_store_credentials
     scripts:
@@ -23,23 +22,29 @@ workflows:
           fi
           npx cap sync ios
 
-      - name: Install CocoaPods
+      - name: Debug project structure
         script: |
-          cd ios/App
-          pod install
-          ls -la  # debug: verify workspace exists
+          echo "=== ios/ contents ==="
+          ls -la ios/App/
+          echo "=== Looking for workspace or project ==="
+          find ios -name "*.xcworkspace" -o -name "*.xcodeproj" | head -20
 
       - name: Set up signing
         script: |
-          # Create API key file for xcodebuild
           mkdir -p ~/private_keys
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
 
       - name: Build and archive
         script: |
           cd ios/App
+          # Use workspace if it exists, otherwise use project
+          if [ -d "App.xcworkspace" ]; then
+            BUILD_ARG="-workspace App.xcworkspace"
+          else
+            BUILD_ARG="-project App.xcodeproj"
+          fi
           xcodebuild \
-            -workspace App.xcworkspace \
+            $BUILD_ARG \
             -scheme App \
             -configuration Release \
             -archivePath build/App.xcarchive \
