@@ -44,6 +44,11 @@ workflows:
           keychain initialize
           keychain add-certificates
 
+      - name: Increment build number
+        script: |
+          cd ios/App
+          agvtool new-version -all $(($(date +%s) / 60))
+
       - name: Apply profiles to project
         script: |
           cd ios/App
