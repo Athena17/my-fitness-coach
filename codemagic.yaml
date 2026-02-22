@@ -25,7 +25,11 @@ workflows:
       - name: Set development team
         script: |
           cd ios/App
-          ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
+          ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*?;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
+          # Also add team where it's missing (empty string)
+          ruby -pi -e "gsub(/DEVELOPMENT_TEAM = \"\";/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
+          echo "Team ID set to: $APPLE_TEAM_ID"
+          grep -c "DEVELOPMENT_TEAM = $APPLE_TEAM_ID" App.xcodeproj/project.pbxproj || echo "WARNING: Team ID not found in pbxproj"
 
       - name: Fetch signing files
         script: |
@@ -66,11 +70,13 @@ workflows:
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
+            <string>app-store-connect</string>
             <key>destination</key>
             <string>upload</string>
             <key>signingStyle</key>
             <string>manual</string>
+            <key>teamID</key>
+            <string>${APPLE_TEAM_ID}</string>
           </dict>
           </plist>
           PLIST
