@@ -48,15 +48,16 @@ workflows:
       - name: Build IPA
         script: |
           cd ios/App
-          if [ -d "App.xcworkspace" ]; then
-            BUILD_ARG="--workspace App.xcworkspace"
-          else
-            BUILD_ARG="--project App.xcodeproj"
-          fi
-          xcode-project build-ipa \
-            $BUILD_ARG \
-            --scheme App \
-            --config Release
+          xcodebuild \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            -destination "generic/platform=iOS" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            archive 2>&1 | tail -50
 
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
