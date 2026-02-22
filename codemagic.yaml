@@ -45,49 +45,21 @@ workflows:
           ruby -pi -e 'gsub(/CODE_SIGN_STYLE = Automatic;/, "CODE_SIGN_STYLE = Manual;")' App.xcodeproj/project.pbxproj
           xcode-project use-profiles
 
-      - name: Build and archive
+      - name: Build IPA
         script: |
           cd ios/App
           if [ -d "App.xcworkspace" ]; then
-            BUILD_ARG="-workspace App.xcworkspace"
+            BUILD_ARG="--workspace App.xcworkspace"
           else
-            BUILD_ARG="-project App.xcodeproj"
+            BUILD_ARG="--project App.xcodeproj"
           fi
-          xcodebuild \
+          xcode-project build-ipa \
             $BUILD_ARG \
-            -scheme App \
-            -configuration Release \
-            -archivePath build/App.xcarchive \
-            -destination "generic/platform=iOS" \
-            archive
-
-      - name: Export IPA
-        script: |
-          cd ios/App
-          cat > exportOptions.plist <<PLIST
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store-connect</string>
-            <key>destination</key>
-            <string>upload</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>teamID</key>
-            <string>${APPLE_TEAM_ID}</string>
-          </dict>
-          </plist>
-          PLIST
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/App.xcarchive \
-            -exportOptionsPlist exportOptions.plist \
-            -exportPath build/ipa
+            --scheme App \
+            --config Release
 
     artifacts:
-      - ios/App/build/ipa/*.ipa
+      - ios/App/build/ios/ipa/*.ipa
 
     publishing:
       app_store_connect:
