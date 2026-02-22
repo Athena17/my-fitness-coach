@@ -8,9 +8,6 @@ workflows:
       xcode: latest
       groups:
         - app_store_credentials
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.irada.app
     scripts:
       - name: Install dependencies
         script: npm ci
@@ -30,15 +27,11 @@ workflows:
           cd ios/App
           ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
 
-      - name: Create certificate and provisioning profile
+      - name: Fetch signing files
         script: |
-          # Fetch or create distribution certificate
-          app-store-connect certificates list --type IOS_DISTRIBUTION --save || \
-            app-store-connect certificates create --type IOS_DISTRIBUTION --save
-
-          # Fetch or create App Store provisioning profile
-          app-store-connect profiles list --type IOS_APP_STORE --bundle-id-identifier com.irada.app --save || \
-            app-store-connect profiles create --type IOS_APP_STORE --bundle-id-identifier com.irada.app --save
+          app-store-connect fetch-signing-files com.irada.app \
+            --type IOS_APP_STORE \
+            --create
 
       - name: Apply profiles to project
         script: |
