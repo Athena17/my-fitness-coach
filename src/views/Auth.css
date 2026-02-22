@@ -5,14 +5,30 @@
   min-height: 100dvh;
   padding: 20px;
   font-family: var(--font-sans);
+  transition: background 0.4s ease;
 }
+
+/* ── Mode accent colours ── */
+.auth--signin { --auth-accent: var(--color-primary); }
+.auth--signup { --auth-accent: var(--color-success); }
 
 .auth-content {
   width: 100%;
   max-width: 400px;
-  animation: ob-slide-in 0.25s ease-out;
+  animation: auth-fade-in 0.3s ease-out;
 }
 
+/* ── Icon ── */
+.auth-icon {
+  text-align: center;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--auth-accent);
+  transition: color 0.3s ease;
+}
+
+/* ── Title & subtitle ── */
 .auth-title {
   font-size: 1.4rem;
   font-weight: 700;
@@ -29,6 +45,7 @@
   margin-bottom: 20px;
 }
 
+/* ── Card ── */
 .auth-card {
   position: relative;
   background: var(--color-surface);
@@ -62,6 +79,7 @@
   z-index: 1;
 }
 
+/* ── Form ── */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -84,25 +102,52 @@
   margin: 0;
 }
 
+/* ── Submit button — colour follows mode ── */
+.auth-submit {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--auth-accent);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.15s ease;
+}
+
+.auth-submit:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Toggle link ── */
 .auth-toggle {
   display: block;
   width: 100%;
   text-align: center;
   font-size: 0.78rem;
-  color: var(--color-primary);
+  color: var(--auth-accent);
   font-weight: 500;
   font-family: var(--font-sans);
   padding: 8px;
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .auth-toggle:hover {
   text-decoration: underline;
 }
 
-@keyframes ob-slide-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Animation ── */
+@keyframes auth-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

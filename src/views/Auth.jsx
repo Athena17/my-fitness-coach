@@ -11,6 +11,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
 
+  const isSignUp = mode === 'signup';
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
@@ -18,7 +20,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (mode === 'signup') {
+      if (isSignUp) {
         await signUp(email, password);
         setConfirmMessage('Check your email for a confirmation link!');
       } else {
@@ -32,17 +34,18 @@ export default function Auth() {
   }
 
   function toggleMode() {
-    setMode(mode === 'signin' ? 'signup' : 'signin');
+    setMode(isSignUp ? 'signin' : 'signup');
     setError('');
     setConfirmMessage('');
   }
 
   return (
-    <div className="auth">
-      <div className="auth-content">
+    <div className={`auth ${isSignUp ? 'auth--signup' : 'auth--signin'}`}>
+      <div className="auth-content" key={mode}>
+        <div className="auth-icon">{isSignUp ? '✦' : '◎'}</div>
         <h1 className="auth-title">Irada</h1>
         <p className="auth-subtitle">
-          {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+          {isSignUp ? 'Start your journey' : 'Welcome back'}
         </p>
 
         <div className="auth-card">
@@ -70,7 +73,7 @@ export default function Auth() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
             </div>
 
@@ -79,10 +82,10 @@ export default function Auth() {
 
             <button
               type="submit"
-              className="btn-primary"
+              className="auth-submit"
               disabled={loading}
             >
-              {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+              {loading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
             </button>
           </form>
         </div>
@@ -92,9 +95,9 @@ export default function Auth() {
           className="auth-toggle"
           onClick={toggleMode}
         >
-          {mode === 'signin'
-            ? "Don't have an account? Sign Up"
-            : 'Already have an account? Sign In'}
+          {isSignUp
+            ? 'Already have an account? Sign In'
+            : "Don't have an account? Sign Up"}
         </button>
       </div>
     </div>
