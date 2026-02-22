@@ -39,6 +39,11 @@ workflows:
             --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
             --create
 
+      - name: Set up keychain
+        script: |
+          keychain initialize
+          keychain add-certificates
+
       - name: Apply profiles to project
         script: |
           cd ios/App
