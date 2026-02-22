@@ -29,11 +29,10 @@ workflows:
 
       - name: Fetch signing files
         script: |
-          echo "${CERTIFICATE_PRIVATE_KEY}" > /tmp/cert_key.pem
           app-store-connect fetch-signing-files com.irada.app \
             --type IOS_APP_STORE \
             --platform IOS \
-            --certificate-key /tmp/cert_key.pem \
+            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
             --create
 
       - name: Apply profiles to project
