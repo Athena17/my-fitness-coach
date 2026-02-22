@@ -581,6 +581,38 @@
   font-family: var(--font-sans);
 }
 
+/* ── Meal picker in confirm view ── */
+.confirm-meal-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-meal-options {
+  display: flex;
+  gap: 6px;
+}
+
+.confirm-meal-chip {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(46, 142, 192, 0.18);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-meal-chip--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
 .confirm-input {
   padding: 10px 12px;
   border-radius: 12px;

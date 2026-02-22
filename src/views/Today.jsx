@@ -275,7 +275,7 @@ export default function Today() {
               <span className="add-mode-title">Add Meal</span>
             </div>
             <div className="add-choose-options">
-              <button className="add-choose-card" onClick={() => { setCustomDraft({ name: '', kcal: '', protein: '' }); setCustomStep('direct'); }}>
+              <button className="add-choose-card" onClick={() => { setCustomDraft((d) => ({ ...d, name: '', kcal: '', protein: '' })); setCustomStep('direct'); }}>
                 <span className="add-choose-card-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </span>
@@ -415,6 +415,22 @@ export default function Today() {
                 </div>
               )}
 
+              <div className="confirm-meal-picker">
+                <label className="confirm-label">Meal</label>
+                <div className="confirm-meal-options">
+                  {MEAL_CONFIG.map(({ key, label }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`confirm-meal-chip${customDraft.mealSlot === key ? ' confirm-meal-chip--active' : ''}`}
+                      onClick={() => setCustomDraft((d) => ({ ...d, mealSlot: key }))}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="confirm-card">
                 <div className="confirm-servings-row">
                   <div className="confirm-serving-group">
@@ -546,7 +562,7 @@ export default function Today() {
                         <button
                           className="meal-add-btn"
                           onClick={() => {
-                            setCustomDraft((d) => ({ ...d, mealSlot: meal }));
+                            setCustomDraft({ mealSlot: meal });
                             setCustomStep('choose');
                           }}
                         >
@@ -573,7 +589,7 @@ export default function Today() {
                       <button
                         className="meal-empty-prompt"
                         onClick={() => {
-                          setCustomDraft((d) => ({ ...d, mealSlot: meal }));
+                          setCustomDraft({ mealSlot: meal });
                           setCustomStep('choose');
                         }}
                       >
