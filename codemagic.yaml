@@ -57,4 +57,3 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration  # Set up in Codemagic UI
-        submit_to_test_flight: true
