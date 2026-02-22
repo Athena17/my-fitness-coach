@@ -23,6 +23,12 @@ workflows:
           fi
           npx cap sync ios
 
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+          ls -la  # debug: verify workspace exists
+
       - name: Set up signing
         script: |
           # Create API key file for xcodebuild
