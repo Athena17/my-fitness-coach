@@ -30,7 +30,17 @@ workflows:
           cd ios/App
           ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
 
-      - name: Switch to manual signing and apply profiles
+      - name: Create certificate and provisioning profile
+        script: |
+          # Fetch or create distribution certificate
+          app-store-connect certificates list --type IOS_DISTRIBUTION --save || \
+            app-store-connect certificates create --type IOS_DISTRIBUTION --save
+
+          # Fetch or create App Store provisioning profile
+          app-store-connect profiles list --type IOS_APP_STORE --bundle-id-identifier com.irada.app --save || \
+            app-store-connect profiles create --type IOS_APP_STORE --bundle-id-identifier com.irada.app --save
+
+      - name: Apply profiles to project
         script: |
           cd ios/App
           ruby -pi -e 'gsub(/CODE_SIGN_STYLE = Automatic;/, "CODE_SIGN_STYLE = Manual;")' App.xcodeproj/project.pbxproj
