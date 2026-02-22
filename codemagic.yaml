@@ -8,6 +8,9 @@ workflows:
       xcode: latest
       groups:
         - app_store_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.irada.app
     scripts:
       - name: Install dependencies
         script: npm ci
@@ -22,27 +25,20 @@ workflows:
           fi
           npx cap sync ios
 
-      - name: Debug project structure
-        script: |
-          echo "=== ios/ contents ==="
-          ls -la ios/App/
-          echo "=== Looking for workspace or project ==="
-          find ios -name "*.xcworkspace" -o -name "*.xcodeproj" | head -20
-
-      - name: Set up signing
-        script: |
-          mkdir -p ~/private_keys
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
-
       - name: Set development team
         script: |
           cd ios/App
           ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
 
+      - name: Switch to manual signing and apply profiles
+        script: |
+          cd ios/App
+          ruby -pi -e 'gsub(/CODE_SIGN_STYLE = Automatic;/, "CODE_SIGN_STYLE = Manual;")' App.xcodeproj/project.pbxproj
+          xcode-project use-profiles
+
       - name: Build and archive
         script: |
           cd ios/App
-          # Use workspace if it exists, otherwise use project
           if [ -d "App.xcworkspace" ]; then
             BUILD_ARG="-workspace App.xcworkspace"
           else
@@ -53,12 +49,7 @@ workflows:
             -scheme App \
             -configuration Release \
             -archivePath build/App.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8 \
-            -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID \
             -destination "generic/platform=iOS" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             archive
 
       - name: Export IPA
@@ -74,7 +65,7 @@ workflows:
             <key>destination</key>
             <string>upload</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
           </dict>
           </plist>
           PLIST
@@ -82,11 +73,7 @@ workflows:
             -exportArchive \
             -archivePath build/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath build/ipa \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8 \
-            -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID
+            -exportPath build/ipa
 
     artifacts:
       - ios/App/build/ipa/*.ipa
