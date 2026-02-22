@@ -1,0 +1,14 @@
+{
+  "appId": "com.irada.app",
+  "appName": "Irada",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#f5f3f0"
+  },
+  "server": {
+    "hostname": "irada.app",
+    "androidScheme": "https",
+    "iosScheme": "https"
+  }
+}

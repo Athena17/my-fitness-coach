@@ -1,0 +1,60 @@
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+      groups:
+        - app_store_credentials  # Set up in Codemagic UI
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.irada.app
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Build web app
+        script: npm run build
+
+      - name: Add iOS platform
+        script: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+          npx cap sync ios
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      - name: Build iOS app
+        script: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        script: |
+          cd ios/App
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/App.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa
+
+    artifacts:
+      - ios/App/build/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration  # Set up in Codemagic UI
+        submit_to_test_flight: true
