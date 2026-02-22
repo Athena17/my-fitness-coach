@@ -37,8 +37,8 @@ workflows:
       - name: Set development team
         script: |
           cd ios/App
-          sed -i '' "s/DEVELOPMENT_TEAM = \"\"/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\"/g" App.xcodeproj/project.pbxproj
-          sed -i '' "s/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = $APPLE_TEAM_ID;/g" App.xcodeproj/project.pbxproj
+          ruby -pi -e "gsub(/DEVELOPMENT_TEAM = .*;/, \"DEVELOPMENT_TEAM = #{ENV['APPLE_TEAM_ID']};\")" App.xcodeproj/project.pbxproj
+          ruby -pi -e "gsub(/CODE_SIGN_IDENTITY = .*;/, 'CODE_SIGN_IDENTITY = \"Apple Distribution\";')" App.xcodeproj/project.pbxproj
 
       - name: Build and archive
         script: |
