@@ -34,6 +34,12 @@ workflows:
           mkdir -p ~/private_keys
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
 
+      - name: Set development team
+        script: |
+          cd ios/App
+          sed -i '' "s/DEVELOPMENT_TEAM = \"\"/DEVELOPMENT_TEAM = \"$APPLE_TEAM_ID\"/g" App.xcodeproj/project.pbxproj
+          sed -i '' "s/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = $APPLE_TEAM_ID;/g" App.xcodeproj/project.pbxproj
+
       - name: Build and archive
         script: |
           cd ios/App
@@ -53,6 +59,7 @@ workflows:
             -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
             -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID \
             -destination "generic/platform=iOS" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             archive
 
       - name: Export IPA
