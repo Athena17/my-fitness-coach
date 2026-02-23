@@ -18,14 +18,13 @@
   animation: auth-fade-in 0.3s ease-out;
 }
 
-/* ── Icon ── */
-.auth-icon {
-  text-align: center;
-  font-size: 2rem;
-  line-height: 1;
-  margin-bottom: 8px;
-  color: var(--auth-accent);
-  transition: color 0.3s ease;
+/* ── Logo ── */
+.auth-logo {
+  display: block;
+  width: 72px;
+  height: auto;
+  margin: 0 auto 8px;
+  border-radius: 16px;
 }
 
 /* ── Title & subtitle ── */

@@ -213,6 +213,7 @@ export default function Onboarding() {
   return (
     <div className="onboarding">
       <div className="onboarding-content">
+        <img src="./logo.svg" alt="Irada" className="onboarding-logo" />
         <h1 className="onboarding-title">Irada</h1>
 
         {/* Progress bar */}

@@ -42,7 +42,7 @@ export default function Auth() {
   return (
     <div className={`auth ${isSignUp ? 'auth--signup' : 'auth--signin'}`}>
       <div className="auth-content" key={mode}>
-        <div className="auth-icon">{isSignUp ? '✦' : '◎'}</div>
+        <img src="./logo.svg" alt="Irada" className="auth-logo" />
         <h1 className="auth-title">Irada</h1>
         <p className="auth-subtitle">
           {isSignUp ? 'Start your journey' : 'Welcome back'}

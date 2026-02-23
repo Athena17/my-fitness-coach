@@ -12,6 +12,14 @@
   max-width: 400px;
 }
 
+.onboarding-logo {
+  display: block;
+  width: 72px;
+  height: auto;
+  margin: 0 auto 8px;
+  border-radius: 16px;
+}
+
 .onboarding-title {
   font-size: 1.4rem;
   font-weight: 700;
