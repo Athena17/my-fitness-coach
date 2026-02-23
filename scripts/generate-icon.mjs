@@ -30,7 +30,7 @@ const innerContent = innerMatch[1];
 // The logo is 1024×1536. To center in a 1024×1024 square,
 // we shift the content up by (1536-1024)/2 = 256px
 const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 256 1024 1024" width="1024" height="1024">
-<rect x="0" y="256" width="1024" height="1024" fill="#f5f3f0"/>
+<rect x="0" y="256" width="1024" height="1024" fill="#0f1823"/>
 ${innerContent}
 </svg>`;
 
