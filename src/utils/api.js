@@ -313,11 +313,15 @@ function recipeToApp(row) {
     ingredients: row.ingredients,
     totalKcal: row.total_kcal,
     totalProtein: row.total_protein,
+    totalCarbs: row.total_carbs ?? 0,
+    totalFat: row.total_fat ?? 0,
     servings: row.servings,
     servingsYield: row.servings_yield ?? row.servings,
     perServing: {
       kcal: row.per_serving_kcal ?? (row.servings ? Math.round(row.total_kcal / row.servings) : row.total_kcal),
       protein: row.per_serving_protein ?? (row.servings ? Math.round(row.total_protein / row.servings * 10) / 10 : row.total_protein),
+      carbs: row.per_serving_carbs ?? (row.servings ? Math.round((row.total_carbs ?? 0) / row.servings) : (row.total_carbs ?? 0)),
+      fat: row.per_serving_fat ?? (row.servings ? Math.round((row.total_fat ?? 0) / row.servings * 10) / 10 : (row.total_fat ?? 0)),
     },
     notes: row.notes,
   };
@@ -330,10 +334,14 @@ function recipeToDB(userId, r) {
     ingredients: r.ingredients || [],
     total_kcal: r.totalKcal ?? 0,
     total_protein: r.totalProtein ?? 0,
+    total_carbs: r.totalCarbs ?? 0,
+    total_fat: r.totalFat ?? 0,
     servings: r.servings ?? r.servingsYield ?? 1,
     servings_yield: r.servingsYield ?? r.servings ?? 1,
     per_serving_kcal: r.perServing?.kcal ?? 0,
     per_serving_protein: r.perServing?.protein ?? 0,
+    per_serving_carbs: r.perServing?.carbs ?? 0,
+    per_serving_fat: r.perServing?.fat ?? 0,
     notes: r.notes || null,
   };
   if (userId) row.user_id = userId;
@@ -505,4 +513,65 @@ export async function upsertDayType(userId, dateKey, dayType) {
     .from('day_types')
     .upsert({ user_id: userId, date_key: dateKey, day_type: dayType }, { onConflict: 'user_id,date_key' });
   if (error) console.error('upsertDayType:', error);
+}
+
+// ─── Personal Ingredients ────────────────────────────
+
+function personalIngToApp(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    refAmount: row.ref_amount ?? 0,
+    refUnit: row.ref_unit ?? 'g',
+    refKcal: row.ref_kcal ?? 0,
+    refProtein: row.ref_protein ?? 0,
+    refCarbs: row.ref_carbs ?? 0,
+    refFat: row.ref_fat ?? 0,
+    sortOrder: row.sort_order ?? 0,
+  };
+}
+
+function personalIngToDB(userId, ing, index) {
+  const row = {
+    name: ing.name || '',
+    ref_amount: ing.refAmount ?? 0,
+    ref_unit: ing.refUnit ?? 'g',
+    ref_kcal: ing.refKcal ?? 0,
+    ref_protein: ing.refProtein ?? 0,
+    ref_carbs: ing.refCarbs ?? 0,
+    ref_fat: ing.refFat ?? 0,
+    sort_order: index ?? 0,
+  };
+  if (ing.id) row.id = ing.id;
+  if (userId) row.user_id = userId;
+  return row;
+}
+
+export async function fetchPersonalIngredients(userId) {
+  const { data, error } = await supabase
+    .from('personal_ingredients')
+    .select('*')
+    .eq('user_id', userId)
+    .order('sort_order', { ascending: true });
+  if (error) { console.error('fetchPersonalIngredients:', error); return []; }
+  return data.map(personalIngToApp);
+}
+
+export async function insertPersonalIngredient(userId, ing, index) {
+  const row = personalIngToDB(userId, ing, index);
+  const { data, error } = await supabase.from('personal_ingredients').insert(row).select().single();
+  if (error) { console.error('insertPersonalIngredient:', error); return null; }
+  return personalIngToApp(data);
+}
+
+export async function updatePersonalIngredient(ing) {
+  const row = personalIngToDB(null, ing, ing.sortOrder);
+  delete row.id;
+  const { error } = await supabase.from('personal_ingredients').update(row).eq('id', ing.id);
+  if (error) console.error('updatePersonalIngredient:', error);
+}
+
+export async function deletePersonalIngredient(id) {
+  const { error } = await supabase.from('personal_ingredients').delete().eq('id', id);
+  if (error) console.error('deletePersonalIngredient:', error);
 }

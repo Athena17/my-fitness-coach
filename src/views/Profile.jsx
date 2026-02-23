@@ -3,8 +3,8 @@ import { useApp } from '../context/useApp.js';
 import { useAuth } from '../context/useAuth.js';
 import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
-import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
-import { exportData, importData, clearAllData, loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
+import { sumNutrition, calcWeightChange, hasMacroTargets } from '../utils/nutritionCalc.js';
+import { exportData, importData, clearAllData } from '../utils/storage.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
@@ -68,7 +68,7 @@ const UNITS = [
   { label: 'serving', grams: 100 },
 ];
 
-function IngredientForm({ form, setForm, onSave, onCancel, saveLabel }) {
+function IngredientForm({ form, setForm, onSave, onCancel, saveLabel, macroFlags }) {
   return (
     <div className="ing-form ing-form--add">
       <input
@@ -124,6 +124,32 @@ function IngredientForm({ form, setForm, onSave, onCancel, saveLabel }) {
             placeholder="0"
           />
         </div>
+        {macroFlags?.showCarbs && (
+          <div className="ing-field">
+            <label className="ing-label">Carbs (g)</label>
+            <input
+              className="ing-input ing-input--num"
+              type="number"
+              inputMode="decimal"
+              value={form.carbs}
+              onChange={(e) => setForm({ ...form, carbs: e.target.value })}
+              placeholder="0"
+            />
+          </div>
+        )}
+        {macroFlags?.showFat && (
+          <div className="ing-field">
+            <label className="ing-label">Fat (g)</label>
+            <input
+              className="ing-input ing-input--num"
+              type="number"
+              inputMode="decimal"
+              value={form.fat}
+              onChange={(e) => setForm({ ...form, fat: e.target.value })}
+              placeholder="0"
+            />
+          </div>
+        )}
       </div>
       <div className="ing-actions">
         <button type="button" className="ing-save" onClick={onSave}>{saveLabel}</button>
@@ -134,64 +160,69 @@ function IngredientForm({ form, setForm, onSave, onCancel, saveLabel }) {
 }
 
 function MyIngredientsSection() {
-  const [ingredients, setIngredients] = useState(() => loadPersonalIngredients());
-  const [editingIndex, setEditingIndex] = useState(null);
+  const { state, dispatch } = useApp();
+  const ingredients = state.personalIngredients || [];
+  const [editingId, setEditingId] = useState(null);
   const [adding, setAdding] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
-  const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '' };
+  const mFlags = hasMacroTargets(state.targets);
+  const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '', carbs: '', fat: '' };
   const [form, setForm] = useState(emptyForm);
 
-  function handleDelete(index) {
-    const updated = ingredients.filter((_, i) => i !== index);
-    savePersonalIngredients(updated);
-    setIngredients(updated);
-    if (editingIndex === index) setEditingIndex(null);
+  function handleDelete(ing) {
+    dispatch({ type: 'DELETE_PERSONAL_INGREDIENT', payload: ing.id });
+    if (editingId === ing.id) setEditingId(null);
   }
 
-  function startEdit(index) {
-    const ing = ingredients[index];
+  function startEdit(ing) {
     setForm({
       name: ing.name,
       amount: String(ing.refAmount || 100),
       unit: ing.refUnit || 'g',
       kcal: String(ing.refKcal || 0),
       protein: String(ing.refProtein || 0),
+      carbs: String(ing.refCarbs || 0),
+      fat: String(ing.refFat || 0),
     });
-    setEditingIndex(index);
+    setEditingId(ing.id);
     setAdding(false);
     setCollapsed(false);
   }
 
   function handleSave() {
     if (!form.name.trim()) return;
-    const updated = [...ingredients];
-    updated[editingIndex] = {
-      name: form.name.trim(),
-      refAmount: Number(form.amount) || 0, refUnit: form.unit,
-      refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
-    };
-    savePersonalIngredients(updated);
-    setIngredients(updated);
-    setEditingIndex(null);
+    dispatch({
+      type: 'UPDATE_PERSONAL_INGREDIENT',
+      payload: {
+        id: editingId,
+        name: form.name.trim(),
+        refAmount: Number(form.amount) || 0, refUnit: form.unit,
+        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
+        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) * 10) / 10,
+      },
+    });
+    setEditingId(null);
   }
 
   function startAdd() {
     setForm(emptyForm);
     setAdding(true);
-    setEditingIndex(null);
+    setEditingId(null);
     setCollapsed(false);
   }
 
   function handleAddSave() {
     if (!form.name.trim()) return;
-    const newIng = {
-      name: form.name.trim(),
-      refAmount: Number(form.amount) || 0, refUnit: form.unit,
-      refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
-    };
-    const updated = [newIng, ...ingredients];
-    savePersonalIngredients(updated);
-    setIngredients(updated);
+    dispatch({
+      type: 'ADD_PERSONAL_INGREDIENT',
+      payload: {
+        id: generateId(),
+        name: form.name.trim(),
+        refAmount: Number(form.amount) || 0, refUnit: form.unit,
+        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
+        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) * 10) / 10,
+      },
+    });
     setAdding(false);
   }
 
@@ -210,31 +241,31 @@ function MyIngredientsSection() {
       {!collapsed && (
         <>
           {adding && (
-            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />
+            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" macroFlags={mFlags} />
           )}
           {!adding && ingredients.length === 0 ? (
             <p className="settings-empty">No custom ingredients yet — tap + to add one</p>
           ) : (
             <div className="settings-list">
-              {ingredients.map((ing, i) => (
-                <div key={`${ing.name}-${i}`} className="settings-list-item">
-                  {editingIndex === i ? (
-                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingIndex(null)} saveLabel="Save" />
+              {ingredients.map((ing) => (
+                <div key={ing.id} className="settings-list-item">
+                  {editingId === ing.id ? (
+                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingId(null)} saveLabel="Save" macroFlags={mFlags} />
                   ) : (
                     <>
-                      <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(i)}>
+                      <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(ing)}>
                         <span className="settings-list-name">{ing.name}</span>
                         <span className="settings-list-meta">
                           {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal ?? 0} cal · {ing.refProtein ?? 0}g protein
                         </span>
                       </button>
                       <div className="settings-list-actions">
-                        <button type="button" className="settings-list-consume" onClick={() => startEdit(i)} aria-label="Edit ingredient">
+                        <button type="button" className="settings-list-consume" onClick={() => startEdit(ing)} aria-label="Edit ingredient">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                           </svg>
                         </button>
-                        <button type="button" className="settings-list-delete" onClick={() => handleDelete(i)} aria-label="Delete ingredient">
+                        <button type="button" className="settings-list-delete" onClick={() => handleDelete(ing)} aria-label="Delete ingredient">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                           </svg>
@@ -351,16 +382,24 @@ export default function Profile() {
 
   /* ——— Settings state ——— */
   const [editing, setEditing] = useState(false);
-  const [userName, setUserName] = useState(targets.userName || '');
   const [weightLossTarget, setWeightLossTarget] = useState(String(targets.weightLossTarget || 5));
   const [kcal, setKcal] = useState(String(targets.kcal));
   const [protein, setProtein] = useState(String(targets.protein));
   const [water, setWater] = useState(String(targets.waterTargetLiters || 2.5));
+  const [macrosEnabled, setMacrosEnabled] = useState((targets.carbs || 0) > 0 || (targets.fat || 0) > 0);
+  const [carbsTarget, setCarbsTarget] = useState(targets.carbs ? String(targets.carbs) : '');
+  const [fatTarget, setFatTarget] = useState(targets.fat ? String(targets.fat) : '');
   const [cyclingEnabled, setCyclingEnabled] = useState(cyclingConfig.enabled);
   const [trainingKcal, setTrainingKcal] = useState(String(cyclingConfig.trainingKcal || ''));
   const [trainingProtein, setTrainingProtein] = useState(String(cyclingConfig.trainingProtein || ''));
+  const [trainingCarbs, setTrainingCarbs] = useState(String(cyclingConfig.trainingCarbs || ''));
+  const [trainingFat, setTrainingFat] = useState(String(cyclingConfig.trainingFat || ''));
   const [restKcal, setRestKcal] = useState(String(cyclingConfig.restKcal || ''));
   const [restProtein, setRestProtein] = useState(String(cyclingConfig.restProtein || ''));
+  const [restCarbs, setRestCarbs] = useState(String(cyclingConfig.restCarbs || ''));
+  const [restFat, setRestFat] = useState(String(cyclingConfig.restFat || ''));
+  const [macroEditing, setMacroEditing] = useState(!macrosEnabled);
+  const [cyclingEditing, setCyclingEditing] = useState(!cyclingEnabled);
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -372,17 +411,89 @@ export default function Profile() {
   const [exportText, setExportText] = useState('');
   const [exportMsg, setExportMsg] = useState('');
 
+  function handleMacroToggle(enabled) {
+    setMacrosEnabled(enabled);
+    if (enabled) {
+      setCarbsTarget(targets.carbs ? String(targets.carbs) : '');
+      setFatTarget(targets.fat ? String(targets.fat) : '');
+      setMacroEditing(true);
+    } else {
+      setCarbsTarget('');
+      setFatTarget('');
+      setMacroEditing(false);
+      dispatch({
+        type: 'SET_TARGETS',
+        payload: { ...targets, carbs: 0, fat: 0 },
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  }
+
+  function handleMacroSave() {
+    const c = Number(carbsTarget) || 0;
+    const f = Number(fatTarget) || 0;
+    if (c < 0 || c > 1000) { setErrors((prev) => ({ ...prev, carbs: '0–1000' })); return; }
+    if (f < 0 || f > 500) { setErrors((prev) => ({ ...prev, fat: '0–500' })); return; }
+    dispatch({
+      type: 'SET_TARGETS',
+      payload: { ...targets, carbs: c, fat: f },
+    });
+    setErrors({});
+    setMacroEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  function handleCyclingToggle(enabled) {
+    setCyclingEnabled(enabled);
+    if (enabled) {
+      setTrainingKcal(String(cyclingConfig.trainingKcal || targets.kcal));
+      setTrainingProtein(String(cyclingConfig.trainingProtein || targets.protein));
+      setTrainingCarbs(String(cyclingConfig.trainingCarbs || ''));
+      setTrainingFat(String(cyclingConfig.trainingFat || ''));
+      setRestKcal(String(cyclingConfig.restKcal || targets.kcal));
+      setRestProtein(String(cyclingConfig.restProtein || targets.protein));
+      setRestCarbs(String(cyclingConfig.restCarbs || ''));
+      setRestFat(String(cyclingConfig.restFat || ''));
+      setCyclingEditing(true);
+    } else {
+      setCyclingEditing(false);
+      setCyclingConfig({ enabled: false, trainingKcal: 0, trainingProtein: 0, trainingCarbs: 0, trainingFat: 0, restKcal: 0, restProtein: 0, restCarbs: 0, restFat: 0 });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  }
+
+  function handleCyclingSave() {
+    const errs = {};
+    const tk = Number(trainingKcal), tp = Number(trainingProtein);
+    const rk = Number(restKcal), rp = Number(restProtein);
+    if (!tk || tk < 500 || tk > 10000) errs.trainingKcal = '500–10,000';
+    if (!tp || tp < 10 || tp > 500) errs.trainingProtein = '10–500';
+    if (!rk || rk < 500 || rk > 10000) errs.restKcal = '500–10,000';
+    if (!rp || rp < 10 || rp > 500) errs.restProtein = '10–500';
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    setCyclingConfig({
+      enabled: true,
+      trainingKcal: tk, trainingProtein: tp,
+      trainingCarbs: macrosEnabled ? (Number(trainingCarbs) || 0) : 0,
+      trainingFat: macrosEnabled ? (Number(trainingFat) || 0) : 0,
+      restKcal: rk, restProtein: rp,
+      restCarbs: macrosEnabled ? (Number(restCarbs) || 0) : 0,
+      restFat: macrosEnabled ? (Number(restFat) || 0) : 0,
+    });
+    setCyclingEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
   function startEditing() {
-    setUserName(targets.userName || '');
     setWeightLossTarget(String(targets.weightLossTarget || 5));
     setKcal(String(targets.kcal));
     setProtein(String(targets.protein));
     setWater(String(targets.waterTargetLiters || 2.5));
-    setCyclingEnabled(cyclingConfig.enabled);
-    setTrainingKcal(String(cyclingConfig.trainingKcal || targets.kcal));
-    setTrainingProtein(String(cyclingConfig.trainingProtein || targets.protein));
-    setRestKcal(String(cyclingConfig.restKcal || targets.kcal));
-    setRestProtein(String(cyclingConfig.restProtein || targets.protein));
     setErrors({});
     setEditing(true);
   }
@@ -393,35 +504,21 @@ export default function Profile() {
     e.preventDefault();
     const errs = {};
     const k = Number(kcal), p = Number(protein), w = Number(weightLossTarget), wt = Number(water);
-    if (!userName.trim()) errs.userName = 'Enter your name';
     if (!k || k < 500 || k > 10000) errs.kcal = '500–10,000';
     if (!p || p < 10 || p > 500) errs.protein = '10–500';
     if (!w || w < 0.5 || w > 100) errs.weightLossTarget = '0.5–100';
     if (!wt || wt < 0.5 || wt > 15) errs.water = '0.5–15';
-    if (cyclingEnabled) {
-      const tk = Number(trainingKcal), tp = Number(trainingProtein);
-      const rk = Number(restKcal), rp = Number(restProtein);
-      if (!tk || tk < 500 || tk > 10000) errs.trainingKcal = '500–10,000';
-      if (!tp || tp < 10 || tp > 500) errs.trainingProtein = '10–500';
-      if (!rk || rk < 500 || rk > 10000) errs.restKcal = '500–10,000';
-      if (!rp || rp < 10 || rp > 500) errs.restProtein = '10–500';
-    }
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
     dispatch({
       type: 'SET_TARGETS',
       payload: {
-        userName: userName.trim(), kcal: k, protein: p, waterTargetLiters: wt,
+        userName: targets.userName || '', kcal: k, protein: p,
+        carbs: targets.carbs || 0, fat: targets.fat || 0,
+        waterTargetLiters: wt,
         maintenanceKcal: targets.maintenanceKcal || targets.kcal, weightLossTarget: w,
       },
-    });
-    setCyclingConfig({
-      enabled: cyclingEnabled,
-      trainingKcal: cyclingEnabled ? Number(trainingKcal) : 0,
-      trainingProtein: cyclingEnabled ? Number(trainingProtein) : 0,
-      restKcal: cyclingEnabled ? Number(restKcal) : 0,
-      restProtein: cyclingEnabled ? Number(restProtein) : 0,
     });
     setEditing(false);
     setSaved(true);
@@ -578,19 +675,7 @@ export default function Profile() {
             <path d="M20 21a8 8 0 1 0-16 0" />
           </svg>
         </div>
-        {editing ? (
-          <div className="profile-name-group">
-            <input
-              className="profile-name-input"
-              type="text" value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Your name" autoFocus
-            />
-            {errors.userName && <span className="form-error">{errors.userName}</span>}
-          </div>
-        ) : (
-          <span className="profile-name-display">{targets.userName || 'Your name'}</span>
-        )}
+        <span className="profile-name-display">{targets.userName || 'Your name'}</span>
       </div>
 
       {/* ——— Monthly Progress ——— */}
@@ -854,49 +939,6 @@ export default function Profile() {
               {errors.protein && <span className="form-error">{errors.protein}</span>}
             </div>
 
-            {/* Calorie Cycling */}
-            <div className="cycling-toggle-row">
-              <span className="cycling-toggle-label">Calorie cycling</span>
-              <div className="cycling-toggle-pills">
-                <button type="button" className={`cycling-pill${!cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => setCyclingEnabled(false)}>Off</button>
-                <button type="button" className={`cycling-pill${cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => setCyclingEnabled(true)}>On</button>
-              </div>
-            </div>
-            {cyclingEnabled && (
-              <div className="cycling-fields">
-                <div className="cycling-day-group">
-                  <span className="cycling-day-label">Training day</span>
-                  <div className="cycling-day-inputs">
-                    <div className="form-group">
-                      <label htmlFor="settings-training-kcal">Calories</label>
-                      <input id="settings-training-kcal" type="number" inputMode="numeric" value={trainingKcal} onChange={(e) => setTrainingKcal(e.target.value)} placeholder="e.g. 2500" />
-                      {errors.trainingKcal && <span className="form-error">{errors.trainingKcal}</span>}
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="settings-training-protein">Protein (g)</label>
-                      <input id="settings-training-protein" type="number" inputMode="numeric" value={trainingProtein} onChange={(e) => setTrainingProtein(e.target.value)} placeholder="e.g. 180" />
-                      {errors.trainingProtein && <span className="form-error">{errors.trainingProtein}</span>}
-                    </div>
-                  </div>
-                </div>
-                <div className="cycling-day-group">
-                  <span className="cycling-day-label">Rest day</span>
-                  <div className="cycling-day-inputs">
-                    <div className="form-group">
-                      <label htmlFor="settings-rest-kcal">Calories</label>
-                      <input id="settings-rest-kcal" type="number" inputMode="numeric" value={restKcal} onChange={(e) => setRestKcal(e.target.value)} placeholder="e.g. 1800" />
-                      {errors.restKcal && <span className="form-error">{errors.restKcal}</span>}
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="settings-rest-protein">Protein (g)</label>
-                      <input id="settings-rest-protein" type="number" inputMode="numeric" value={restProtein} onChange={(e) => setRestProtein(e.target.value)} placeholder="e.g. 120" />
-                      {errors.restProtein && <span className="form-error">{errors.restProtein}</span>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <div className="form-group">
               <label htmlFor="settings-water">Water target (L / day)</label>
               <input id="settings-water" type="number" inputMode="decimal" step="0.1" value={water} onChange={(e) => setWater(e.target.value)} placeholder="e.g. 2.5" />
@@ -928,35 +970,153 @@ export default function Profile() {
               <div className="target-row-left"><span className="target-icon"><TargetIcon type="water" /></span><span className="target-label">Water target</span></div>
               <span className="target-value">{targets.waterTargetLiters || 2.5} L / day</span>
             </div>
-            {cyclingConfig.enabled && (
-              <>
-                <div className="target-divider" />
-                <div className="target-row">
-                  <div className="target-row-left">
-                    <span className="target-icon">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M20.5 18a2.5 2.5 0 0 0 0-5H16v5h4.5z"/><path d="M20.5 6a2.5 2.5 0 0 1 0 5H16V6h4.5z"/>
-                      </svg>
-                    </span>
-                    <span className="target-label">Calorie cycling</span>
-                  </div>
-                  <span className="target-value cycling-on-badge">On</span>
-                </div>
-                <div className="cycling-display">
-                  <div className="cycling-display-row">
-                    <span className="cycling-display-label">Training day</span>
-                    <span className="cycling-display-value">{cyclingConfig.trainingKcal} cal · {cyclingConfig.trainingProtein}g</span>
-                  </div>
-                  <div className="cycling-display-row">
-                    <span className="cycling-display-label">Rest day</span>
-                    <span className="cycling-display-value">{cyclingConfig.restKcal} cal · {cyclingConfig.restProtein}g</span>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         )}
         {saved && <p className="settings-message">Saved!</p>}
+      </div>
+
+      {/* ——— Track Carbs & Fat ——— */}
+      <div className="settings-section">
+        <div className="cycling-toggle-row" style={{ marginBottom: macrosEnabled ? 12 : 0 }}>
+          <span className="cycling-toggle-label">Track carbs &amp; fat</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="cycling-toggle-pills">
+              <button type="button" className={`cycling-pill${!macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(false)}>Off</button>
+              <button type="button" className={`cycling-pill${macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(true)}>On</button>
+            </div>
+            {macrosEnabled && !macroEditing && (
+              <button type="button" className="edit-btn" onClick={() => { setCarbsTarget(targets.carbs ? String(targets.carbs) : ''); setFatTarget(targets.fat ? String(targets.fat) : ''); setMacroEditing(true); }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
+        {macrosEnabled && macroEditing && (
+          <div className="targets-form">
+            <div className="form-group">
+              <label htmlFor="settings-carbs">Carbs target (g / day)</label>
+              <input id="settings-carbs" type="number" inputMode="numeric" value={carbsTarget} onChange={(e) => setCarbsTarget(e.target.value)} placeholder="e.g. 200" />
+              {errors.carbs && <span className="form-error">{errors.carbs}</span>}
+            </div>
+            <div className="form-group">
+              <label htmlFor="settings-fat">Fat target (g / day)</label>
+              <input id="settings-fat" type="number" inputMode="numeric" value={fatTarget} onChange={(e) => setFatTarget(e.target.value)} placeholder="e.g. 65" />
+              {errors.fat && <span className="form-error">{errors.fat}</span>}
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn-primary settings-save-btn" onClick={handleMacroSave}>Save</button>
+            </div>
+          </div>
+        )}
+        {macrosEnabled && !macroEditing && (
+          <div className="targets-display">
+            <div className="target-row">
+              <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-carbs)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span><span className="target-label">Carbs</span></div>
+              <span className="target-value">{targets.carbs || 0} g / day</span>
+            </div>
+            <div className="target-divider" />
+            <div className="target-row">
+              <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-fat)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></span><span className="target-label">Fat</span></div>
+              <span className="target-value">{targets.fat || 0} g / day</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ——— Calorie Cycling ——— */}
+      <div className="settings-section">
+        <div className="cycling-toggle-row" style={{ marginBottom: cyclingEnabled ? 12 : 0 }}>
+          <span className="cycling-toggle-label">Calorie cycling</span>
+          <div className="cycling-toggle-pills">
+            <button type="button" className={`cycling-pill${!cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(false)}>Off</button>
+            <button type="button" className={`cycling-pill${cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(true)}>On</button>
+          </div>
+        </div>
+        {cyclingEnabled && cyclingEditing && (
+          <div className="cycling-fields">
+            <div className="cycling-day-group">
+              <span className="cycling-day-label">Training day</span>
+              <div className="cycling-day-inputs">
+                <div className="form-group">
+                  <label htmlFor="settings-training-kcal">Calories</label>
+                  <input id="settings-training-kcal" type="number" inputMode="numeric" value={trainingKcal} onChange={(e) => setTrainingKcal(e.target.value)} placeholder="e.g. 2500" />
+                  {errors.trainingKcal && <span className="form-error">{errors.trainingKcal}</span>}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="settings-training-protein">Protein (g)</label>
+                  <input id="settings-training-protein" type="number" inputMode="numeric" value={trainingProtein} onChange={(e) => setTrainingProtein(e.target.value)} placeholder="e.g. 180" />
+                  {errors.trainingProtein && <span className="form-error">{errors.trainingProtein}</span>}
+                </div>
+                {macrosEnabled && (
+                  <div className="form-group">
+                    <label htmlFor="settings-training-carbs">Carbs (g)</label>
+                    <input id="settings-training-carbs" type="number" inputMode="numeric" value={trainingCarbs} onChange={(e) => setTrainingCarbs(e.target.value)} placeholder="Optional" />
+                  </div>
+                )}
+                {macrosEnabled && (
+                  <div className="form-group">
+                    <label htmlFor="settings-training-fat">Fat (g)</label>
+                    <input id="settings-training-fat" type="number" inputMode="numeric" value={trainingFat} onChange={(e) => setTrainingFat(e.target.value)} placeholder="Optional" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="cycling-day-group">
+              <span className="cycling-day-label">Rest day</span>
+              <div className="cycling-day-inputs">
+                <div className="form-group">
+                  <label htmlFor="settings-rest-kcal">Calories</label>
+                  <input id="settings-rest-kcal" type="number" inputMode="numeric" value={restKcal} onChange={(e) => setRestKcal(e.target.value)} placeholder="e.g. 1800" />
+                  {errors.restKcal && <span className="form-error">{errors.restKcal}</span>}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="settings-rest-protein">Protein (g)</label>
+                  <input id="settings-rest-protein" type="number" inputMode="numeric" value={restProtein} onChange={(e) => setRestProtein(e.target.value)} placeholder="e.g. 120" />
+                  {errors.restProtein && <span className="form-error">{errors.restProtein}</span>}
+                </div>
+                {macrosEnabled && (
+                  <div className="form-group">
+                    <label htmlFor="settings-rest-carbs">Carbs (g)</label>
+                    <input id="settings-rest-carbs" type="number" inputMode="numeric" value={restCarbs} onChange={(e) => setRestCarbs(e.target.value)} placeholder="Optional" />
+                  </div>
+                )}
+                {macrosEnabled && (
+                  <div className="form-group">
+                    <label htmlFor="settings-rest-fat">Fat (g)</label>
+                    <input id="settings-rest-fat" type="number" inputMode="numeric" value={restFat} onChange={(e) => setRestFat(e.target.value)} placeholder="Optional" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn-primary settings-save-btn" onClick={handleCyclingSave}>Save</button>
+            </div>
+          </div>
+        )}
+        {cyclingEnabled && !cyclingEditing && (
+          <div className="cycling-display" onClick={() => { setCyclingEditing(true); }} style={{ cursor: 'pointer' }}>
+            <div className="cycling-display-row">
+              <span className="cycling-display-label">Training day</span>
+              <span className="cycling-display-value">
+                {cyclingConfig.trainingKcal} cal · {cyclingConfig.trainingProtein}g
+                {cyclingConfig.trainingCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.trainingCarbs}g</span></>}
+                {cyclingConfig.trainingFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.trainingFat}g</span></>}
+              </span>
+            </div>
+            <div className="cycling-display-row">
+              <span className="cycling-display-label">Rest day</span>
+              <span className="cycling-display-value">
+                {cyclingConfig.restKcal} cal · {cyclingConfig.restProtein}g
+                {cyclingConfig.restCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.restCarbs}g</span></>}
+                {cyclingConfig.restFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.restFat}g</span></>}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ——— My Ingredients ——— */}

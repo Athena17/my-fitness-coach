@@ -36,6 +36,7 @@ export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
   const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat } = useEffectiveTargets();
+  const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
 
   // FAB menu
@@ -479,30 +480,36 @@ export default function Today() {
                   />
                 </div>
               </div>
-              <div className="direct-form-row">
-                <div className="direct-form-group">
-                  <label className="confirm-label">Carbs (g)</label>
-                  <input
-                    className="direct-input"
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={customDraft?.carbs || ''}
-                    onChange={(e) => setCustomDraft((d) => ({ ...d, carbs: e.target.value }))}
-                  />
+              {macroFlags.showEither && (
+                <div className="direct-form-row">
+                  {macroFlags.showCarbs && (
+                    <div className="direct-form-group">
+                      <label className="confirm-label">Carbs (g)</label>
+                      <input
+                        className="direct-input"
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={customDraft?.carbs || ''}
+                        onChange={(e) => setCustomDraft((d) => ({ ...d, carbs: e.target.value }))}
+                      />
+                    </div>
+                  )}
+                  {macroFlags.showFat && (
+                    <div className="direct-form-group">
+                      <label className="confirm-label">Fat (g)</label>
+                      <input
+                        className="direct-input"
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={customDraft?.fat || ''}
+                        onChange={(e) => setCustomDraft((d) => ({ ...d, fat: e.target.value }))}
+                      />
+                    </div>
+                  )}
                 </div>
-                <div className="direct-form-group">
-                  <label className="confirm-label">Fat (g)</label>
-                  <input
-                    className="direct-input"
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={customDraft?.fat || ''}
-                    onChange={(e) => setCustomDraft((d) => ({ ...d, fat: e.target.value }))}
-                  />
-                </div>
-              </div>
+              )}
               <button
                 type="button"
                 className={`ilf-my-meals-toggle ${customDraft?.saveToMyMeals ? 'ilf-my-meals-toggle--on' : ''}`}
@@ -558,15 +565,13 @@ export default function Today() {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#9575cd" stroke="#9575cd" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
                     {Math.round(customDraft.protein)}g
                   </span>
-                  {(customDraft.carbs > 0 || customDraft.fat > 0) && <>
-                    {customDraft.carbs > 0 && <>
-                      <span className="confirm-hero-sep" />
-                      <span className="confirm-hero-macro" style={{ color: 'var(--color-carbs)' }}>C {Math.round(customDraft.carbs)}g</span>
-                    </>}
-                    {customDraft.fat > 0 && <>
-                      <span className="confirm-hero-sep" />
-                      <span className="confirm-hero-macro" style={{ color: 'var(--color-fat)' }}>F {Math.round(customDraft.fat)}g</span>
-                    </>}
+                  {macroFlags.showCarbs && customDraft.carbs > 0 && <>
+                    <span className="confirm-hero-sep" />
+                    <span className="confirm-hero-macro" style={{ color: 'var(--color-carbs)' }}>C {Math.round(customDraft.carbs)}g</span>
+                  </>}
+                  {macroFlags.showFat && customDraft.fat > 0 && <>
+                    <span className="confirm-hero-sep" />
+                    <span className="confirm-hero-macro" style={{ color: 'var(--color-fat)' }}>F {Math.round(customDraft.fat)}g</span>
                   </>}
                 </div>
               </div>
@@ -691,15 +696,14 @@ export default function Today() {
         const dailyTotals = sumNutrition(todayEntries);
         const calTarget = effectiveKcal || state.targets?.kcal || 2000;
         const protTarget = effectiveProtein || state.targets?.protein || 120;
-        const macroFlags = hasMacroTargets(state.targets);
 
         return (
           <>
             {/* Daily summary */}
             <div className="daily-summary">
-              <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
+              <span className="daily-summary-item" style={{ color: 'var(--color-kcal)' }}><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
               <span className="daily-summary-sep" />
-              <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g protein</span>
+              <span className="daily-summary-item" style={{ color: 'var(--color-protein)' }}><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g P</span>
               {macroFlags.showCarbs && <>
                 <span className="daily-summary-sep" />
                 <span className="daily-summary-item" style={{ color: 'var(--color-carbs)' }}><span className="daily-summary-value">{Math.round(dailyTotals.carbs)}</span> / {effectiveCarbs}g C</span>

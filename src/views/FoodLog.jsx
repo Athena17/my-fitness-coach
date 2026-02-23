@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
+import { hasMacroTargets } from '../utils/nutritionCalc.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday } from '../utils/dateUtils.js';
 import FoodSearch from '../components/FoodSearch.jsx';
@@ -9,6 +10,7 @@ const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSelect }) {
   const { state, dispatch } = useApp();
+  const mFlags = hasMacroTargets(state.targets);
   const editing = state.editingEntry;
   const isEditing = !!editing;
 
@@ -130,30 +132,36 @@ export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSele
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="food-carbs">Carbs (g)</label>
-            <input
-              id="food-carbs"
-              type="number"
-              inputMode="decimal"
-              value={carbs}
-              onChange={(e) => setCarbs(e.target.value)}
-              placeholder="0"
-            />
+        {mFlags.showEither && (
+          <div className="form-row">
+            {mFlags.showCarbs && (
+              <div className="form-group">
+                <label htmlFor="food-carbs">Carbs (g)</label>
+                <input
+                  id="food-carbs"
+                  type="number"
+                  inputMode="decimal"
+                  value={carbs}
+                  onChange={(e) => setCarbs(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            )}
+            {mFlags.showFat && (
+              <div className="form-group">
+                <label htmlFor="food-fat">Fat (g)</label>
+                <input
+                  id="food-fat"
+                  type="number"
+                  inputMode="decimal"
+                  value={fat}
+                  onChange={(e) => setFat(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            )}
           </div>
-          <div className="form-group">
-            <label htmlFor="food-fat">Fat (g)</label>
-            <input
-              id="food-fat"
-              type="number"
-              inputMode="decimal"
-              value={fat}
-              onChange={(e) => setFat(e.target.value)}
-              placeholder="0"
-            />
-          </div>
-        </div>
+        )}
 
         {!defaultMeal && !isEditing && (
           <div className="form-group">

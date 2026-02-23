@@ -545,28 +545,73 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ——— Secondary macros (carbs/fat) ——— */
-.ov-secondary-macros {
+/* ——— Small macro rings (carbs/fat) ——— */
+.ov-sm-rings {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.ov-sm-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.ov-sm-ring-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 2px;
-  font-size: 0.78rem;
+  filter: drop-shadow(0 3px 10px color-mix(in srgb, var(--ring-glow, #888) 18%, transparent));
+  transition: filter 0.6s;
+}
+
+.ov-sm-ring-wrap svg {
+  display: block;
+}
+
+.ov-sm-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.ov-sm-ring-num {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.ov-sm-ring-unit {
+  font-size: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.55;
+}
+
+.ov-sm-ring-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  letter-spacing: -0.01em;
+  opacity: 0.75;
 }
 
-.ov-secondary-macro {
+.ov-sm-ring-label svg {
   opacity: 0.85;
-}
-
-.ov-secondary-sep {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--color-text-secondary);
-  opacity: 0.3;
 }
 
 /* ——— Water glass reminder ——— */

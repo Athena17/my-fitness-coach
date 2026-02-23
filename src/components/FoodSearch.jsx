@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import foodDatabase from '../data/foodDatabase.js';
 import { useApp } from '../context/useApp.js';
+import { hasMacroTargets } from '../utils/nutritionCalc.js';
 import './FoodSearch.css';
 
 export default function FoodSearch({ onSelect }) {
   const { state } = useApp();
+  const mFlags = hasMacroTargets(state.targets);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -114,8 +116,8 @@ export default function FoodSearch({ onSelect }) {
                 </span>
                 <span className="food-search-meta">
                   {food.serving.kcal} cal · {food.serving.protein}g
-                  {food.serving.carbs > 0 && ` · C ${food.serving.carbs}g`}
-                  {food.serving.fat > 0 && ` · F ${food.serving.fat}g`}
+                  {mFlags.showCarbs && food.serving.carbs > 0 && ` · C ${food.serving.carbs}g`}
+                  {mFlags.showFat && food.serving.fat > 0 && ` · F ${food.serving.fat}g`}
                   {' · '}{food.serving.label}
                 </span>
               </button>

@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
-import { loadPersonalIngredients, savePersonalIngredients } from '../utils/storage.js';
 import { useApp } from '../context/useApp.js';
 import { toGrams } from '../utils/ingredientCalc.js';
+import { generateId } from '../utils/idGenerator.js';
+import { hasMacroTargets } from '../utils/nutritionCalc.js';
 
 const GRAM_PORTION = { label: 'g', grams: 1 };
 
@@ -39,11 +40,10 @@ function toPersonalDbEntry(p, i) {
   return { ...p, id: `p_${i}`, isPersonal: true };
 }
 
-function getAllDb() {
-  const personal = loadPersonalIngredients();
+function getAllDb(personal) {
   return [
     ...ingredientsDatabase,
-    ...personal.map(toPersonalDbEntry),
+    ...(personal || []).map(toPersonalDbEntry),
   ];
 }
 
@@ -207,7 +207,10 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled }) {
             >
               <span className="ilf-dropdown-name">{ing.name}</span>
               <span className="ilf-dropdown-meta">
-                {ing.kcalPer100g} cal · {ing.proteinPer100g}g per 100g
+                {ing.kcalPer100g} cal · {ing.proteinPer100g}g
+                {ing.carbsPer100g > 0 && ` · C ${ing.carbsPer100g}g`}
+                {ing.fatPer100g > 0 && ` · F ${ing.fatPer100g}g`}
+                {' per 100g'}
               </span>
             </button>
           ))}
@@ -234,6 +237,15 @@ function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled }) {
       <span className="ilf-compact-detail">
         {row.amount} {row.portionLabel}
         {rowKcal !== null && <> · {rowKcal} cal · {rowProtein}g</>}
+        {(() => {
+          const g = toGrams(row.amount, row.portionGrams);
+          const c = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(g * (row.carbsPer100g || 0) / 100 * 10) / 10;
+          const f = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(g * (row.fatPer100g || 0) / 100 * 10) / 10;
+          return <>
+            {c > 0 && <> · C {c}g</>}
+            {f > 0 && <> · F {f}g</>}
+          </>;
+        })()}
       </span>
       <button type="button" className="ilf-compact-edit" onClick={onEdit} disabled={disabled} aria-label="Edit">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -251,6 +263,7 @@ function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled }) {
 
 export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   const { state, dispatch } = useApp();
+  const macroFlags = hasMacroTargets(state.targets);
   const [rows, setRows] = useState(() => {
     if (initialData?.ingredients?.length > 0) {
       const prefilled = initialData.ingredients.map((ing) => ({
@@ -277,7 +290,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   const [mealName, setMealName] = useState(initialData?.name || '');
   const [nameError, setNameError] = useState(false);
   const [saveToMyMeals, setSaveToMyMeals] = useState(true);
-  const allDb = useMemo(() => getAllDb(), []);
+  const personalIngredients = state.personalIngredients;
+  const allDb = useMemo(() => getAllDb(personalIngredients), [personalIngredients]);
 
   // True when any confirmed row is expanded — locks all other interactions
   const editingRowIndex = rows.findIndex((r) => (r.matched || r.isNew) && r.editing);
@@ -395,22 +409,24 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
 
   function handleSave() {
     if (validRows.length === 0) return;
-    const personal = loadPersonalIngredients();
     for (const r of rows) {
       if (r.isNew && r.saveToDb && (r.totalKcal > 0)) {
-        const exists = personal.find((p) => p.name.toLowerCase() === r.name.toLowerCase());
+        const exists = personalIngredients.find((p) => p.name.toLowerCase() === r.name.toLowerCase());
         if (!exists) {
-          personal.push({
-            name: r.name,
-            refAmount: Number(r.amount) || 0,
-            refUnit: r.portionLabel,
-            refKcal: Math.round(r.totalKcal),
-            refProtein: Math.round(r.totalProtein * 10) / 10,
+          dispatch({
+            type: 'ADD_PERSONAL_INGREDIENT',
+            payload: {
+              id: generateId(),
+              name: r.name,
+              refAmount: Number(r.amount) || 0,
+              refUnit: r.portionLabel,
+              refKcal: Math.round(r.totalKcal),
+              refProtein: Math.round(r.totalProtein * 10) / 10,
+            },
           });
         }
       }
     }
-    savePersonalIngredients(personal);
 
     const ingredients = validRows.map((r) => {
       if (r.isNew) {
@@ -553,7 +569,18 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                         ))}
                       </select>
                       {rowKcal !== null && (
-                        <span className="ilf-row-calc">{rowKcal} cal · {rowProtein}g</span>
+                        <span className="ilf-row-calc">
+                          {rowKcal} cal · {rowProtein}g
+                          {(() => {
+                            const gc = toGrams(row.amount, row.portionGrams);
+                            const rc = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(gc * (row.carbsPer100g || 0) / 100 * 10) / 10;
+                            const rf = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(gc * (row.fatPer100g || 0) / 100 * 10) / 10;
+                            return <>
+                              {rc > 0 && <> · C {rc}g</>}
+                              {rf > 0 && <> · F {rf}g</>}
+                            </>;
+                          })()}
+                        </span>
                       )}
                       {row.matched && row.editing && (
                         <button type="button" className="ilf-done-btn" onClick={() => updateRow(i, { editing: false })}>Done</button>
@@ -579,20 +606,24 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                             onChange={(e) => updateRow(i, { totalProtein: Number(e.target.value) || 0 })}
                             placeholder="0" />
                         </div>
-                        <div className="ilf-new-row">
-                          <label className="ilf-new-label">carbs (g)</label>
-                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
-                            value={row.totalCarbs || ''}
-                            onChange={(e) => updateRow(i, { totalCarbs: Number(e.target.value) || 0 })}
-                            placeholder="0" />
-                        </div>
-                        <div className="ilf-new-row">
-                          <label className="ilf-new-label">fat (g)</label>
-                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
-                            value={row.totalFat || ''}
-                            onChange={(e) => updateRow(i, { totalFat: Number(e.target.value) || 0 })}
-                            placeholder="0" />
-                        </div>
+                        {macroFlags.showCarbs && (
+                          <div className="ilf-new-row">
+                            <label className="ilf-new-label">carbs (g)</label>
+                            <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                              value={row.totalCarbs || ''}
+                              onChange={(e) => updateRow(i, { totalCarbs: Number(e.target.value) || 0 })}
+                              placeholder="0" />
+                          </div>
+                        )}
+                        {macroFlags.showFat && (
+                          <div className="ilf-new-row">
+                            <label className="ilf-new-label">fat (g)</label>
+                            <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                              value={row.totalFat || ''}
+                              onChange={(e) => updateRow(i, { totalFat: Number(e.target.value) || 0 })}
+                              placeholder="0" />
+                          </div>
+                        )}
                         <label className="ilf-save-toggle">
                           <input type="checkbox" checked={row.saveToDb} onChange={(e) => updateRow(i, { saveToDb: e.target.checked })} />
                           <span>Save to my ingredients</span>
@@ -618,6 +649,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
               <span className="ilf-totals-sep" />
               <svg className="ilf-totals-icon" width="11" height="11" viewBox="0 0 24 24" fill="#9575cd" stroke="#9575cd" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
               {totals.protein}g
+              {totals.carbs > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-carbs)' }}>C {totals.carbs}g</span></>}
+              {totals.fat > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-fat)' }}>F {totals.fat}g</span></>}
             </span>
           </div>
         )}

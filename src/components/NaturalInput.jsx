@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { parseNaturalInput } from '../utils/naturalParse.js';
+import { useApp } from '../context/useApp.js';
+import { hasMacroTargets } from '../utils/nutritionCalc.js';
 import './NaturalInput.css';
 
 export default function NaturalInput({ onAdd, onEdit }) {
+  const { state } = useApp();
+  const mFlags = hasMacroTargets(state.targets);
   const [text, setText] = useState('');
   const [preview, setPreview] = useState(null);
 
@@ -64,8 +68,8 @@ export default function NaturalInput({ onAdd, onEdit }) {
           <div className="preview-macros">
             <span className="preview-kcal">{preview.kcal} cal</span>
             <span className="preview-protein">{preview.protein}g protein</span>
-            {preview.carbs > 0 && <span className="preview-carbs" style={{ color: 'var(--color-carbs)' }}>{preview.carbs}g carbs</span>}
-            {preview.fat > 0 && <span className="preview-fat" style={{ color: 'var(--color-fat)' }}>{preview.fat}g fat</span>}
+            {mFlags.showCarbs && preview.carbs > 0 && <span className="preview-carbs" style={{ color: 'var(--color-carbs)' }}>{preview.carbs}g carbs</span>}
+            {mFlags.showFat && preview.fat > 0 && <span className="preview-fat" style={{ color: 'var(--color-fat)' }}>{preview.fat}g fat</span>}
           </div>
           {preview.matchedFoods.length > 0 && (
             <p className="preview-matched">

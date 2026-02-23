@@ -11,6 +11,7 @@ import {
   fetchLeftovers, insertLeftover as apiInsertLeftover, updateLeftover as apiUpdateLeftover, deleteLeftover as apiDeleteLeftover,
   fetchCustomMeals, insertCustomMeal as apiInsertCustomMeal, updateCustomMeal as apiUpdateCustomMeal, deleteCustomMeal as apiDeleteCustomMeal,
   fetchDayTypes, upsertDayType,
+  fetchPersonalIngredients, insertPersonalIngredient as apiInsertPersonalIng, updatePersonalIngredient as apiUpdatePersonalIng, deletePersonalIngredient as apiDeletePersonalIng,
 } from '../utils/api.js';
 
 const DEFAULT_TARGETS = {
@@ -33,6 +34,7 @@ function init() {
     recipes: [],
     leftovers: [],
     customMeals: [],
+    personalIngredients: [],
     dayTypes: {},
     currentView: VIEWS.DASHBOARD,
     editingEntry: null,
@@ -51,6 +53,7 @@ function reducer(state, action) {
         recipes: action.payload.recipes || [],
         leftovers: action.payload.leftovers || [],
         customMeals: action.payload.customMeals || [],
+        personalIngredients: action.payload.personalIngredients || [],
         dayTypes: action.payload.dayTypes || {},
         currentView: VIEWS.DASHBOARD,
         editingEntry: null,
@@ -146,6 +149,24 @@ function reducer(state, action) {
         customMeals: state.customMeals.filter((m) => m.id !== action.payload),
       };
 
+    case 'SET_PERSONAL_INGREDIENTS':
+      return { ...state, personalIngredients: action.payload };
+
+    case 'ADD_PERSONAL_INGREDIENT':
+      return { ...state, personalIngredients: [action.payload, ...state.personalIngredients] };
+
+    case 'UPDATE_PERSONAL_INGREDIENT':
+      return {
+        ...state,
+        personalIngredients: state.personalIngredients.map((i) => (i.id === action.payload.id ? action.payload : i)),
+      };
+
+    case 'DELETE_PERSONAL_INGREDIENT':
+      return {
+        ...state,
+        personalIngredients: state.personalIngredients.filter((i) => i.id !== action.payload),
+      };
+
     case 'SET_DAY_TYPE':
       return {
         ...state,
@@ -188,7 +209,7 @@ export function AppProvider({ children }) {
       }
 
       setLoading(true);
-      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes] = await Promise.all([
+      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.all([
         fetchProfile(user.id),
         fetchEntries(user.id),
         fetchExerciseLogs(user.id),
@@ -197,11 +218,12 @@ export function AppProvider({ children }) {
         fetchLeftovers(user.id),
         fetchCustomMeals(user.id),
         fetchDayTypes(user.id),
+        fetchPersonalIngredients(user.id),
       ]);
       if (cancelled) return;
       rawDispatch({
         type: 'INIT_DATA',
-        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes },
+        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes },
       });
       setLoading(false);
     })();
@@ -315,6 +337,22 @@ export function AppProvider({ children }) {
       case 'SET_DAY_TYPE': {
         rawDispatch(action);
         upsertDayType(user.id, action.payload.dateKey, action.payload.dayType);
+        break;
+      }
+
+      case 'ADD_PERSONAL_INGREDIENT': {
+        rawDispatch(action);
+        apiInsertPersonalIng(user.id, action.payload, 0);
+        break;
+      }
+      case 'UPDATE_PERSONAL_INGREDIENT': {
+        rawDispatch(action);
+        apiUpdatePersonalIng(action.payload);
+        break;
+      }
+      case 'DELETE_PERSONAL_INGREDIENT': {
+        rawDispatch(action);
+        apiDeletePersonalIng(action.payload);
         break;
       }
 

@@ -125,6 +125,42 @@ function HeroRing({ pct, gradId, gradStart, gradEnd, label, value, unit, isOver,
   );
 }
 
+/* Small ring for secondary macros (carbs/fat) */
+const SM_SIZE = 80;
+const SM_STROKE = 5;
+const SM_RADIUS = (SM_SIZE - SM_STROKE) / 2;
+const SM_CIRC = 2 * Math.PI * SM_RADIUS;
+
+function SmallRing({ pct, gradId, gradStart, gradEnd, label, value, unit, mounted, icon }) {
+  const offset = mounted ? SM_CIRC * (1 - Math.min(pct, 1)) : SM_CIRC;
+  return (
+    <div className="ov-sm-ring">
+      <div className="ov-sm-ring-wrap" style={{ '--ring-glow': gradStart }}>
+        <svg width={SM_SIZE} height={SM_SIZE}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor={gradStart} />
+              <stop offset="100%" stopColor={gradEnd} />
+            </linearGradient>
+          </defs>
+          <circle cx={SM_SIZE / 2} cy={SM_SIZE / 2} r={SM_RADIUS}
+            fill="none" stroke="var(--color-text-secondary)" strokeWidth={SM_STROKE} opacity="0.06" />
+          <circle cx={SM_SIZE / 2} cy={SM_SIZE / 2} r={SM_RADIUS}
+            fill="none" stroke={`url(#${gradId})`} strokeWidth={SM_STROKE}
+            strokeDasharray={SM_CIRC} strokeDashoffset={offset}
+            strokeLinecap="round" className="ov-ring-anim"
+            transform={`rotate(-90 ${SM_SIZE / 2} ${SM_SIZE / 2})`} />
+        </svg>
+        <div className="ov-sm-ring-inner">
+          <span className="ov-sm-ring-num">{value}</span>
+          <span className="ov-sm-ring-unit">{unit}</span>
+        </div>
+      </div>
+      <span className="ov-sm-ring-label">{icon}{label}</span>
+    </div>
+  );
+}
+
 
 export default function Dashboard() {
   const { state, dispatch } = useApp();
@@ -464,27 +500,8 @@ export default function Dashboard() {
         );
       })()}
 
-      {/* 4. Today remaining summary */}
       <div className="ov-today-strip ov-enter ov-enter--3">
         <span className="ov-today-label">Today</span>
-        {todayLogged ? (
-          <span className="ov-today-remaining">
-            {isOver ? 'Over target' : `${(todayKcalTarget - kcalEaten).toLocaleString()} cal`}
-            {' · '}
-            {proteinPct >= 1 ? 'Protein hit' : `${proteinTarget - proteinEaten}g protein`}
-            {macroFlags.showCarbs && (() => {
-              const carbsLeft = effectiveCarbs - Math.round(todayTotals.carbs);
-              return ` · ${carbsLeft <= 0 ? 'Carbs hit' : `${carbsLeft}g C`}`;
-            })()}
-            {macroFlags.showFat && (() => {
-              const fatLeft = effectiveFat - Math.round(todayTotals.fat);
-              return ` · ${fatLeft <= 0 ? 'Fat hit' : `${fatLeft}g F`}`;
-            })()}
-            <span className="ov-today-suffix"> left</span>
-          </span>
-        ) : (
-          <span className="ov-today-remaining">Start logging to see your day</span>
-        )}
       </div>
 
       {/* Day type toggle (calorie cycling) */}
@@ -501,22 +518,24 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 5. Two hero rings + celebration */}
+      {/* 5. Rings — layout depends on macro tracking */}
       <div className={`ov-heroes ov-enter ov-enter--3${isPerfectDay ? ' ov-heroes--perfect' : ''}`}>
         <HeroRing
           pct={kcalPct} gradId="kcal-grad" gradStart={kcalGradStart} gradEnd={kcalGradEnd}
           label="Calories" mounted={mounted} isOver={isOver}
           value={`${kcalEaten.toLocaleString()}`}
-          unit={`/ ${todayKcalTarget.toLocaleString()}`}
+          unit={`/ ${todayKcalTarget.toLocaleString()} cal`}
           icon={<svg width="12" height="12" viewBox="0 0 16 16" fill={kcalGradStart} stroke="none"><path d="M8 16c-3.3 0-6-1.8-6-4 0-2.3 2.1-5 4-7 .3-.3.7-.4 1-.1.2.2.2.5.1.8-.2.6-.1 1.2.1 1.7.3.6.9 1 1.6 1 .9 0 1.5-.6 1.5-1.5 0-.9-.4-1.7-.8-2.3-.2-.3-.1-.7.2-.9.2-.1.5-.1.7.1C12.3 5.5 14 8 14 10.5c0 2.7-2.7 5.5-6 5.5z"/></svg>}
         />
-        <HeroRing
-          pct={proteinPct} gradId="prot-grad" gradStart={protGradStart} gradEnd={protGradEnd}
-          label="Protein" mounted={mounted} isOver={false}
-          value={`${proteinEaten}`}
-          unit={`/ ${proteinTarget}g`}
-          icon={<svg width="12" height="12" viewBox="0 0 24 24" fill={protGradStart} stroke={protGradStart} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>}
-        />
+        {!macroFlags.showEither && (
+          <HeroRing
+            pct={proteinPct} gradId="prot-grad" gradStart={protGradStart} gradEnd={protGradEnd}
+            label="Protein" mounted={mounted} isOver={false}
+            value={`${proteinEaten}`}
+            unit={`/ ${proteinTarget}g`}
+            icon={<svg width="12" height="12" viewBox="0 0 24 24" fill={protGradStart} stroke="none"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>}
+          />
+        )}
       </div>
       {isPerfectDay && (
         <div className="ov-perfect ov-enter ov-enter--4">
@@ -525,19 +544,36 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Secondary macros (carbs/fat) — only when targets set */}
+      {/* 3 small rings (Protein + Carbs + Fat) — only when macro tracking on */}
       {macroFlags.showEither && (
-        <div className="ov-secondary-macros ov-enter ov-enter--4">
+        <div className="ov-sm-rings ov-enter ov-enter--4">
+          <SmallRing
+            pct={proteinPct}
+            gradId="prot-grad" gradStart={protGradStart} gradEnd={protGradEnd}
+            label="Protein" mounted={mounted}
+            value={`${proteinEaten}`}
+            unit={`/ ${proteinTarget}g`}
+            icon={<svg width="10" height="10" viewBox="0 0 24 24" fill={protGradStart} stroke="none"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>}
+          />
           {macroFlags.showCarbs && (
-            <span className="ov-secondary-macro" style={{ color: 'var(--color-carbs)' }}>
-              C: {Math.round(todayTotals.carbs)}/{effectiveCarbs}g
-            </span>
+            <SmallRing
+              pct={effectiveCarbs > 0 ? Math.round(todayTotals.carbs) / effectiveCarbs : 0}
+              gradId="carbs-grad" gradStart="#8d7b6a" gradEnd="#7a6b5c"
+              label="Carbs" mounted={mounted}
+              value={`${Math.round(todayTotals.carbs)}`}
+              unit={`/ ${effectiveCarbs}g`}
+              icon={<svg width="10" height="10" viewBox="0 0 24 24" fill="#8d7b6a" stroke="none"><path d="M2 22 16 8"/><path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/><path d="M7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/><path d="M11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z"/><path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z"/></svg>}
+            />
           )}
-          {macroFlags.showCarbs && macroFlags.showFat && <span className="ov-secondary-sep" />}
           {macroFlags.showFat && (
-            <span className="ov-secondary-macro" style={{ color: 'var(--color-fat)' }}>
-              F: {Math.round(todayTotals.fat)}/{effectiveFat}g
-            </span>
+            <SmallRing
+              pct={effectiveFat > 0 ? Math.round(todayTotals.fat) / effectiveFat : 0}
+              gradId="fat-grad" gradStart="#b5654a" gradEnd="#9c4f3a"
+              label="Fat" mounted={mounted}
+              value={`${Math.round(todayTotals.fat)}`}
+              unit={`/ ${effectiveFat}g`}
+              icon={<svg width="10" height="10" viewBox="0 0 24 24" fill="#b5654a" stroke="none"><path d="M12 2C6 2 2 6.5 2 11c0 3 1.5 5.5 4 7v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2c2.5-1.5 4-4 4-7 0-4.5-4-9-10-9z"/></svg>}
+            />
           )}
         </div>
       )}

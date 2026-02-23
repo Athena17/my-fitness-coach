@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useApp } from '../context/useApp.js';
+import { hasMacroTargets } from '../utils/nutritionCalc.js';
 import { getEmoji } from '../utils/foodEmoji.js';
 import './FoodEntryCard.css';
 
@@ -17,7 +18,8 @@ function detectMeal(x, y) {
 }
 
 export default function FoodEntryCard({ entry, onDelete, dragEntryId, setDragEntryId, setDragOverMeal, onEntryDrop }) {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
+  const mFlags = hasMacroTargets(state.targets);
   const dragRef = useRef(null);
   const docRef = useRef(null);
   const isDragging = dragEntryId === entry.id;
@@ -160,12 +162,8 @@ export default function FoodEntryCard({ entry, onDelete, dragEntryId, setDragEnt
       <span className="fec-name">{entry.name}</span>
       <span className="fec-macros">
         {Math.round(entry.kcal)} cal · {Math.round(entry.protein)}g
-        {(entry.carbs > 0 || entry.fat > 0) && (
-          <>
-            {entry.carbs > 0 && ` · C ${Math.round(entry.carbs)}g`}
-            {entry.fat > 0 && ` · F ${Math.round(entry.fat)}g`}
-          </>
-        )}
+        {mFlags.showCarbs && entry.carbs > 0 && ` · C ${Math.round(entry.carbs)}g`}
+        {mFlags.showFat && entry.fat > 0 && ` · F ${Math.round(entry.fat)}g`}
       </span>
     </button>
   );

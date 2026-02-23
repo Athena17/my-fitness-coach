@@ -719,6 +719,7 @@
     0 4px 24px rgba(46, 142, 192, 0.10),
     0 1px 6px rgba(0, 0, 0, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  overflow: hidden;
 }
 
 .ilf-meal-card::before {
@@ -820,6 +821,10 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(46, 142, 192, 0.08);
+}
+
+.ilf-row:focus-within {
+  z-index: 20;
 }
 
 .ilf-row:last-child {
@@ -940,6 +945,7 @@
   align-items: center;
   gap: 6px;
   margin-top: 6px;
+  flex-wrap: wrap;
 }
 
 .ilf-field-amount {
@@ -1044,6 +1050,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(46, 142, 192, 0.08);
+  overflow: hidden;
 }
 
 .ilf-compact-name {
