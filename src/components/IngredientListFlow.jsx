@@ -170,7 +170,7 @@ function makeMatchedRow(match) {
 
 /* --- Autocomplete dropdown --- */
 
-function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled }) {
+function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macroFlags }) {
   const [open, setOpen] = useState(false);
   const results = useMemo(() => searchDb(value, allDb), [value, allDb]);
 
@@ -208,8 +208,8 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled }) {
               <span className="ilf-dropdown-name">{ing.name}</span>
               <span className="ilf-dropdown-meta">
                 {ing.kcalPer100g} cal · {ing.proteinPer100g}g
-                {ing.carbsPer100g > 0 && ` · C ${ing.carbsPer100g}g`}
-                {ing.fatPer100g > 0 && ` · F ${ing.fatPer100g}g`}
+                {macroFlags.showCarbs && ing.carbsPer100g > 0 && ` · C ${ing.carbsPer100g}g`}
+                {macroFlags.showFat && ing.fatPer100g > 0 && ` · F ${ing.fatPer100g}g`}
                 {' per 100g'}
               </span>
             </button>
@@ -230,20 +230,20 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled }) {
 
 /* --- Compact line for confirmed rows --- */
 
-function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled }) {
+function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled, macroFlags }) {
   return (
     <div className={`ilf-compact${disabled ? ' ilf-compact--locked' : ''}`}>
       <span className="ilf-compact-name">{row.name}</span>
       <span className="ilf-compact-detail">
         {row.amount} {row.portionLabel}
         {rowKcal !== null && <> · {rowKcal} cal · {rowProtein}g</>}
-        {(() => {
+        {macroFlags.showEither && (() => {
           const g = toGrams(row.amount, row.portionGrams);
           const c = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(g * (row.carbsPer100g || 0) / 100 * 10) / 10;
           const f = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(g * (row.fatPer100g || 0) / 100 * 10) / 10;
           return <>
-            {c > 0 && <> · C {c}g</>}
-            {f > 0 && <> · F {f}g</>}
+            {macroFlags.showCarbs && c > 0 && <> · C {c}g</>}
+            {macroFlags.showFat && f > 0 && <> · F {f}g</>}
           </>;
         })()}
       </span>
@@ -530,6 +530,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                     onEdit={() => updateRow(i, { editing: true })}
                     onRemove={() => removeRow(i)}
                     disabled={locked}
+                    macroFlags={macroFlags}
                   />
                 );
               }
@@ -544,6 +545,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                       onConfirm={(forceNew) => handleConfirmName(i, forceNew)}
                       allDb={allDb}
                       disabled={locked && editingRowIndex !== i}
+                      macroFlags={macroFlags}
                     />
                     {confirmed && (
                       <button type="button" className="ilf-row-action ilf-row-action--remove" onClick={() => removeRow(i)} aria-label="Remove">
@@ -571,13 +573,13 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                       {rowKcal !== null && (
                         <span className="ilf-row-calc">
                           {rowKcal} cal · {rowProtein}g
-                          {(() => {
+                          {macroFlags.showEither && (() => {
                             const gc = toGrams(row.amount, row.portionGrams);
                             const rc = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(gc * (row.carbsPer100g || 0) / 100 * 10) / 10;
                             const rf = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(gc * (row.fatPer100g || 0) / 100 * 10) / 10;
                             return <>
-                              {rc > 0 && <> · C {rc}g</>}
-                              {rf > 0 && <> · F {rf}g</>}
+                              {macroFlags.showCarbs && rc > 0 && <> · C {rc}g</>}
+                              {macroFlags.showFat && rf > 0 && <> · F {rf}g</>}
                             </>;
                           })()}
                         </span>
@@ -649,8 +651,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
               <span className="ilf-totals-sep" />
               <svg className="ilf-totals-icon" width="11" height="11" viewBox="0 0 24 24" fill="#9575cd" stroke="#9575cd" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
               {totals.protein}g
-              {totals.carbs > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-carbs)' }}>C {totals.carbs}g</span></>}
-              {totals.fat > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-fat)' }}>F {totals.fat}g</span></>}
+              {macroFlags.showCarbs && totals.carbs > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-carbs)' }}>C {totals.carbs}g</span></>}
+              {macroFlags.showFat && totals.fat > 0 && <><span className="ilf-totals-sep" /><span style={{ color: 'var(--color-fat)' }}>F {totals.fat}g</span></>}
             </span>
           </div>
         )}

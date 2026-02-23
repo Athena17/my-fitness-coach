@@ -821,6 +821,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(46, 142, 192, 0.08);
+  overflow-x: hidden;
 }
 
 .ilf-row:focus-within {
@@ -946,6 +947,7 @@
   gap: 6px;
   margin-top: 6px;
   flex-wrap: wrap;
+  overflow-x: hidden;
 }
 
 .ilf-field-amount {
