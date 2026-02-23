@@ -199,7 +199,7 @@ export function AppProvider({ children }) {
   });
 
   // Load data from Supabase when user becomes available
-  const userIdRef = useRef(null);
+  const userIdRef = useRef(undefined); // undefined so first null check doesn't skip
   useEffect(() => {
     // Same user — skip re-fetch (avoids Supabase auth firing multiple events)
     const uid = user?.id ?? null;
