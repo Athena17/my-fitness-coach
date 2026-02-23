@@ -5,7 +5,7 @@ import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
-import { sumNutrition } from '../utils/nutritionCalc.js';
+import { sumNutrition, hasMacroTargets } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
@@ -35,7 +35,7 @@ function detectMeal(x, y) {
 export default function Today() {
   const { state, dispatch } = useApp();
   const { todayEntries, caloriesBurned } = useDailyEntries();
-  const { kcal: effectiveKcal, protein: effectiveProtein } = useEffectiveTargets();
+  const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat } = useEffectiveTargets();
   const [activeTab, setActiveTab] = useState('food');
 
   // FAB menu
@@ -198,6 +198,8 @@ export default function Today() {
         name: item.name,
         kcal: item.kcal,
         protein: item.protein,
+        carbs: item.carbs || 0,
+        fat: item.fat || 0,
         servingsYield: item.remaining,
         servingsConsumed: 1,
         mealSlot: getDefaultMeal(),
@@ -212,6 +214,8 @@ export default function Today() {
       name: item.name,
       kcal: item.kcal,
       protein: item.protein,
+      carbs: item.carbs || 0,
+      fat: item.fat || 0,
       ingredients: item.ingredients,
       servingsYield: 1,
       servingsConsumed: 1,
@@ -231,6 +235,8 @@ export default function Today() {
         name: item.name,
         kcal: item.kcal,
         protein: item.protein,
+        carbs: item.carbs || 0,
+        fat: item.fat || 0,
         servingsYield: item.remaining,
         servingsConsumed: 1,
         mealSlot: mealKey,
@@ -247,6 +253,8 @@ export default function Today() {
           name: item.name,
           kcal: Math.round(item.kcal),
           protein: Math.round(item.protein * 10) / 10,
+          carbs: Math.round((item.carbs || 0) * 10) / 10,
+          fat: Math.round((item.fat || 0) * 10) / 10,
           meal: mealKey,
           servingSize: 1,
           servingUnit: 'serving',
@@ -283,6 +291,7 @@ export default function Today() {
     setCustomDraft((d) => ({
       ...d,
       name: result.name, kcal: result.kcal, protein: result.protein,
+      carbs: result.carbs || 0, fat: result.fat || 0,
       ingredients: result.ingredients,
       servingsYield: 1, servingsConsumed: 1,
       mealSlot: d?.mealSlot || getDefaultMeal(),
@@ -292,7 +301,9 @@ export default function Today() {
 
   function handleConfirmSave() {
     if (!customDraft || !customDraft.mealSlot) return;
-    const { name, kcal, protein, ingredients, servingsYield, servingsConsumed, mealSlot } = customDraft;
+    const { name, kcal, protein, carbs: draftCarbs, fat: draftFat, ingredients, servingsYield, servingsConsumed, mealSlot } = customDraft;
+    const cVal = draftCarbs || 0;
+    const fVal = draftFat || 0;
     const yieldN = Math.max(1, servingsYield);
     const consumed = Math.min(Math.max(0, servingsConsumed), yieldN);
 
@@ -306,6 +317,8 @@ export default function Today() {
             id: generateId(), name,
             kcal: Math.round(kcal * consumed),
             protein: Math.round(protein * consumed * 10) / 10,
+            carbs: Math.round(cVal * consumed * 10) / 10,
+            fat: Math.round(fVal * consumed * 10) / 10,
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
             timestamp: Date.now(), dateKey: getToday(),
             fromLeftoverId: lo.id,
@@ -320,7 +333,12 @@ export default function Today() {
       }
     } else {
       // New meal
-      const perServing = { kcal: Math.round(kcal / yieldN), protein: Math.round(protein / yieldN * 10) / 10 };
+      const perServing = {
+        kcal: Math.round(kcal / yieldN),
+        protein: Math.round(protein / yieldN * 10) / 10,
+        carbs: Math.round(cVal / yieldN * 10) / 10,
+        fat: Math.round(fVal / yieldN * 10) / 10,
+      };
 
       if (consumed > 0) {
         dispatch({
@@ -329,6 +347,8 @@ export default function Today() {
             id: generateId(), name,
             kcal: Math.round(perServing.kcal * consumed),
             protein: Math.round(perServing.protein * consumed * 10) / 10,
+            carbs: Math.round(perServing.carbs * consumed * 10) / 10,
+            fat: Math.round(perServing.fat * consumed * 10) / 10,
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
             timestamp: Date.now(), dateKey: getToday(),
             ...(ingredients ? { ingredients } : {}),
@@ -357,6 +377,8 @@ export default function Today() {
         name,
         kcal: Math.round(kcal),
         protein: Math.round(protein * 10) / 10,
+        carbs: Math.round(cVal * 10) / 10,
+        fat: Math.round(fVal * 10) / 10,
         ingredients: ingredients || [],
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
@@ -373,10 +395,12 @@ export default function Today() {
     const name = customDraft?.name?.trim();
     const kcal = Number(customDraft?.kcal);
     const protein = Number(customDraft?.protein) || 0;
+    const carbs = Number(customDraft?.carbs) || 0;
+    const fat = Number(customDraft?.fat) || 0;
     if (!name || !kcal || kcal <= 0) return;
     setCustomDraft((d) => ({
       ...d,
-      name, kcal, protein,
+      name, kcal, protein, carbs, fat,
       servingsYield: 1, servingsConsumed: 1,
       mealSlot: d?.mealSlot || getDefaultMeal(),
     }));
@@ -399,7 +423,7 @@ export default function Today() {
         <IngredientListFlow
           initialData={entry.ingredients ? entry : { name: entry.name, ingredients: [] }}
           onSave={(built) => {
-            dispatch({ type: 'UPDATE_ENTRY', payload: { ...entry, name: built.name, kcal: built.kcal, protein: built.protein, ingredients: built.ingredients } });
+            dispatch({ type: 'UPDATE_ENTRY', payload: { ...entry, name: built.name, kcal: built.kcal, protein: built.protein, carbs: built.carbs || 0, fat: built.fat || 0, ingredients: built.ingredients } });
             dispatch({ type: 'SET_EDITING_ENTRY', payload: null });
           }}
           onCancel={() => dispatch({ type: 'SET_EDITING_ENTRY', payload: null })}
@@ -452,6 +476,30 @@ export default function Today() {
                     placeholder="0"
                     value={customDraft?.protein || ''}
                     onChange={(e) => setCustomDraft((d) => ({ ...d, protein: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="direct-form-row">
+                <div className="direct-form-group">
+                  <label className="confirm-label">Carbs (g)</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.carbs || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, carbs: e.target.value }))}
+                  />
+                </div>
+                <div className="direct-form-group">
+                  <label className="confirm-label">Fat (g)</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.fat || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, fat: e.target.value }))}
                   />
                 </div>
               </div>
@@ -510,6 +558,16 @@ export default function Today() {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#9575cd" stroke="#9575cd" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M19.54,11.53a15.59,15.59,0,0,1-5.49,3.35,10.06,10.06,0,0,1-3,.87L8.25,12.93a10.06,10.06,0,0,1,.87-3,15.59,15.59,0,0,1,3.35-5.49,5,5,0,0,1,7.07,7.07Z"/><path d="M8.34,18.49l2.74-2.74h0L8.25,12.93h0L5.51,15.66A2,2,0,0,0,3.59,19a1.94,1.94,0,0,0,.9.51,1.94,1.94,0,0,0,.51.9,2,2,0,0,0,3.34-1.92Z"/></svg>
                     {Math.round(customDraft.protein)}g
                   </span>
+                  {(customDraft.carbs > 0 || customDraft.fat > 0) && <>
+                    {customDraft.carbs > 0 && <>
+                      <span className="confirm-hero-sep" />
+                      <span className="confirm-hero-macro" style={{ color: 'var(--color-carbs)' }}>C {Math.round(customDraft.carbs)}g</span>
+                    </>}
+                    {customDraft.fat > 0 && <>
+                      <span className="confirm-hero-sep" />
+                      <span className="confirm-hero-macro" style={{ color: 'var(--color-fat)' }}>F {Math.round(customDraft.fat)}g</span>
+                    </>}
+                  </>}
                 </div>
               </div>
 
@@ -633,6 +691,7 @@ export default function Today() {
         const dailyTotals = sumNutrition(todayEntries);
         const calTarget = effectiveKcal || state.targets?.kcal || 2000;
         const protTarget = effectiveProtein || state.targets?.protein || 120;
+        const macroFlags = hasMacroTargets(state.targets);
 
         return (
           <>
@@ -641,6 +700,14 @@ export default function Today() {
               <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
               <span className="daily-summary-sep" />
               <span className="daily-summary-item"><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g protein</span>
+              {macroFlags.showCarbs && <>
+                <span className="daily-summary-sep" />
+                <span className="daily-summary-item" style={{ color: 'var(--color-carbs)' }}><span className="daily-summary-value">{Math.round(dailyTotals.carbs)}</span> / {effectiveCarbs}g C</span>
+              </>}
+              {macroFlags.showFat && <>
+                <span className="daily-summary-sep" />
+                <span className="daily-summary-item" style={{ color: 'var(--color-fat)' }}><span className="daily-summary-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F</span>
+              </>}
             </div>
 
             {/* My Saved Meals section — hidden when empty */}
@@ -653,6 +720,8 @@ export default function Today() {
                   name: m.name,
                   kcal: m.kcal,
                   protein: m.protein,
+                  carbs: m.carbs || 0,
+                  fat: m.fat || 0,
                   ingredients: m.ingredients,
                   useCount: m.useCount || 0,
                 }))
@@ -698,6 +767,8 @@ export default function Today() {
                   name: l.name,
                   kcal: l.perServing.kcal,
                   protein: l.perServing.protein,
+                  carbs: l.perServing.carbs || 0,
+                  fat: l.perServing.fat || 0,
                   remaining: l.remainingServings,
                   leftover: l,
                 }));
@@ -763,7 +834,11 @@ export default function Today() {
                     <div className="meal-row-header">
                       <span className="meal-label">{label}</span>
                       {isFilled && (
-                        <span className="meal-totals-compact">{Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g</span>
+                        <span className="meal-totals-compact">
+                          {Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g
+                          {macroFlags.showCarbs && totals.carbs > 0 ? ` · C ${Math.round(totals.carbs)}g` : ''}
+                          {macroFlags.showFat && totals.fat > 0 ? ` · F ${Math.round(totals.fat)}g` : ''}
+                        </span>
                       )}
                     </div>
                     {isFilled && (

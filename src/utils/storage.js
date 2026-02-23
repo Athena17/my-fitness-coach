@@ -7,7 +7,7 @@ const CUSTOM_MEALS_KEY = 'nt_custom_meals';
 const RECIPES_KEY = 'nt_recipes';
 const LEFTOVERS_KEY = 'nt_leftovers';
 const PERSONAL_INGREDIENTS_KEY = 'nt_personal_ingredients';
-const CURRENT_SCHEMA = 3;
+const CURRENT_SCHEMA = 4;
 
 function safeGet(key) {
   try {
@@ -58,7 +58,7 @@ export function runMigrations() {
 }
 
 export function loadTargets() {
-  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, maintenanceKcal: 2000, userName: '', weightLossTarget: 5, onboardingComplete: false };
+  return safeGet(TARGETS_KEY) || { kcal: 2000, protein: 120, carbs: 0, fat: 0, maintenanceKcal: 2000, userName: '', weightLossTarget: 5, onboardingComplete: false };
 }
 
 export function saveTargets(targets) {

@@ -158,7 +158,15 @@ export default function FoodEntryCard({ entry, onDelete, dragEntryId, setDragEnt
       </span>
       <span className="fec-emoji">{getEmoji(entry.name)}</span>
       <span className="fec-name">{entry.name}</span>
-      <span className="fec-macros">{Math.round(entry.kcal)} cal · {Math.round(entry.protein)}g</span>
+      <span className="fec-macros">
+        {Math.round(entry.kcal)} cal · {Math.round(entry.protein)}g
+        {(entry.carbs > 0 || entry.fat > 0) && (
+          <>
+            {entry.carbs > 0 && ` · C ${Math.round(entry.carbs)}g`}
+            {entry.fat > 0 && ` · F ${Math.round(entry.fat)}g`}
+          </>
+        )}
+      </span>
     </button>
   );
 }

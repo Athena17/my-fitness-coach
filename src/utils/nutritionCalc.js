@@ -3,9 +3,17 @@ export function sumNutrition(entries) {
     (acc, entry) => ({
       kcal: acc.kcal + (entry.kcal || 0),
       protein: acc.protein + (entry.protein || 0),
+      carbs: acc.carbs + (entry.carbs || 0),
+      fat: acc.fat + (entry.fat || 0),
     }),
-    { kcal: 0, protein: 0 }
+    { kcal: 0, protein: 0, carbs: 0, fat: 0 }
   );
+}
+
+export function hasMacroTargets(targets) {
+  const showCarbs = (targets?.carbs || 0) > 0;
+  const showFat = (targets?.fat || 0) > 0;
+  return { showCarbs, showFat, showEither: showCarbs || showFat };
 }
 
 const ACTIVITY_FACTORS = {

@@ -14,15 +14,21 @@ export function toGrams(amount, portionGrams) {
 export function calculateMealTotals(ingredients) {
   let kcal = 0;
   let protein = 0;
+  let carbs = 0;
+  let fat = 0;
 
   for (const ing of ingredients) {
     const g = toGrams(ing.amount, ing.portionGrams);
     kcal += g * (ing.kcalPer100g || 0) / 100;
     protein += g * (ing.proteinPer100g || 0) / 100;
+    carbs += g * (ing.carbsPer100g || 0) / 100;
+    fat += g * (ing.fatPer100g || 0) / 100;
   }
 
   return {
     kcal: Math.round(kcal),
     protein: Math.round(protein * 10) / 10,
+    carbs: Math.round(carbs * 10) / 10,
+    fat: Math.round(fat * 10) / 10,
   };
 }

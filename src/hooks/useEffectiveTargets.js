@@ -12,18 +12,25 @@ export function useEffectiveTargets() {
     return {
       kcal: targets.kcal,
       protein: targets.protein,
+      carbs: targets.carbs ?? 0,
+      fat: targets.fat ?? 0,
       dayType: null,
       setDayType: null,
       cyclingEnabled: false,
     };
   }
 
-  const effectiveKcal = dayType === 'training' ? config.trainingKcal : config.restKcal;
-  const effectiveProtein = dayType === 'training' ? config.trainingProtein : config.restProtein;
+  const isTraining = dayType === 'training';
+  const effectiveKcal = isTraining ? config.trainingKcal : config.restKcal;
+  const effectiveProtein = isTraining ? config.trainingProtein : config.restProtein;
+  const effectiveCarbs = isTraining ? config.trainingCarbs : config.restCarbs;
+  const effectiveFat = isTraining ? config.trainingFat : config.restFat;
 
   return {
     kcal: effectiveKcal,
     protein: effectiveProtein,
+    carbs: effectiveCarbs || targets.carbs || 0,
+    fat: effectiveFat || targets.fat || 0,
     dayType,
     setDayType,
     cyclingEnabled: true,

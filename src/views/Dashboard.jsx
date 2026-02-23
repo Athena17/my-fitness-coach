@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
-import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
+import { sumNutrition, calcWeightChange, hasMacroTargets } from '../utils/nutritionCalc.js';
 import { getWeekRange, getToday } from '../utils/dateUtils.js';
 import { generateId } from '../utils/idGenerator.js';
 import './Dashboard.css';
@@ -130,7 +130,8 @@ export default function Dashboard() {
   const { state, dispatch } = useApp();
   const { targets, entries } = state;
   const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
-  const { kcal: effectiveKcal, protein: effectiveProtein, dayType, setDayType, cyclingEnabled } = useEffectiveTargets();
+  const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat, dayType, setDayType, cyclingEnabled } = useEffectiveTargets();
+  const macroFlags = hasMacroTargets(targets);
   const [mounted, setMounted] = useState(false);
   const [waterSplash, setWaterSplash] = useState(false);
   const [waterFlood, setWaterFlood] = useState(false);
@@ -282,6 +283,24 @@ export default function Dashboard() {
     if (proteinPct >= 1) msgs.push({ tag: 'Protein', text: 'Protein target hit — nice work!', level: 'good' });
     else if (proteinPct < 0.5) msgs.push({ tag: 'Protein', text: 'Try adding more protein to your next meal.', level: 'alert' });
     else msgs.push({ tag: 'Protein', text: `${proteinTarget - proteinEaten}g of protein left to hit your target.`, level: 'alert' });
+    // Carbs
+    if (macroFlags.showCarbs) {
+      const carbsEaten = Math.round(todayTotals.carbs);
+      const carbsTarget = effectiveCarbs;
+      const carbsLeft = carbsTarget - carbsEaten;
+      if (carbsLeft <= 0) msgs.push({ tag: 'Carbs', text: 'Carbs target reached!', level: 'good' });
+      else if (carbsLeft < carbsTarget * 0.2) msgs.push({ tag: 'Carbs', text: `Almost at your carbs target — ${carbsLeft}g left.`, level: 'good' });
+      else msgs.push({ tag: 'Carbs', text: `${carbsLeft}g of carbs left today.`, level: 'alert' });
+    }
+    // Fat
+    if (macroFlags.showFat) {
+      const fatEaten = Math.round(todayTotals.fat);
+      const fatTarget = effectiveFat;
+      const fatLeft = fatTarget - fatEaten;
+      if (fatLeft <= 0) msgs.push({ tag: 'Fat', text: 'Fat target reached!', level: 'good' });
+      else if (fatLeft < fatTarget * 0.2) msgs.push({ tag: 'Fat', text: `Almost at your fat target — ${fatLeft}g left.`, level: 'good' });
+      else msgs.push({ tag: 'Fat', text: `${fatLeft}g of fat left today.`, level: 'alert' });
+    }
     // Water — always show when behind
     const waterRatio = todayWaterTotal / waterTarget;
     if (waterRatio >= 1) msgs.push({ tag: 'Hydration', text: 'Water goal reached — well hydrated today!', level: 'good' });
@@ -308,7 +327,7 @@ export default function Dashboard() {
       }
     }
     return msgs;
-  }, [todayTotals, isOver, kcalEaten, todayKcalTarget, targets, proteinPct, proteinEaten, proteinTarget, todayWaterTotal, waterTarget, hour, caloriesBurned, weekData, wc]);
+  }, [todayTotals, isOver, kcalEaten, todayKcalTarget, targets, proteinPct, proteinEaten, proteinTarget, todayWaterTotal, waterTarget, hour, caloriesBurned, weekData, wc, macroFlags, effectiveCarbs, effectiveFat]);
 
   // Insight swipe state
   const [insightIdx, setInsightIdx] = useState(0);
@@ -453,6 +472,14 @@ export default function Dashboard() {
             {isOver ? 'Over target' : `${(todayKcalTarget - kcalEaten).toLocaleString()} cal`}
             {' · '}
             {proteinPct >= 1 ? 'Protein hit' : `${proteinTarget - proteinEaten}g protein`}
+            {macroFlags.showCarbs && (() => {
+              const carbsLeft = effectiveCarbs - Math.round(todayTotals.carbs);
+              return ` · ${carbsLeft <= 0 ? 'Carbs hit' : `${carbsLeft}g C`}`;
+            })()}
+            {macroFlags.showFat && (() => {
+              const fatLeft = effectiveFat - Math.round(todayTotals.fat);
+              return ` · ${fatLeft <= 0 ? 'Fat hit' : `${fatLeft}g F`}`;
+            })()}
             <span className="ov-today-suffix"> left</span>
           </span>
         ) : (
@@ -495,6 +522,23 @@ export default function Dashboard() {
         <div className="ov-perfect ov-enter ov-enter--4">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34b87a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
           <span>All targets hit</span>
+        </div>
+      )}
+
+      {/* Secondary macros (carbs/fat) — only when targets set */}
+      {macroFlags.showEither && (
+        <div className="ov-secondary-macros ov-enter ov-enter--4">
+          {macroFlags.showCarbs && (
+            <span className="ov-secondary-macro" style={{ color: 'var(--color-carbs)' }}>
+              C: {Math.round(todayTotals.carbs)}/{effectiveCarbs}g
+            </span>
+          )}
+          {macroFlags.showCarbs && macroFlags.showFat && <span className="ov-secondary-sep" />}
+          {macroFlags.showFat && (
+            <span className="ov-secondary-macro" style={{ color: 'var(--color-fat)' }}>
+              F: {Math.round(todayTotals.fat)}/{effectiveFat}g
+            </span>
+          )}
         </div>
       )}
 

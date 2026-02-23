@@ -16,6 +16,8 @@ import {
 const DEFAULT_TARGETS = {
   kcal: 2000,
   protein: 120,
+  carbs: 0,
+  fat: 0,
   maintenanceKcal: 2000,
   userName: '',
   weightLossTarget: 5,

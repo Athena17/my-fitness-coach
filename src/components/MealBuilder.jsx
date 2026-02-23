@@ -71,6 +71,8 @@ function buildRowFromIngredient(ing) {
   const portions = dbMatch ? getPortions(dbMatch) : [GRAM_PORTION];
   const kcalPer100g = dbMatch ? dbMatch.kcalPer100g : (ing.grams > 0 ? Math.round(ing.kcal / ing.grams * 100) : 0);
   const proteinPer100g = dbMatch ? dbMatch.proteinPer100g : (ing.grams > 0 ? Math.round(ing.protein / ing.grams * 1000) / 10 : 0);
+  const carbsPer100g = dbMatch ? (dbMatch.carbsPer100g || 0) : (ing.grams > 0 ? Math.round((ing.carbs || 0) / ing.grams * 1000) / 10 : 0);
+  const fatPer100g = dbMatch ? (dbMatch.fatPer100g || 0) : (ing.grams > 0 ? Math.round((ing.fat || 0) / ing.grams * 1000) / 10 : 0);
 
   return {
     key: Date.now() + Math.random(),
@@ -80,6 +82,8 @@ function buildRowFromIngredient(ing) {
     portionGrams: 1,
     kcalPer100g,
     proteinPer100g,
+    carbsPer100g,
+    fatPer100g,
     portions,
   };
 }
@@ -106,6 +110,8 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
               name: ing.name,
               kcalPer100g: ing.kcalPer100g,
               proteinPer100g: ing.proteinPer100g,
+              carbsPer100g: ing.carbsPer100g || 0,
+              fatPer100g: ing.fatPer100g || 0,
               portions,
               portionLabel: defaultPortion.label,
               portionGrams: defaultPortion.grams,
@@ -158,6 +164,8 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
         grams: Math.round(g),
         kcal: Math.round(g * r.kcalPer100g / 100),
         protein: Math.round(g * r.proteinPer100g / 100 * 10) / 10,
+        carbs: Math.round(g * (r.carbsPer100g || 0) / 100 * 10) / 10,
+        fat: Math.round(g * (r.fatPer100g || 0) / 100 * 10) / 10,
       };
     });
 
@@ -171,6 +179,8 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
         name: builtName,
         kcal: totals.kcal,
         protein: totals.protein,
+        carbs: totals.carbs,
+        fat: totals.fat,
         ingredients,
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
@@ -180,6 +190,8 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
       name: builtName,
       totalKcal: totals.kcal,
       totalProtein: totals.protein,
+      totalCarbs: totals.carbs,
+      totalFat: totals.fat,
       ingredients,
     });
   }

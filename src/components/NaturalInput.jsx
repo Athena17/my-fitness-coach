@@ -64,6 +64,8 @@ export default function NaturalInput({ onAdd, onEdit }) {
           <div className="preview-macros">
             <span className="preview-kcal">{preview.kcal} cal</span>
             <span className="preview-protein">{preview.protein}g protein</span>
+            {preview.carbs > 0 && <span className="preview-carbs" style={{ color: 'var(--color-carbs)' }}>{preview.carbs}g carbs</span>}
+            {preview.fat > 0 && <span className="preview-fat" style={{ color: 'var(--color-fat)' }}>{preview.fat}g fat</span>}
           </div>
           {preview.matchedFoods.length > 0 && (
             <p className="preview-matched">

@@ -64,10 +64,14 @@ export function parseNaturalInput(text) {
   // Sum up nutrition from matched foods (use serving values)
   let totalKcal = 0;
   let totalProtein = 0;
+  let totalCarbs = 0;
+  let totalFat = 0;
 
   for (const food of used) {
     totalKcal += food.serving.kcal;
     totalProtein += food.serving.protein;
+    totalCarbs += food.serving.carbs || 0;
+    totalFat += food.serving.fat || 0;
   }
 
   // Add dummy estimates for unrecognized items
@@ -79,12 +83,16 @@ export function parseNaturalInput(text) {
     // Nothing matched at all — give a rough per-item estimate
     totalKcal += unrecognizedCount * 150;
     totalProtein += unrecognizedCount * 5;
+    totalCarbs += unrecognizedCount * 15;
+    totalFat += unrecognizedCount * 5;
   }
 
   return {
     name: text.trim(),
     kcal: Math.round(totalKcal),
     protein: Math.round(totalProtein),
+    carbs: Math.round(totalCarbs),
+    fat: Math.round(totalFat),
     servingSize: 1,
     servingUnit: 'g',
     matchedFoods: used.map((f) => f.name),

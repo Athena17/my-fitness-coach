@@ -9,8 +9,12 @@ export function useCyclingConfig() {
     enabled: targets.cyclingEnabled ?? false,
     trainingKcal: targets.cyclingTrainingKcal ?? 0,
     trainingProtein: targets.cyclingTrainingProtein ?? 0,
+    trainingCarbs: targets.cyclingTrainingCarbs ?? 0,
+    trainingFat: targets.cyclingTrainingFat ?? 0,
     restKcal: targets.cyclingRestKcal ?? 0,
     restProtein: targets.cyclingRestProtein ?? 0,
+    restCarbs: targets.cyclingRestCarbs ?? 0,
+    restFat: targets.cyclingRestFat ?? 0,
   };
 
   const setConfig = useCallback((newConfig) => {
@@ -20,8 +24,12 @@ export function useCyclingConfig() {
         cyclingEnabled: newConfig.enabled,
         cyclingTrainingKcal: newConfig.trainingKcal,
         cyclingTrainingProtein: newConfig.trainingProtein,
+        cyclingTrainingCarbs: newConfig.trainingCarbs,
+        cyclingTrainingFat: newConfig.trainingFat,
         cyclingRestKcal: newConfig.restKcal,
         cyclingRestProtein: newConfig.restProtein,
+        cyclingRestCarbs: newConfig.restCarbs,
+        cyclingRestFat: newConfig.restFat,
       },
     });
   }, [dispatch]);

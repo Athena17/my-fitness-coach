@@ -49,11 +49,17 @@ function profileToApp(row) {
     goal: row.goal,
     intensity: row.intensity,
     waterTargetLiters: row.water_target_liters,
+    carbs: row.carbs_target ?? 0,
+    fat: row.fat_target ?? 0,
     cyclingEnabled: row.cycling_enabled ?? false,
     cyclingTrainingKcal: row.cycling_training_kcal ?? 0,
     cyclingTrainingProtein: row.cycling_training_protein ?? 0,
+    cyclingTrainingCarbs: row.cycling_training_carbs ?? 0,
+    cyclingTrainingFat: row.cycling_training_fat ?? 0,
     cyclingRestKcal: row.cycling_rest_kcal ?? 0,
     cyclingRestProtein: row.cycling_rest_protein ?? 0,
+    cyclingRestCarbs: row.cycling_rest_carbs ?? 0,
+    cyclingRestFat: row.cycling_rest_fat ?? 0,
   };
 }
 
@@ -74,11 +80,17 @@ function profileToDB(userId, p) {
     goal: p.goal,
     intensity: p.intensity,
     water_target_liters: p.waterTargetLiters,
+    carbs_target: p.carbs ?? 0,
+    fat_target: p.fat ?? 0,
     cycling_enabled: p.cyclingEnabled ?? false,
     cycling_training_kcal: p.cyclingTrainingKcal ?? 0,
     cycling_training_protein: p.cyclingTrainingProtein ?? 0,
+    cycling_training_carbs: p.cyclingTrainingCarbs ?? 0,
+    cycling_training_fat: p.cyclingTrainingFat ?? 0,
     cycling_rest_kcal: p.cyclingRestKcal ?? 0,
     cycling_rest_protein: p.cyclingRestProtein ?? 0,
+    cycling_rest_carbs: p.cyclingRestCarbs ?? 0,
+    cycling_rest_fat: p.cyclingRestFat ?? 0,
   };
 }
 
@@ -122,6 +134,8 @@ function entryToApp(row) {
     name: row.name,
     kcal: row.kcal,
     protein: row.protein,
+    carbs: row.carbs ?? 0,
+    fat: row.fat ?? 0,
     meal: row.meal,
     servingSize: row.serving_size,
     servingUnit: row.serving_unit,
@@ -139,6 +153,8 @@ function entryToDB(userId, e) {
     name: e.name || 'Food',
     kcal: e.kcal ?? 0,
     protein: e.protein ?? 0,
+    carbs: e.carbs ?? 0,
+    fat: e.fat ?? 0,
     meal: e.meal || 'Snack',
     serving_size: e.servingSize ?? null,
     serving_unit: e.servingUnit || 'g',
@@ -366,6 +382,8 @@ function leftoverToApp(row) {
     perServing: {
       kcal: row.per_serving_kcal ?? row.kcal,
       protein: row.per_serving_protein ?? row.protein,
+      carbs: row.per_serving_carbs ?? 0,
+      fat: row.per_serving_fat ?? 0,
     },
     dateKey: row.date_key,
     dateCooked: row.date_cooked,
@@ -384,6 +402,8 @@ function leftoverToDB(userId, l) {
     servings_left: l.remainingServings ?? 1,
     per_serving_kcal: l.perServing?.kcal ?? 0,
     per_serving_protein: l.perServing?.protein ?? 0,
+    per_serving_carbs: l.perServing?.carbs ?? 0,
+    per_serving_fat: l.perServing?.fat ?? 0,
     date_key: l.dateKey || l.dateCooked || new Date().toISOString().slice(0, 10),
     date_cooked: l.dateCooked || null,
     recipe_id: l.recipeId || null,
@@ -444,6 +464,8 @@ function customMealToApp(row) {
     ingredients: row.ingredients,
     kcal: row.total_kcal,
     protein: row.total_protein,
+    carbs: row.total_carbs ?? 0,
+    fat: row.total_fat ?? 0,
     useCount: row.use_count ?? 0,
   };
 }
@@ -454,6 +476,8 @@ function customMealToDB(userId, m) {
     ingredients: m.ingredients || [],
     total_kcal: m.kcal ?? 0,
     total_protein: m.protein ?? 0,
+    total_carbs: m.carbs ?? 0,
+    total_fat: m.fat ?? 0,
     use_count: m.useCount ?? 0,
   };
   if (m.id) row.id = m.id;

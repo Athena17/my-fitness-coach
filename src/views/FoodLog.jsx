@@ -17,6 +17,8 @@ export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSele
   const [name, setName] = useState(initial?.name ?? '');
   const [kcal, setKcal] = useState(initial ? String(initial.kcal) : '');
   const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
+  const [carbs, setCarbs] = useState(initial ? String(initial.carbs || 0) : '');
+  const [fat, setFat] = useState(initial ? String(initial.fat || 0) : '');
   const [meal, setMeal] = useState(initial?.meal ?? defaultMeal ?? 'Breakfast');
   const [errors, setErrors] = useState({});
 
@@ -28,6 +30,8 @@ export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSele
     setName(food.name);
     setKcal(String(food.serving.kcal));
     setProtein(String(food.serving.protein));
+    setCarbs(String(food.serving.carbs || 0));
+    setFat(String(food.serving.fat || 0));
   }
 
   function validate() {
@@ -51,6 +55,8 @@ export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSele
       name: name.trim(),
       kcal: Number(kcal),
       protein: Number(protein),
+      carbs: Number(carbs) || 0,
+      fat: Number(fat) || 0,
       meal,
       servingSize: 1,
       servingUnit: 'g',
@@ -121,6 +127,31 @@ export default function FoodLog({ prefill, defaultMeal, onDone, onCustomMealSele
               placeholder="0"
             />
             {errors.protein && <span className="form-error">{errors.protein}</span>}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="food-carbs">Carbs (g)</label>
+            <input
+              id="food-carbs"
+              type="number"
+              inputMode="decimal"
+              value={carbs}
+              onChange={(e) => setCarbs(e.target.value)}
+              placeholder="0"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="food-fat">Fat (g)</label>
+            <input
+              id="food-fat"
+              type="number"
+              inputMode="decimal"
+              value={fat}
+              onChange={(e) => setFat(e.target.value)}
+              placeholder="0"
+            />
           </div>
         </div>
 

@@ -158,6 +158,8 @@ function makeMatchedRow(match) {
     portions,
     kcalPer100g: match.kcalPer100g,
     proteinPer100g: match.proteinPer100g,
+    carbsPer100g: match.carbsPer100g || 0,
+    fatPer100g: match.fatPer100g || 0,
     matched: true,
     isNew: false,
     isPersonal: !!match.isPersonal,
@@ -299,6 +301,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
           query: ing.name, name: ing.name, amount: 1,
           portionLabel: defaultPortion.label, portionGrams: defaultPortion.grams,
           portions, kcalPer100g: ing.kcalPer100g, proteinPer100g: ing.proteinPer100g,
+          carbsPer100g: ing.carbsPer100g || 0, fatPer100g: ing.fatPer100g || 0,
           matched: true, isNew: false, isPersonal: !!ing.isPersonal, saveToDb: false, editing: true,
         } : r,
       );
@@ -320,6 +323,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
             ...r, name: match.name, query: match.name,
             portionLabel: defaultPortion.label, portionGrams: defaultPortion.grams,
             portions, kcalPer100g: match.kcalPer100g, proteinPer100g: match.proteinPer100g,
+            carbsPer100g: match.carbsPer100g || 0, fatPer100g: match.fatPer100g || 0,
             matched: true, isNew: false, isPersonal: !!match.isPersonal, saveToDb: false, editing: true,
           };
         }
@@ -368,17 +372,23 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   const totals = useMemo(() => {
     let kcal = 0;
     let protein = 0;
+    let carbs = 0;
+    let fat = 0;
     for (const r of validRows) {
       if (r.isNew) {
         kcal += r.totalKcal || 0;
         protein += r.totalProtein || 0;
+        carbs += r.totalCarbs || 0;
+        fat += r.totalFat || 0;
       } else {
         const g = toGrams(r.amount, r.portionGrams);
         kcal += g * (r.kcalPer100g || 0) / 100;
         protein += g * (r.proteinPer100g || 0) / 100;
+        carbs += g * (r.carbsPer100g || 0) / 100;
+        fat += g * (r.fatPer100g || 0) / 100;
       }
     }
-    return { kcal: Math.round(kcal), protein: Math.round(protein * 10) / 10 };
+    return { kcal: Math.round(kcal), protein: Math.round(protein * 10) / 10, carbs: Math.round(carbs * 10) / 10, fat: Math.round(fat * 10) / 10 };
   }, [validRows]);
 
   /* --- Save --- */
@@ -409,6 +419,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
           name: r.name, grams: Math.round(g),
           kcal: Math.round(r.totalKcal),
           protein: Math.round(r.totalProtein * 10) / 10,
+          carbs: Math.round((r.totalCarbs || 0) * 10) / 10,
+          fat: Math.round((r.totalFat || 0) * 10) / 10,
         };
       }
       const g = toGrams(r.amount, r.portionGrams);
@@ -416,6 +428,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
         name: r.name, grams: Math.round(g),
         kcal: Math.round(g * r.kcalPer100g / 100),
         protein: Math.round(g * r.proteinPer100g / 100 * 10) / 10,
+        carbs: Math.round(g * (r.carbsPer100g || 0) / 100 * 10) / 10,
+        fat: Math.round(g * (r.fatPer100g || 0) / 100 * 10) / 10,
       };
     });
 
@@ -430,12 +444,12 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
       const existing = (state.customMeals || []).find((m) => m.name.toLowerCase() === finalName.toLowerCase());
       const customMeal = {
         ...(existing ? { id: existing.id, useCount: (existing.useCount || 0) + 1 } : { id: crypto.randomUUID(), useCount: 1 }),
-        name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients,
+        name: finalName, kcal: totals.kcal, protein: totals.protein, carbs: totals.carbs, fat: totals.fat, ingredients,
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
     }
 
-    onSave({ name: finalName, kcal: totals.kcal, protein: totals.protein, ingredients });
+    onSave({ name: finalName, kcal: totals.kcal, protein: totals.protein, carbs: totals.carbs, fat: totals.fat, ingredients });
   }
 
   return (
@@ -563,6 +577,20 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                           <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
                             value={row.totalProtein || ''}
                             onChange={(e) => updateRow(i, { totalProtein: Number(e.target.value) || 0 })}
+                            placeholder="0" />
+                        </div>
+                        <div className="ilf-new-row">
+                          <label className="ilf-new-label">carbs (g)</label>
+                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                            value={row.totalCarbs || ''}
+                            onChange={(e) => updateRow(i, { totalCarbs: Number(e.target.value) || 0 })}
+                            placeholder="0" />
+                        </div>
+                        <div className="ilf-new-row">
+                          <label className="ilf-new-label">fat (g)</label>
+                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                            value={row.totalFat || ''}
+                            onChange={(e) => updateRow(i, { totalFat: Number(e.target.value) || 0 })}
                             placeholder="0" />
                         </div>
                         <label className="ilf-save-toggle">

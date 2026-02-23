@@ -113,7 +113,10 @@ export default function FoodSearch({ onSelect }) {
                   {food.name}
                 </span>
                 <span className="food-search-meta">
-                  {food.serving.kcal} cal · {food.serving.protein}g · {food.serving.label}
+                  {food.serving.kcal} cal · {food.serving.protein}g
+                  {food.serving.carbs > 0 && ` · C ${food.serving.carbs}g`}
+                  {food.serving.fat > 0 && ` · F ${food.serving.fat}g`}
+                  {' · '}{food.serving.label}
                 </span>
               </button>
             </li>

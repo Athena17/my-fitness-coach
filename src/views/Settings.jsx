@@ -38,6 +38,8 @@ export default function Settings() {
   const [weightLossTarget, setWeightLossTarget] = useState(String(targets.weightLossTarget || 5));
   const [kcal, setKcal] = useState(String(targets.kcal));
   const [protein, setProtein] = useState(String(targets.protein));
+  const [carbsTarget, setCarbsTarget] = useState(targets.carbs ? String(targets.carbs) : '');
+  const [fatTarget, setFatTarget] = useState(targets.fat ? String(targets.fat) : '');
   const [water, setWater] = useState(String(targets.waterTargetLiters || 2.5));
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
@@ -49,6 +51,8 @@ export default function Settings() {
     setWeightLossTarget(String(targets.weightLossTarget || 5));
     setKcal(String(targets.kcal));
     setProtein(String(targets.protein));
+    setCarbsTarget(targets.carbs ? String(targets.carbs) : '');
+    setFatTarget(targets.fat ? String(targets.fat) : '');
     setWater(String(targets.waterTargetLiters || 2.5));
     setErrors({});
     setEditing(true);
@@ -74,12 +78,19 @@ export default function Settings() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    const c = Number(carbsTarget) || 0;
+    const f = Number(fatTarget) || 0;
+    if (c < 0 || c > 1000) { setErrors((e) => ({ ...e, carbs: '0–1000' })); return; }
+    if (f < 0 || f > 500) { setErrors((e) => ({ ...e, fat: '0–500' })); return; }
+
     dispatch({
       type: 'SET_TARGETS',
       payload: {
         userName: userName.trim(),
         kcal: k,
         protein: p,
+        carbs: c,
+        fat: f,
         waterTargetLiters: wt,
         maintenanceKcal: targets.maintenanceKcal || targets.kcal,
         weightLossTarget: w,
@@ -216,6 +227,32 @@ export default function Settings() {
             </div>
 
             <div className="form-group">
+              <label htmlFor="settings-carbs">Carbs target (g / day)</label>
+              <input
+                id="settings-carbs"
+                type="number"
+                inputMode="numeric"
+                value={carbsTarget}
+                onChange={(e) => setCarbsTarget(e.target.value)}
+                placeholder="Leave empty to hide"
+              />
+              {errors.carbs && <span className="form-error">{errors.carbs}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="settings-fat">Fat target (g / day)</label>
+              <input
+                id="settings-fat"
+                type="number"
+                inputMode="numeric"
+                value={fatTarget}
+                onChange={(e) => setFatTarget(e.target.value)}
+                placeholder="Leave empty to hide"
+              />
+              {errors.fat && <span className="form-error">{errors.fat}</span>}
+            </div>
+
+            <div className="form-group">
               <label htmlFor="settings-water">Water target (L / day)</label>
               <input
                 id="settings-water"
@@ -266,6 +303,36 @@ export default function Settings() {
               </div>
               <span className="target-value">{targets.protein} g / day</span>
             </div>
+
+            {targets.carbs > 0 && (
+              <>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left">
+                    <span className="target-icon" style={{ color: 'var(--color-carbs)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    </span>
+                    <span className="target-label">Carbs target</span>
+                  </div>
+                  <span className="target-value">{targets.carbs} g / day</span>
+                </div>
+              </>
+            )}
+
+            {targets.fat > 0 && (
+              <>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left">
+                    <span className="target-icon" style={{ color: 'var(--color-fat)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+                    </span>
+                    <span className="target-label">Fat target</span>
+                  </div>
+                  <span className="target-value">{targets.fat} g / day</span>
+                </div>
+              </>
+            )}
 
             <div className="target-divider" />
 
