@@ -272,6 +272,13 @@ input, button, select, textarea {
   font-size: 16px;
 }
 
+/* Prevent iOS Safari auto-zoom: inputs must be >= 16px on focus */
+@supports (-webkit-touch-callout: none) {
+  input:focus, textarea:focus, select:focus {
+    font-size: max(1rem, 16px);
+  }
+}
+
 button {
   cursor: pointer;
   border: none;
