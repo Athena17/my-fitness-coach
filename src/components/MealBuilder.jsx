@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { calculateMealTotals, toGrams } from '../utils/ingredientCalc.js';
 import { useApp } from '../context/useApp.js';
@@ -13,6 +14,7 @@ function getPortions(ing) {
 function IngredientSearch({ value, onChange, onSelect }) {
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
+  const [rect, setRect] = useState(null);
 
   const results = useMemo(() => {
     if (!value || value.length < 2) return [];
@@ -22,11 +24,23 @@ function IngredientSearch({ value, onChange, onSelect }) {
       .slice(0, 8);
   }, [value]);
 
+  const updateRect = useCallback(() => {
+    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
+  }, []);
+
   useEffect(() => {
-    if (open && results.length > 0 && inputRef.current) {
-      inputRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  }, [open, results.length]);
+    if (!open || results.length === 0) return;
+    updateRect();
+    const appMain = document.querySelector('.app-main');
+    if (appMain) appMain.addEventListener('scroll', updateRect, { passive: true });
+    window.addEventListener('resize', updateRect);
+    return () => {
+      if (appMain) appMain.removeEventListener('scroll', updateRect);
+      window.removeEventListener('resize', updateRect);
+    };
+  }, [open, results.length, updateRect]);
+
+  const showDropdown = open && results.length > 0 && rect;
 
   return (
     <div className="mb-search-wrap">
@@ -36,16 +50,17 @@ function IngredientSearch({ value, onChange, onSelect }) {
         className="mb-input"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { setOpen(true); updateRect(); }}
         placeholder="Search ingredient…"
       />
-      {open && results.length > 0 && (
-        <div className="mb-dropdown">
+      {showDropdown && createPortal(
+        <div className="mb-dropdown mb-dropdown-portal" style={{ top: rect.bottom, left: rect.left, width: rect.width }}>
           {results.map((ing) => (
             <button
               key={ing.id}
               className="mb-dropdown-item"
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => { onSelect(ing); setOpen(false); }}
             >
               <span className="mb-dropdown-name">{ing.name}</span>
@@ -55,7 +70,8 @@ function IngredientSearch({ value, onChange, onSelect }) {
               </span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
