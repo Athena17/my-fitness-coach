@@ -31,8 +31,12 @@ export function AuthProvider({ children }) {
           window.history.replaceState(null, '', window.location.pathname);
         }
 
-        // Get the current session (works after code exchange or from stored session)
-        const { data: { session } } = await supabase.auth.getSession();
+        // Get the current session with a timeout to avoid hanging on token refresh
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth session timeout')), 8000)
+        );
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
         setUser(session?.user ?? null);
       } catch (err) {
         console.error('Auth init error:', err);

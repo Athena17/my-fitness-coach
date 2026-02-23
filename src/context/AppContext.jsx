@@ -224,7 +224,7 @@ export function AppProvider({ children }) {
 
       setLoading(true);
       try {
-        const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.all([
+        const dataPromise = Promise.all([
           fetchProfile(uid),
           fetchEntries(uid),
           fetchExerciseLogs(uid),
@@ -235,6 +235,10 @@ export function AppProvider({ children }) {
           fetchDayTypes(uid),
           fetchPersonalIngredients(uid),
         ]);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Data load timeout')), 15000)
+        );
+        const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.race([dataPromise, timeoutPromise]);
         if (cancelled) return;
         rawDispatch({
           type: 'INIT_DATA',
