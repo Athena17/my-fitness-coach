@@ -199,26 +199,33 @@ export function AppProvider({ children }) {
   });
 
   // Load data from Supabase when user becomes available
+  const userIdRef = useRef(null);
   useEffect(() => {
+    // Same user — skip re-fetch (avoids Supabase auth firing multiple events)
+    const uid = user?.id ?? null;
+    if (uid === userIdRef.current) return;
+    userIdRef.current = uid;
+
     let cancelled = false;
 
     (async () => {
-      if (!user) {
+      if (!uid) {
+        rawDispatch({ type: 'INIT_DATA', payload: {} });
         setLoading(false);
         return;
       }
 
       setLoading(true);
       const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.all([
-        fetchProfile(user.id),
-        fetchEntries(user.id),
-        fetchExerciseLogs(user.id),
-        fetchWaterLogs(user.id),
-        fetchRecipes(user.id),
-        fetchLeftovers(user.id),
-        fetchCustomMeals(user.id),
-        fetchDayTypes(user.id),
-        fetchPersonalIngredients(user.id),
+        fetchProfile(uid),
+        fetchEntries(uid),
+        fetchExerciseLogs(uid),
+        fetchWaterLogs(uid),
+        fetchRecipes(uid),
+        fetchLeftovers(uid),
+        fetchCustomMeals(uid),
+        fetchDayTypes(uid),
+        fetchPersonalIngredients(uid),
       ]);
       if (cancelled) return;
       rawDispatch({
