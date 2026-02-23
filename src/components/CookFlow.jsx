@@ -24,9 +24,9 @@ export default function CookFlow({ onComplete, onCancel }) {
 
     const perServing = {
       kcal: Math.round(builtData.totalKcal / yieldNum),
-      protein: Math.round(builtData.totalProtein / yieldNum * 10) / 10,
+      protein: Math.round(builtData.totalProtein / yieldNum),
       carbs: Math.round((builtData.totalCarbs || 0) / yieldNum),
-      fat: Math.round((builtData.totalFat || 0) / yieldNum * 10) / 10,
+      fat: Math.round((builtData.totalFat || 0) / yieldNum),
     };
 
     const recipe = {
@@ -70,7 +70,7 @@ export default function CookFlow({ onComplete, onCancel }) {
   const perServing = yieldNum > 0
     ? {
         kcal: Math.round(builtData.totalKcal / yieldNum),
-        protein: Math.round(builtData.totalProtein / yieldNum * 10) / 10,
+        protein: Math.round(builtData.totalProtein / yieldNum),
       }
     : { kcal: 0, protein: 0 };
 

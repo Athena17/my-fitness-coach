@@ -9,7 +9,7 @@ export function toGrams(amount, portionGrams) {
 /**
  * Calculate totals from an array of ingredient rows.
  * Each row: { amount, portionGrams, kcalPer100g, proteinPer100g }
- * Returns: { kcal: integer, protein: 1 decimal }
+ * Returns: { kcal: integer, protein: integer }
  */
 export function calculateMealTotals(ingredients) {
   let kcal = 0;
@@ -27,8 +27,8 @@ export function calculateMealTotals(ingredients) {
 
   return {
     kcal: Math.round(kcal),
-    protein: Math.round(protein * 10) / 10,
-    carbs: Math.round(carbs * 10) / 10,
-    fat: Math.round(fat * 10) / 10,
+    protein: Math.round(protein),
+    carbs: Math.round(carbs),
+    fat: Math.round(fat),
   };
 }

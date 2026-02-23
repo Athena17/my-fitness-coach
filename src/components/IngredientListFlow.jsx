@@ -239,8 +239,8 @@ function CompactRow({ row, rowKcal, rowProtein, onEdit, onRemove, disabled, macr
         {rowKcal !== null && <> · {rowKcal} cal · {rowProtein}g</>}
         {macroFlags.showEither && (() => {
           const g = toGrams(row.amount, row.portionGrams);
-          const c = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(g * (row.carbsPer100g || 0) / 100 * 10) / 10;
-          const f = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(g * (row.fatPer100g || 0) / 100 * 10) / 10;
+          const c = row.isNew ? Math.round(row.totalCarbs || 0) : Math.round(g * (row.carbsPer100g || 0) / 100);
+          const f = row.isNew ? Math.round(row.totalFat || 0) : Math.round(g * (row.fatPer100g || 0) / 100);
           return <>
             {macroFlags.showCarbs && c > 0 && <> · C {c}g</>}
             {macroFlags.showFat && f > 0 && <> · F {f}g</>}
@@ -402,7 +402,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
         fat += g * (r.fatPer100g || 0) / 100;
       }
     }
-    return { kcal: Math.round(kcal), protein: Math.round(protein * 10) / 10, carbs: Math.round(carbs * 10) / 10, fat: Math.round(fat * 10) / 10 };
+    return { kcal: Math.round(kcal), protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) };
   }, [validRows]);
 
   /* --- Save --- */
@@ -421,7 +421,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
               refAmount: Number(r.amount) || 0,
               refUnit: r.portionLabel,
               refKcal: Math.round(r.totalKcal),
-              refProtein: Math.round(r.totalProtein * 10) / 10,
+              refProtein: Math.round(r.totalProtein),
             },
           });
         }
@@ -434,18 +434,18 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
         return {
           name: r.name, grams: Math.round(g),
           kcal: Math.round(r.totalKcal),
-          protein: Math.round(r.totalProtein * 10) / 10,
-          carbs: Math.round((r.totalCarbs || 0) * 10) / 10,
-          fat: Math.round((r.totalFat || 0) * 10) / 10,
+          protein: Math.round(r.totalProtein),
+          carbs: Math.round(r.totalCarbs || 0),
+          fat: Math.round(r.totalFat || 0),
         };
       }
       const g = toGrams(r.amount, r.portionGrams);
       return {
         name: r.name, grams: Math.round(g),
         kcal: Math.round(g * r.kcalPer100g / 100),
-        protein: Math.round(g * r.proteinPer100g / 100 * 10) / 10,
-        carbs: Math.round(g * (r.carbsPer100g || 0) / 100 * 10) / 10,
-        fat: Math.round(g * (r.fatPer100g || 0) / 100 * 10) / 10,
+        protein: Math.round(g * r.proteinPer100g / 100),
+        carbs: Math.round(g * (r.carbsPer100g || 0) / 100),
+        fat: Math.round(g * (r.fatPer100g || 0) / 100),
       };
     });
 
@@ -513,10 +513,10 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
               let rowProtein = null;
               if (row.isNew && (row.totalKcal > 0 || row.totalProtein > 0)) {
                 rowKcal = Math.round(row.totalKcal);
-                rowProtein = Math.round(row.totalProtein * 10) / 10;
+                rowProtein = Math.round(row.totalProtein);
               } else if (row.kcalPer100g > 0 && Number(row.amount) > 0) {
                 rowKcal = Math.round(g * row.kcalPer100g / 100);
-                rowProtein = Math.round(g * row.proteinPer100g / 100 * 10) / 10;
+                rowProtein = Math.round(g * row.proteinPer100g / 100);
               }
               const confirmed = row.matched || row.isNew;
 
@@ -575,8 +575,8 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                           {rowKcal} cal · {rowProtein}g
                           {macroFlags.showEither && (() => {
                             const gc = toGrams(row.amount, row.portionGrams);
-                            const rc = row.isNew ? Math.round((row.totalCarbs || 0) * 10) / 10 : Math.round(gc * (row.carbsPer100g || 0) / 100 * 10) / 10;
-                            const rf = row.isNew ? Math.round((row.totalFat || 0) * 10) / 10 : Math.round(gc * (row.fatPer100g || 0) / 100 * 10) / 10;
+                            const rc = row.isNew ? Math.round(row.totalCarbs || 0) : Math.round(gc * (row.carbsPer100g || 0) / 100);
+                            const rf = row.isNew ? Math.round(row.totalFat || 0) : Math.round(gc * (row.fatPer100g || 0) / 100);
                             return <>
                               {macroFlags.showCarbs && rc > 0 && <> · C {rc}g</>}
                               {macroFlags.showFat && rf > 0 && <> · F {rf}g</>}

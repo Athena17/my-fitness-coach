@@ -172,9 +172,40 @@ export default function Today() {
     }
   }
 
-  // Custom add flow
-  const [customStep, setCustomStep] = useState(null);
-  const [customDraft, setCustomDraft] = useState(null);
+  // Custom add flow — restore from global draft if available
+  const [customStep, setCustomStepRaw] = useState(state.mealDraft?.step ?? null);
+  const [customDraft, setCustomDraft] = useState(state.mealDraft?.draft ?? null);
+  const [navStack, setNavStack] = useState([]);
+
+  // Navigate forward: push current step onto stack, then go to next step
+  function navigateTo(step) {
+    setNavStack((prev) => [...prev, customStep]);
+    setCustomStepRaw(step);
+  }
+
+  // Navigate back: pop from stack (or close if stack empty)
+  function navigateBack() {
+    if (navStack.length > 0) {
+      const prev = navStack[navStack.length - 1];
+      setNavStack((s) => s.slice(0, -1));
+      setCustomStepRaw(prev);
+    } else {
+      handleCustomClose();
+    }
+  }
+
+  // Direct step set (for resets/saves — clears stack)
+  function setCustomStep(step) {
+    setNavStack([]);
+    setCustomStepRaw(step);
+  }
+
+  // Sync draft to global state so it survives tab switches
+  useEffect(() => {
+    if (customStep && customDraft) {
+      dispatch({ type: 'SET_MEAL_DRAFT', payload: { step: customStep, draft: customDraft } });
+    }
+  }, [customStep, customDraft, dispatch]);
 
   // --- Delete handler ---
 
@@ -253,9 +284,9 @@ export default function Today() {
           id: generateId(),
           name: item.name,
           kcal: Math.round(item.kcal),
-          protein: Math.round(item.protein * 10) / 10,
-          carbs: Math.round((item.carbs || 0) * 10) / 10,
-          fat: Math.round((item.fat || 0) * 10) / 10,
+          protein: Math.round(item.protein),
+          carbs: Math.round(item.carbs || 0),
+          fat: Math.round(item.fat || 0),
           meal: mealKey,
           servingSize: 1,
           servingUnit: 'serving',
@@ -297,7 +328,7 @@ export default function Today() {
       servingsYield: 1, servingsConsumed: 1,
       mealSlot: d?.mealSlot || getDefaultMeal(),
     }));
-    setCustomStep('confirm');
+    navigateTo('confirm');
   }
 
   function handleConfirmSave() {
@@ -317,9 +348,9 @@ export default function Today() {
           payload: {
             id: generateId(), name,
             kcal: Math.round(kcal * consumed),
-            protein: Math.round(protein * consumed * 10) / 10,
-            carbs: Math.round(cVal * consumed * 10) / 10,
-            fat: Math.round(fVal * consumed * 10) / 10,
+            protein: Math.round(protein * consumed),
+            carbs: Math.round(cVal * consumed),
+            fat: Math.round(fVal * consumed),
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
             timestamp: Date.now(), dateKey: getToday(),
             fromLeftoverId: lo.id,
@@ -336,9 +367,9 @@ export default function Today() {
       // New meal
       const perServing = {
         kcal: Math.round(kcal / yieldN),
-        protein: Math.round(protein / yieldN * 10) / 10,
-        carbs: Math.round(cVal / yieldN * 10) / 10,
-        fat: Math.round(fVal / yieldN * 10) / 10,
+        protein: Math.round(protein / yieldN),
+        carbs: Math.round(cVal / yieldN),
+        fat: Math.round(fVal / yieldN),
       };
 
       if (consumed > 0) {
@@ -347,9 +378,9 @@ export default function Today() {
           payload: {
             id: generateId(), name,
             kcal: Math.round(perServing.kcal * consumed),
-            protein: Math.round(perServing.protein * consumed * 10) / 10,
-            carbs: Math.round(perServing.carbs * consumed * 10) / 10,
-            fat: Math.round(perServing.fat * consumed * 10) / 10,
+            protein: Math.round(perServing.protein * consumed),
+            carbs: Math.round(perServing.carbs * consumed),
+            fat: Math.round(perServing.fat * consumed),
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
             timestamp: Date.now(), dateKey: getToday(),
             ...(ingredients ? { ingredients } : {}),
@@ -377,9 +408,9 @@ export default function Today() {
         ...(existing ? { id: existing.id, useCount: (existing.useCount || 0) + 1 } : { id: generateId(), useCount: 1 }),
         name,
         kcal: Math.round(kcal),
-        protein: Math.round(protein * 10) / 10,
-        carbs: Math.round(cVal * 10) / 10,
-        fat: Math.round(fVal * 10) / 10,
+        protein: Math.round(protein),
+        carbs: Math.round(cVal),
+        fat: Math.round(fVal),
         ingredients: ingredients || [],
       };
       dispatch({ type: existing ? 'UPDATE_CUSTOM_MEAL' : 'ADD_CUSTOM_MEAL', payload: customMeal });
@@ -390,6 +421,7 @@ export default function Today() {
 
     setCustomStep(null);
     setCustomDraft(null);
+    dispatch({ type: 'CLEAR_MEAL_DRAFT' });
   }
 
   function handleDirectNext() {
@@ -405,12 +437,13 @@ export default function Today() {
       servingsYield: 1, servingsConsumed: 1,
       mealSlot: d?.mealSlot || getDefaultMeal(),
     }));
-    setCustomStep('confirm');
+    navigateTo('confirm');
   }
 
   function handleCustomClose() {
     setCustomStep(null);
     setCustomDraft(null);
+    dispatch({ type: 'CLEAR_MEAL_DRAFT' });
   }
 
   // --- Full-view takeovers ---
@@ -439,7 +472,7 @@ export default function Today() {
         {customStep === 'direct' && (
           <div className="add-mode-view">
             <div className="add-mode-header">
-              <button className="add-mode-back" onClick={handleCustomClose}>
+              <button className="add-mode-back" onClick={navigateBack}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
               <span className="add-mode-title">Log Meal</span>
@@ -526,21 +559,21 @@ export default function Today() {
         {customStep === 'list' && (
           <IngredientListFlow
             onSave={handleListDone}
-            onCancel={customDraft?.servingsYield ? () => setCustomStep('confirm') : handleCustomClose}
+            onCancel={navigateBack}
             initialData={customDraft?.servingsYield ? customDraft : undefined}
           />
         )}
 
         {customStep === 'confirm' && customDraft && (() => {
           const perServing = customDraft.servingsYield > 1
-            ? { kcal: Math.round(customDraft.kcal / customDraft.servingsYield), protein: Math.round(customDraft.protein / customDraft.servingsYield * 10) / 10 }
-            : { kcal: Math.round(customDraft.kcal), protein: Math.round(customDraft.protein * 10) / 10 };
+            ? { kcal: Math.round(customDraft.kcal / customDraft.servingsYield), protein: Math.round(customDraft.protein / customDraft.servingsYield) }
+            : { kcal: Math.round(customDraft.kcal), protein: Math.round(customDraft.protein) };
           const leftover = customDraft.servingsYield - customDraft.servingsConsumed;
 
           return (
             <div className="add-mode-view confirm-view">
               <div className="add-mode-header">
-                <button className="add-mode-back" onClick={handleCustomClose}>
+                <button className="add-mode-back" onClick={navigateBack}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
                 <span className="add-mode-title">Log Meal</span>
@@ -574,7 +607,7 @@ export default function Today() {
                 <div className="confirm-ingredients">
                   <div className="confirm-ingredients-header">
                     <span className="confirm-ingredients-title">Ingredients</span>
-                    <button type="button" className="confirm-ingredients-edit" onClick={() => setCustomStep('list')}>
+                    <button type="button" className="confirm-ingredients-edit" onClick={() => navigateTo('list')}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                       Edit
                     </button>

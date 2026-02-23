@@ -192,8 +192,8 @@ function MyIngredientsSection() {
         id: editingId,
         name: form.name.trim(),
         refAmount: Number(form.amount) || 0, refUnit: form.unit,
-        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
-        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) * 10) / 10,
+        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) || 0),
+        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) || 0),
       },
     });
     setEditingId(null);
@@ -214,8 +214,8 @@ function MyIngredientsSection() {
         id: generateId(),
         name: form.name.trim(),
         refAmount: Number(form.amount) || 0, refUnit: form.unit,
-        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) * 10) / 10,
-        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) * 10) / 10,
+        refKcal: Math.round(Number(form.kcal) || 0), refProtein: Math.round(Number(form.protein) || 0),
+        refCarbs: Math.round(Number(form.carbs) || 0), refFat: Math.round(Number(form.fat) || 0),
       },
     });
     setAdding(false);
@@ -598,7 +598,7 @@ export default function Profile() {
       if (!dateKey || numParts.length < 2) { skipped++; continue; }
 
       const kcalVal = Math.round(numParts[0]);
-      const proteinVal = Math.round(numParts[1] * 10) / 10;
+      const proteinVal = Math.round(numParts[1]);
       if (kcalVal <= 0) { skipped++; continue; }
 
       newEntries.push({
@@ -644,7 +644,7 @@ export default function Profile() {
     }
     const lines = Object.keys(dayMap)
       .sort()
-      .map((dk) => `${dk}, ${Math.round(dayMap[dk].kcal)}, ${Math.round(dayMap[dk].protein * 10) / 10}`)
+      .map((dk) => `${dk}, ${Math.round(dayMap[dk].kcal)}, ${Math.round(dayMap[dk].protein)}`)
       .join('\n');
     setExportText(lines || 'No data to export.');
     setShowExport(true);

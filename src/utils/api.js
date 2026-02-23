@@ -319,9 +319,9 @@ function recipeToApp(row) {
     servingsYield: row.servings_yield ?? row.servings,
     perServing: {
       kcal: row.per_serving_kcal ?? (row.servings ? Math.round(row.total_kcal / row.servings) : row.total_kcal),
-      protein: row.per_serving_protein ?? (row.servings ? Math.round(row.total_protein / row.servings * 10) / 10 : row.total_protein),
+      protein: row.per_serving_protein ?? (row.servings ? Math.round(row.total_protein / row.servings) : row.total_protein),
       carbs: row.per_serving_carbs ?? (row.servings ? Math.round((row.total_carbs ?? 0) / row.servings) : (row.total_carbs ?? 0)),
-      fat: row.per_serving_fat ?? (row.servings ? Math.round((row.total_fat ?? 0) / row.servings * 10) / 10 : (row.total_fat ?? 0)),
+      fat: row.per_serving_fat ?? (row.servings ? Math.round((row.total_fat ?? 0) / row.servings) : (row.total_fat ?? 0)),
     },
     notes: row.notes,
   };

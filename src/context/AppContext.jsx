@@ -38,6 +38,7 @@ function init() {
     dayTypes: {},
     currentView: VIEWS.DASHBOARD,
     editingEntry: null,
+    mealDraft: null,
   };
 }
 
@@ -82,6 +83,12 @@ function reducer(state, action) {
 
     case 'SET_EDITING_ENTRY':
       return { ...state, editingEntry: action.payload };
+
+    case 'SET_MEAL_DRAFT':
+      return { ...state, mealDraft: action.payload };
+
+    case 'CLEAR_MEAL_DRAFT':
+      return { ...state, mealDraft: null };
 
     case 'ADD_EXERCISE':
       return { ...state, exerciseLogs: [...state.exerciseLogs, action.payload] };
@@ -216,23 +223,30 @@ export function AppProvider({ children }) {
       }
 
       setLoading(true);
-      const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.all([
-        fetchProfile(uid),
-        fetchEntries(uid),
-        fetchExerciseLogs(uid),
-        fetchWaterLogs(uid),
-        fetchRecipes(uid),
-        fetchLeftovers(uid),
-        fetchCustomMeals(uid),
-        fetchDayTypes(uid),
-        fetchPersonalIngredients(uid),
-      ]);
-      if (cancelled) return;
-      rawDispatch({
-        type: 'INIT_DATA',
-        payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes },
-      });
-      setLoading(false);
+      try {
+        const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.all([
+          fetchProfile(uid),
+          fetchEntries(uid),
+          fetchExerciseLogs(uid),
+          fetchWaterLogs(uid),
+          fetchRecipes(uid),
+          fetchLeftovers(uid),
+          fetchCustomMeals(uid),
+          fetchDayTypes(uid),
+          fetchPersonalIngredients(uid),
+        ]);
+        if (cancelled) return;
+        rawDispatch({
+          type: 'INIT_DATA',
+          payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes },
+        });
+      } catch (err) {
+        console.error('Data load failed:', err);
+        if (cancelled) return;
+        rawDispatch({ type: 'INIT_DATA', payload: { targets: DEFAULT_TARGETS } });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
 
     return () => { cancelled = true; };

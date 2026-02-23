@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { calculateMealTotals, toGrams } from '../utils/ingredientCalc.js';
 import { useApp } from '../context/useApp.js';
@@ -12,6 +12,7 @@ function getPortions(ing) {
 
 function IngredientSearch({ value, onChange, onSelect }) {
   const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
 
   const results = useMemo(() => {
     if (!value || value.length < 2) return [];
@@ -21,9 +22,16 @@ function IngredientSearch({ value, onChange, onSelect }) {
       .slice(0, 8);
   }, [value]);
 
+  useEffect(() => {
+    if (open && results.length > 0 && inputRef.current) {
+      inputRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [open, results.length]);
+
   return (
     <div className="mb-search-wrap">
       <input
+        ref={inputRef}
         type="text"
         className="mb-input"
         value={value}
@@ -163,9 +171,9 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
         name: r.name,
         grams: Math.round(g),
         kcal: Math.round(g * r.kcalPer100g / 100),
-        protein: Math.round(g * r.proteinPer100g / 100 * 10) / 10,
-        carbs: Math.round(g * (r.carbsPer100g || 0) / 100 * 10) / 10,
-        fat: Math.round(g * (r.fatPer100g || 0) / 100 * 10) / 10,
+        protein: Math.round(g * r.proteinPer100g / 100),
+        carbs: Math.round(g * (r.carbsPer100g || 0) / 100),
+        fat: Math.round(g * (r.fatPer100g || 0) / 100),
       };
     });
 
@@ -218,7 +226,7 @@ export default function MealBuilder({ meal, editingEntry, onSave, onCancel, subm
           const g = toGrams(row.amount, row.portionGrams);
           const hasAmount = Number(row.amount) > 0 && row.kcalPer100g > 0;
           const rowKcal = hasAmount ? Math.round(g * row.kcalPer100g / 100) : null;
-          const rowProtein = hasAmount ? Math.round(g * row.proteinPer100g / 100 * 10) / 10 : null;
+          const rowProtein = hasAmount ? Math.round(g * row.proteinPer100g / 100) : null;
 
           return (
             <div key={row.key} className="mb-row">
