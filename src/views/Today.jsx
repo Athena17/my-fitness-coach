@@ -480,36 +480,30 @@ export default function Today() {
                   />
                 </div>
               </div>
-              {macroFlags.showEither && (
-                <div className="direct-form-row">
-                  {macroFlags.showCarbs && (
-                    <div className="direct-form-group">
-                      <label className="confirm-label">Carbs (g)</label>
-                      <input
-                        className="direct-input"
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={customDraft?.carbs || ''}
-                        onChange={(e) => setCustomDraft((d) => ({ ...d, carbs: e.target.value }))}
-                      />
-                    </div>
-                  )}
-                  {macroFlags.showFat && (
-                    <div className="direct-form-group">
-                      <label className="confirm-label">Fat (g)</label>
-                      <input
-                        className="direct-input"
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={customDraft?.fat || ''}
-                        onChange={(e) => setCustomDraft((d) => ({ ...d, fat: e.target.value }))}
-                      />
-                    </div>
-                  )}
+              <div className="direct-form-row">
+                <div className="direct-form-group">
+                  <label className="confirm-label">Carbs (g)</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.carbs || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, carbs: e.target.value }))}
+                  />
                 </div>
-              )}
+                <div className="direct-form-group">
+                  <label className="confirm-label">Fat (g)</label>
+                  <input
+                    className="direct-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={customDraft?.fat || ''}
+                    onChange={(e) => setCustomDraft((d) => ({ ...d, fat: e.target.value }))}
+                  />
+                </div>
+              </div>
               <button
                 type="button"
                 className={`ilf-my-meals-toggle ${customDraft?.saveToMyMeals ? 'ilf-my-meals-toggle--on' : ''}`}

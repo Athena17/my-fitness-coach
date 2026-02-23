@@ -3,7 +3,7 @@ import { useApp } from '../context/useApp.js';
 import { useAuth } from '../context/useAuth.js';
 import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
-import { sumNutrition, calcWeightChange, hasMacroTargets } from '../utils/nutritionCalc.js';
+import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData, clearAllData } from '../utils/storage.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
@@ -68,7 +68,7 @@ const UNITS = [
   { label: 'serving', grams: 100 },
 ];
 
-function IngredientForm({ form, setForm, onSave, onCancel, saveLabel, macroFlags }) {
+function IngredientForm({ form, setForm, onSave, onCancel, saveLabel }) {
   return (
     <div className="ing-form ing-form--add">
       <input
@@ -124,32 +124,28 @@ function IngredientForm({ form, setForm, onSave, onCancel, saveLabel, macroFlags
             placeholder="0"
           />
         </div>
-        {macroFlags?.showCarbs && (
-          <div className="ing-field">
-            <label className="ing-label">Carbs (g)</label>
-            <input
-              className="ing-input ing-input--num"
-              type="number"
-              inputMode="decimal"
-              value={form.carbs}
-              onChange={(e) => setForm({ ...form, carbs: e.target.value })}
-              placeholder="0"
-            />
-          </div>
-        )}
-        {macroFlags?.showFat && (
-          <div className="ing-field">
-            <label className="ing-label">Fat (g)</label>
-            <input
-              className="ing-input ing-input--num"
-              type="number"
-              inputMode="decimal"
-              value={form.fat}
-              onChange={(e) => setForm({ ...form, fat: e.target.value })}
-              placeholder="0"
-            />
-          </div>
-        )}
+        <div className="ing-field">
+          <label className="ing-label">Carbs (g)</label>
+          <input
+            className="ing-input ing-input--num"
+            type="number"
+            inputMode="decimal"
+            value={form.carbs}
+            onChange={(e) => setForm({ ...form, carbs: e.target.value })}
+            placeholder="0"
+          />
+        </div>
+        <div className="ing-field">
+          <label className="ing-label">Fat (g)</label>
+          <input
+            className="ing-input ing-input--num"
+            type="number"
+            inputMode="decimal"
+            value={form.fat}
+            onChange={(e) => setForm({ ...form, fat: e.target.value })}
+            placeholder="0"
+          />
+        </div>
       </div>
       <div className="ing-actions">
         <button type="button" className="ing-save" onClick={onSave}>{saveLabel}</button>
@@ -165,7 +161,6 @@ function MyIngredientsSection() {
   const [editingId, setEditingId] = useState(null);
   const [adding, setAdding] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
-  const mFlags = hasMacroTargets(state.targets);
   const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '', carbs: '', fat: '' };
   const [form, setForm] = useState(emptyForm);
 
@@ -241,7 +236,7 @@ function MyIngredientsSection() {
       {!collapsed && (
         <>
           {adding && (
-            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" macroFlags={mFlags} />
+            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />
           )}
           {!adding && ingredients.length === 0 ? (
             <p className="settings-empty">No custom ingredients yet — tap + to add one</p>
@@ -250,7 +245,7 @@ function MyIngredientsSection() {
               {ingredients.map((ing) => (
                 <div key={ing.id} className="settings-list-item">
                   {editingId === ing.id ? (
-                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingId(null)} saveLabel="Save" macroFlags={mFlags} />
+                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingId(null)} saveLabel="Save" />
                   ) : (
                     <>
                       <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(ing)}>

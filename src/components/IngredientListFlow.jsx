@@ -608,24 +608,20 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
                             onChange={(e) => updateRow(i, { totalProtein: Number(e.target.value) || 0 })}
                             placeholder="0" />
                         </div>
-                        {macroFlags.showCarbs && (
-                          <div className="ilf-new-row">
-                            <label className="ilf-new-label">carbs (g)</label>
-                            <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
-                              value={row.totalCarbs || ''}
-                              onChange={(e) => updateRow(i, { totalCarbs: Number(e.target.value) || 0 })}
-                              placeholder="0" />
-                          </div>
-                        )}
-                        {macroFlags.showFat && (
-                          <div className="ilf-new-row">
-                            <label className="ilf-new-label">fat (g)</label>
-                            <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
-                              value={row.totalFat || ''}
-                              onChange={(e) => updateRow(i, { totalFat: Number(e.target.value) || 0 })}
-                              placeholder="0" />
-                          </div>
-                        )}
+                        <div className="ilf-new-row">
+                          <label className="ilf-new-label">carbs (g)</label>
+                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                            value={row.totalCarbs || ''}
+                            onChange={(e) => updateRow(i, { totalCarbs: Number(e.target.value) || 0 })}
+                            placeholder="0" />
+                        </div>
+                        <div className="ilf-new-row">
+                          <label className="ilf-new-label">fat (g)</label>
+                          <input type="number" inputMode="decimal" className="ilf-field ilf-field-sm"
+                            value={row.totalFat || ''}
+                            onChange={(e) => updateRow(i, { totalFat: Number(e.target.value) || 0 })}
+                            placeholder="0" />
+                        </div>
                         <label className="ilf-save-toggle">
                           <input type="checkbox" checked={row.saveToDb} onChange={(e) => updateRow(i, { saveToDb: e.target.checked })} />
                           <span>Save to my ingredients</span>
