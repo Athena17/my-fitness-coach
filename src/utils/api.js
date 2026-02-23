@@ -554,13 +554,16 @@ export async function fetchPersonalIngredients(userId) {
     .eq('user_id', userId)
     .order('sort_order', { ascending: true });
   if (error) { console.error('fetchPersonalIngredients:', error); return []; }
+  console.log('[DEBUG] fetchPersonalIngredients: got', data?.length, 'rows');
   return data.map(personalIngToApp);
 }
 
 export async function insertPersonalIngredient(userId, ing, index) {
   const row = personalIngToDB(userId, ing, index);
+  console.log('[DEBUG] insertPersonalIngredient payload:', JSON.stringify(row));
   const { data, error } = await supabase.from('personal_ingredients').insert(row).select().single();
-  if (error) { console.error('insertPersonalIngredient:', error); return null; }
+  if (error) { console.error('[DEBUG] insertPersonalIngredient FAILED:', error.message, error.code, error.details); return null; }
+  console.log('[DEBUG] insertPersonalIngredient SUCCESS:', data?.id);
   return personalIngToApp(data);
 }
 

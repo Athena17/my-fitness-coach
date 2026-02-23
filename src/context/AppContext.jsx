@@ -367,17 +367,17 @@ export function AppProvider({ children }) {
 
       case 'ADD_PERSONAL_INGREDIENT': {
         rawDispatch(action);
-        apiInsertPersonalIng(user.id, action.payload, 0);
+        apiInsertPersonalIng(user.id, action.payload, 0).catch((e) => console.error('ADD_PERSONAL_INGREDIENT failed:', e));
         break;
       }
       case 'UPDATE_PERSONAL_INGREDIENT': {
         rawDispatch(action);
-        apiUpdatePersonalIng(action.payload);
+        apiUpdatePersonalIng(action.payload).catch((e) => console.error('UPDATE_PERSONAL_INGREDIENT failed:', e));
         break;
       }
       case 'DELETE_PERSONAL_INGREDIENT': {
         rawDispatch(action);
-        apiDeletePersonalIng(action.payload);
+        apiDeletePersonalIng(action.payload).catch((e) => console.error('DELETE_PERSONAL_INGREDIENT failed:', e));
         break;
       }
 
