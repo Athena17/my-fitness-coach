@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow-x: hidden;
 }
 
 /* ——— Food / Water / Exercise tabs ——— */
@@ -1271,6 +1272,7 @@
   background: var(--color-bg, rgba(245, 243, 240, 0.97));
   padding: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ——— Confirm step meal picker ——— */
