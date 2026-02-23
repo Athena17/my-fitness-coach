@@ -22,6 +22,29 @@ workflows:
           fi
           npx cap sync ios
 
+      - name: Generate app icon
+        script: |
+          # Generate square icon SVG from logo
+          node scripts/generate-icon.mjs
+          # Install librsvg for SVG→PNG conversion
+          brew install librsvg 2>/dev/null || true
+          # Convert to 1024x1024 PNG
+          rsvg-convert -w 1024 -h 1024 resources/icon.svg -o resources/icon.png
+          # Replace all default Capacitor icons in the asset catalog
+          ICONSET="ios/App/App/Assets.xcassets/AppIcon.appiconset"
+          if [ -d "$ICONSET" ]; then
+            for f in "$ICONSET"/*.png; do
+              # Get dimensions of existing icon
+              W=$(sips -g pixelWidth "$f" | tail -1 | awk '{print $2}')
+              H=$(sips -g pixelHeight "$f" | tail -1 | awk '{print $2}')
+              # Resize our icon to match and overwrite
+              sips -z "$H" "$W" resources/icon.png --out "$f" > /dev/null
+            done
+            echo "Replaced $(ls "$ICONSET"/*.png | wc -l) app icon sizes"
+          else
+            echo "WARNING: AppIcon.appiconset not found"
+          fi
+
       - name: Set development team
         script: |
           cd ios/App
