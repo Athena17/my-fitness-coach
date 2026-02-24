@@ -757,6 +757,44 @@
   font-family: var(--font-sans);
 }
 
+.privacy-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.privacy-content h3 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 14px 0 4px;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.privacy-content h3:first-child {
+  margin-top: 0;
+}
+
+.privacy-content p {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  margin: 0 0 4px;
+}
+
+.privacy-updated {
+  font-size: 0.7rem !important;
+  font-style: italic;
+  margin-bottom: 10px !important;
+}
+
 /* Recipe / Leftover lists */
 .settings-empty {
   font-size: 0.75rem;

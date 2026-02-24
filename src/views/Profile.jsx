@@ -392,6 +392,7 @@ export default function Profile() {
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // 'clear' | 'delete' | null
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
   const [clearError, setClearError] = useState('');
   const [importMessage, setImportMessage] = useState('');
@@ -1407,8 +1408,41 @@ export default function Profile() {
       </div>
 
       <div className="settings-section settings-about">
-        <p>Irada v1.3 — Data synced to cloud.</p>
+        <p>Irada v1.0 — Data synced to cloud.</p>
+        <button type="button" className="privacy-link" onClick={() => setShowPrivacy(true)}>Privacy Policy</button>
       </div>
+
+      {showPrivacy && (
+        <Modal title="Privacy Policy" onClose={() => setShowPrivacy(false)}>
+          <div className="privacy-content">
+            <p className="privacy-updated">Last updated: February 2026</p>
+
+            <h3>What Irada Collects</h3>
+            <p>Irada collects only the data you provide: your email address (for authentication), nutrition targets, food log entries, exercise logs, water logs, and custom meals/recipes.</p>
+
+            <h3>How Your Data Is Stored</h3>
+            <p>Your data is stored locally on your device using browser storage and synced to a secure cloud database (Supabase) so you can access it across devices. Your data is associated with your account and is not shared with third parties.</p>
+
+            <h3>No Tracking or Analytics</h3>
+            <p>Irada does not use any analytics services, advertising trackers, cookies for tracking, or third-party scripts that collect your personal information.</p>
+
+            <h3>Third-Party Services</h3>
+            <p>Irada uses Supabase for authentication and data storage. Google Fonts are loaded for typography. No other third-party services have access to your data.</p>
+
+            <h3>Data You Control</h3>
+            <p>You can export all your data at any time from the Profile page. You can also clear all your data or delete your account entirely — both actions are irreversible and will remove your data from our servers.</p>
+
+            <h3>Children</h3>
+            <p>Irada is not intended for children under 13. We do not knowingly collect data from children.</p>
+
+            <h3>Changes</h3>
+            <p>If this policy changes, the updated version will be available here with a new date.</p>
+
+            <h3>Contact</h3>
+            <p>Questions about your data? Reach out via the app&apos;s GitHub repository.</p>
+          </div>
+        </Modal>
+      )}
 
       {confirmAction === 'clear' && (
         <Modal title="Clear Data" onClose={() => !clearLoading && setConfirmAction(null)}>
