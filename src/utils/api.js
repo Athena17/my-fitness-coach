@@ -575,3 +575,57 @@ export async function deletePersonalIngredient(id) {
   const { error } = await supabase.from('personal_ingredients').delete().eq('id', id);
   if (error) console.error('deletePersonalIngredient:', error);
 }
+
+// ─── Clear All User Data ────────────────────────────
+
+export async function clearAllUserData(userId) {
+  const tables = [
+    'entries',
+    'exercise_logs',
+    'water_logs',
+    'recipes',
+    'leftovers',
+    'custom_meals',
+    'day_types',
+    'personal_ingredients',
+  ];
+
+  const results = await Promise.allSettled(
+    tables.map((table) =>
+      supabase.from(table).delete().eq('user_id', userId)
+    )
+  );
+
+  // Reset profile to defaults instead of deleting (keeps the row for the user)
+  const { error: profileError } = await supabase.from('profiles').update({
+    calorie_target: 2000,
+    protein_target: 120,
+    maintenance_kcal: 2000,
+    user_name: '',
+    weight_loss_target: 5,
+    onboarding_complete: false,
+    age: null,
+    sex: null,
+    height: null,
+    weight: null,
+    activity_level: null,
+    goal: null,
+    intensity: null,
+    water_target_liters: 2.5,
+    carbs_target: 0,
+    fat_target: 0,
+    cycling_enabled: false,
+    cycling_training_kcal: 0,
+    cycling_training_protein: 0,
+    cycling_training_carbs: 0,
+    cycling_training_fat: 0,
+    cycling_rest_kcal: 0,
+    cycling_rest_protein: 0,
+    cycling_rest_carbs: 0,
+    cycling_rest_fat: 0,
+  }).eq('id', userId);
+
+  const errors = results.filter((r) => r.status === 'rejected');
+  if (errors.length > 0) console.error('clearAllUserData partial failures:', errors);
+  if (profileError) console.error('clearAllUserData profile reset:', profileError);
+}

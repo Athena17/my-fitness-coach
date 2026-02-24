@@ -12,6 +12,7 @@ import {
   fetchCustomMeals, insertCustomMeal as apiInsertCustomMeal, updateCustomMeal as apiUpdateCustomMeal, deleteCustomMeal as apiDeleteCustomMeal,
   fetchDayTypes, upsertDayType,
   fetchPersonalIngredients, insertPersonalIngredient as apiInsertPersonalIng, updatePersonalIngredient as apiUpdatePersonalIng, deletePersonalIngredient as apiDeletePersonalIng,
+  clearAllUserData,
 } from '../utils/api.js';
 
 const DEFAULT_TARGETS = {
@@ -187,6 +188,12 @@ function reducer(state, action) {
         entries: action.payload.entries,
         recipes: action.payload.recipes || state.recipes,
         leftovers: action.payload.leftovers || state.leftovers,
+      };
+
+    case 'CLEAR_ALL_DATA':
+      return {
+        ...init(),
+        currentView: state.currentView,
       };
 
     default:
@@ -406,6 +413,14 @@ export function AppProvider({ children }) {
       case 'DELETE_PERSONAL_INGREDIENT': {
         rawDispatch(action);
         apiDeletePersonalIng(action.payload).catch((e) => console.error('DELETE_PERSONAL_INGREDIENT failed:', e));
+        break;
+      }
+
+      case 'CLEAR_ALL_DATA': {
+        rawDispatch(action);
+        clearAllUserData(user.id).catch((e) => console.error('CLEAR_ALL_DATA failed:', e));
+        // Clear localStorage cache
+        try { localStorage.removeItem(`nt_data_cache_${user.id}`); } catch { /* ignore */ }
         break;
       }
 

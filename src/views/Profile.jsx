@@ -4,7 +4,7 @@ import { useAuth } from '../context/useAuth.js';
 import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
-import { exportData, importData, clearAllData } from '../utils/storage.js';
+import { exportData, importData } from '../utils/storage.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
@@ -556,7 +556,10 @@ export default function Profile() {
     e.target.value = '';
   }
 
-  function handleClearData() { clearAllData(); window.location.reload(); }
+  function handleClearData() {
+    dispatch({ type: 'CLEAR_ALL_DATA' });
+    setShowClearConfirm(false);
+  }
 
   function handleHistoricalImport() {
     const lines = historicalText.trim().split('\n').filter((l) => l.trim());
