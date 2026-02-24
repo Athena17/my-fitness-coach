@@ -162,15 +162,15 @@
   gap: 3px;
   padding: 5px 0 4px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 50px;
 }
 
 .progress-card--empty {
-  background: rgba(0, 0, 0, 0.015);
-  border-color: rgba(0, 0, 0, 0.03);
+  background: var(--color-surface-highlight, rgba(245, 245, 245, 0.6));
+  border-color: rgba(0, 0, 0, 0.04);
 }
 
 .progress-card--future {
@@ -1250,4 +1250,77 @@
 
 .settings-list-info--tap:active {
   background: rgba(139, 195, 74, 0.06);
+}
+
+/* ——— Collapsible section toggles ——— */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.section-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.section-toggle-left h2 {
+  margin: 0;
+}
+
+.section-toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.section-toggle-summary {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.section-toggle-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--color-success);
+  background: rgba(52, 199, 89, 0.08);
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.section-chevron {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.section-chevron--open {
+  transform: rotate(90deg);
+}
+
+.section-collapse-body {
+  animation: section-reveal 0.2s ease-out;
+}
+
+@keyframes section-reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }

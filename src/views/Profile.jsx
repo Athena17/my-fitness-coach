@@ -162,7 +162,6 @@ function MyIngredientsSection() {
   const ingredients = state.personalIngredients || [];
   const [editingId, setEditingId] = useState(null);
   const [adding, setAdding] = useState(false);
-  const [collapsed, setCollapsed] = useState(true);
   const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '', carbs: '', fat: '' };
   const [form, setForm] = useState(emptyForm);
 
@@ -183,7 +182,6 @@ function MyIngredientsSection() {
     });
     setEditingId(ing.id);
     setAdding(false);
-    setCollapsed(false);
   }
 
   function handleSave() {
@@ -205,7 +203,6 @@ function MyIngredientsSection() {
     setForm(emptyForm);
     setAdding(true);
     setEditingId(null);
-    setCollapsed(false);
   }
 
   function handleAddSave() {
@@ -224,59 +221,51 @@ function MyIngredientsSection() {
   }
 
   return (
-    <div className="settings-section">
-      <div className="section-header">
-        <button type="button" className="ing-section-toggle" onClick={() => setCollapsed(!collapsed)}>
-          <span className="ing-section-emoji">🫙</span>
-          <h2>My Ingredients</h2>
-          <svg className={`ing-chevron${collapsed ? '' : ' ing-chevron--open'}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
+    <>
+      <div className="section-header" style={{ marginTop: 4 }}>
+        <span style={{ fontSize: '0.72rem', opacity: 0.6, fontWeight: 600 }}>Ingredients List</span>
         <button type="button" className="ing-add-btn" onClick={startAdd} aria-label="Add ingredient">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
-      {!collapsed && (
-        <>
-          {adding && (
-            <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />
-          )}
-          {!adding && ingredients.length === 0 ? (
-            <p className="settings-empty">No custom ingredients yet — tap + to add one</p>
-          ) : (
-            <div className="settings-list">
-              {ingredients.map((ing) => (
-                <div key={ing.id} className="settings-list-item">
-                  {editingId === ing.id ? (
-                    <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingId(null)} saveLabel="Save" />
-                  ) : (
-                    <>
-                      <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(ing)}>
-                        <span className="settings-list-name">{ing.name}</span>
-                        <span className="settings-list-meta">
-                          {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal ?? 0} cal · {ing.refProtein ?? 0}g protein
-                        </span>
-                      </button>
-                      <div className="settings-list-actions">
-                        <button type="button" className="settings-list-consume" onClick={() => startEdit(ing)} aria-label="Edit ingredient">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          </svg>
-                        </button>
-                        <button type="button" className="settings-list-delete" onClick={() => handleDelete(ing)} aria-label="Delete ingredient">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+      {adding && (
+        <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />
       )}
-    </div>
+      {!adding && ingredients.length === 0 ? (
+        <p className="settings-empty">No custom ingredients yet — tap + to add one</p>
+      ) : (
+        <div className="settings-list">
+          {ingredients.map((ing) => (
+            <div key={ing.id} className="settings-list-item">
+              {editingId === ing.id ? (
+                <IngredientForm form={form} setForm={setForm} onSave={handleSave} onCancel={() => setEditingId(null)} saveLabel="Save" />
+              ) : (
+                <>
+                  <button type="button" className="settings-list-info settings-list-info--tap" onClick={() => startEdit(ing)}>
+                    <span className="settings-list-name">{ing.name}</span>
+                    <span className="settings-list-meta">
+                      {ing.refAmount ? `${ing.refAmount} ${ing.refUnit}` : '—'} · {ing.refKcal ?? 0} cal · {ing.refProtein ?? 0}g protein
+                    </span>
+                  </button>
+                  <div className="settings-list-actions">
+                    <button type="button" className="settings-list-consume" onClick={() => startEdit(ing)} aria-label="Edit ingredient">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      </svg>
+                    </button>
+                    <button type="button" className="settings-list-delete" onClick={() => handleDelete(ing)} aria-label="Delete ingredient">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -728,6 +717,12 @@ export default function Profile() {
 
   const maintenanceKcal = targets.maintenanceKcal || targets.kcal;
 
+  /* ——— Collapsible accordion ——— */
+  const [openSection, setOpenSection] = useState(null);
+  const toggle = (key) => setOpenSection((prev) => (prev === key ? null : key));
+
+  const ingredientCount = (state.personalIngredients || []).length;
+
   return (
     <div className="profile">
       {/* ——— User header ——— */}
@@ -966,383 +961,447 @@ export default function Profile() {
         );
       })()}
 
-      {/* ——— Targets ——— */}
+      {/* ——— Nutrition Targets (merged: targets + macros + cycling) ——— */}
       <div className="settings-section">
-        <div className="section-header">
-          <h2>Targets</h2>
-          {!editing && (
-            <button type="button" className="edit-btn" onClick={startEditing}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-              Edit
-            </button>
-          )}
-        </div>
-
-        {editing ? (
-          <form onSubmit={handleSave} className="targets-form">
-            <div className="form-group">
-              <label htmlFor="settings-weight-loss">Weight loss goal (kg)</label>
-              <input id="settings-weight-loss" type="number" inputMode="decimal" value={weightLossTarget} onChange={(e) => setWeightLossTarget(e.target.value)} step="0.5" />
-              {errors.weightLossTarget && <span className="form-error">{errors.weightLossTarget}</span>}
-            </div>
-            <div className="form-group">
-              <div className="form-group-header">
-                <label htmlFor="settings-kcal">Calorie target (cal)</label>
-                <span className="form-annotation">Maintenance: {maintenanceKcal}</span>
-              </div>
-              <input id="settings-kcal" type="number" inputMode="numeric" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="e.g. 1500" />
-              {errors.kcal && <span className="form-error">{errors.kcal}</span>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="settings-protein">Protein target (g / day)</label>
-              <input id="settings-protein" type="number" inputMode="numeric" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="e.g. 120" />
-              {errors.protein && <span className="form-error">{errors.protein}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="settings-water">Water target (L / day)</label>
-              <input id="settings-water" type="number" inputMode="decimal" step="0.1" value={water} onChange={(e) => setWater(e.target.value)} placeholder="e.g. 2.5" />
-              {errors.water && <span className="form-error">{errors.water}</span>}
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="btn-primary settings-save-btn">Save</button>
-              <button type="button" className="btn-cancel" onClick={cancelEditing}>Cancel</button>
-            </div>
-          </form>
-        ) : (
-          <div className="targets-display">
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon"><TargetIcon type="weight" /></span><span className="target-label">Weight loss goal</span></div>
-              <span className="target-value">{targets.weightLossTarget || 5} kg</span>
-            </div>
-            <div className="target-divider" />
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon"><TargetIcon type="calories" /></span><div className="target-label-group"><span className="target-label">Calorie target</span><span className="target-sub">Maintenance: {maintenanceKcal} cal</span></div></div>
-              <span className="target-value">{targets.kcal} cal</span>
-            </div>
-            <div className="target-divider" />
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon"><TargetIcon type="protein" /></span><span className="target-label">Protein target</span></div>
-              <span className="target-value">{targets.protein} g / day</span>
-            </div>
-            <div className="target-divider" />
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon"><TargetIcon type="water" /></span><span className="target-label">Water target</span></div>
-              <span className="target-value">{targets.waterTargetLiters || 2.5} L / day</span>
-            </div>
+        <button type="button" className="section-toggle" onClick={() => toggle('nutrition')}>
+          <div className="section-toggle-left">
+            <h2>Nutrition Targets</h2>
           </div>
-        )}
-        {saved && <p className="settings-message">Saved!</p>}
-      </div>
+          <div className="section-toggle-right">
+            <span className="section-toggle-summary">
+              {targets.kcal} cal · {targets.protein}g P
+            </span>
+            {cyclingEnabled && <span className="section-toggle-badge">Cycling</span>}
+            <svg className={`section-chevron${openSection === 'nutrition' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
 
-      {/* ——— Track Carbs & Fat ——— */}
-      <div className="settings-section">
-        <div className="cycling-toggle-row" style={{ marginBottom: macrosEnabled ? 12 : 0 }}>
-          <span className="cycling-toggle-label">Track carbs &amp; fat</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div className="cycling-toggle-pills">
-              <button type="button" className={`cycling-pill${!macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(false)}>Off</button>
-              <button type="button" className={`cycling-pill${macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(true)}>On</button>
+        {openSection === 'nutrition' && (
+          <div className="section-collapse-body">
+            {/* Base targets */}
+            <div className="section-header" style={{ marginTop: 4 }}>
+              <h2 style={{ fontSize: '0.72rem', opacity: 0.6 }}>Base Targets</h2>
+              {!editing && (
+                <button type="button" className="edit-btn" onClick={startEditing}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                  Edit
+                </button>
+              )}
             </div>
-            {macrosEnabled && !macroEditing && (
-              <button type="button" className="edit-btn" onClick={() => { setCarbsTarget(targets.carbs ? String(targets.carbs) : ''); setFatTarget(targets.fat ? String(targets.fat) : ''); setMacroEditing(true); }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-                Edit
-              </button>
+
+            {editing ? (
+              <form onSubmit={handleSave} className="targets-form">
+                <div className="form-group">
+                  <label htmlFor="settings-weight-loss">Weight loss goal (kg)</label>
+                  <input id="settings-weight-loss" type="number" inputMode="decimal" value={weightLossTarget} onChange={(e) => setWeightLossTarget(e.target.value)} step="0.5" />
+                  {errors.weightLossTarget && <span className="form-error">{errors.weightLossTarget}</span>}
+                </div>
+                <div className="form-group">
+                  <div className="form-group-header">
+                    <label htmlFor="settings-kcal">Calorie target (cal)</label>
+                    <span className="form-annotation">Maintenance: {maintenanceKcal}</span>
+                  </div>
+                  <input id="settings-kcal" type="number" inputMode="numeric" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="e.g. 1500" />
+                  {errors.kcal && <span className="form-error">{errors.kcal}</span>}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="settings-protein">Protein target (g / day)</label>
+                  <input id="settings-protein" type="number" inputMode="numeric" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="e.g. 120" />
+                  {errors.protein && <span className="form-error">{errors.protein}</span>}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="settings-water">Water target (L / day)</label>
+                  <input id="settings-water" type="number" inputMode="decimal" step="0.1" value={water} onChange={(e) => setWater(e.target.value)} placeholder="e.g. 2.5" />
+                  {errors.water && <span className="form-error">{errors.water}</span>}
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="btn-primary settings-save-btn">Save</button>
+                  <button type="button" className="btn-cancel" onClick={cancelEditing}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <div className="targets-display">
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon"><TargetIcon type="weight" /></span><span className="target-label">Weight loss goal</span></div>
+                  <span className="target-value">{targets.weightLossTarget || 5} kg</span>
+                </div>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon"><TargetIcon type="calories" /></span><div className="target-label-group"><span className="target-label">Calorie target</span><span className="target-sub">Maintenance: {maintenanceKcal} cal</span></div></div>
+                  <span className="target-value">{targets.kcal} cal</span>
+                </div>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon"><TargetIcon type="protein" /></span><span className="target-label">Protein target</span></div>
+                  <span className="target-value">{targets.protein} g / day</span>
+                </div>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon"><TargetIcon type="water" /></span><span className="target-label">Water target</span></div>
+                  <span className="target-value">{targets.waterTargetLiters || 2.5} L / day</span>
+                </div>
+              </div>
             )}
-          </div>
-        </div>
-        {macrosEnabled && macroEditing && (
-          <div className="targets-form">
-            <div className="form-group">
-              <label htmlFor="settings-carbs">Carbs target (g / day)</label>
-              <input id="settings-carbs" type="number" inputMode="numeric" value={carbsTarget} onChange={(e) => setCarbsTarget(e.target.value)} placeholder="e.g. 200" />
-              {errors.carbs && <span className="form-error">{errors.carbs}</span>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="settings-fat">Fat target (g / day)</label>
-              <input id="settings-fat" type="number" inputMode="numeric" value={fatTarget} onChange={(e) => setFatTarget(e.target.value)} placeholder="e.g. 65" />
-              {errors.fat && <span className="form-error">{errors.fat}</span>}
-            </div>
-            <div className="form-actions">
-              <button type="button" className="btn-primary settings-save-btn" onClick={handleMacroSave}>Save</button>
-            </div>
-          </div>
-        )}
-        {macrosEnabled && !macroEditing && (
-          <div className="targets-display">
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-carbs)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span><span className="target-label">Carbs</span></div>
-              <span className="target-value">{targets.carbs || 0} g / day</span>
-            </div>
-            <div className="target-divider" />
-            <div className="target-row">
-              <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-fat)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></span><span className="target-label">Fat</span></div>
-              <span className="target-value">{targets.fat || 0} g / day</span>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* ——— Calorie Cycling ——— */}
-      <div className="settings-section">
-        <div className="cycling-toggle-row" style={{ marginBottom: cyclingEnabled ? 12 : 0 }}>
-          <span className="cycling-toggle-label">Calorie cycling</span>
-          <div className="cycling-toggle-pills">
-            <button type="button" className={`cycling-pill${!cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(false)}>Off</button>
-            <button type="button" className={`cycling-pill${cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(true)}>On</button>
-          </div>
-        </div>
-        {cyclingEnabled && cyclingEditing && (
-          <div className="cycling-fields">
-            <div className="cycling-day-group">
-              <span className="cycling-day-label">Training day</span>
-              <div className="cycling-day-inputs">
-                <div className="form-group">
-                  <label htmlFor="settings-training-kcal">Calories</label>
-                  <input id="settings-training-kcal" type="number" inputMode="numeric" value={trainingKcal} onChange={(e) => setTrainingKcal(e.target.value)} placeholder="e.g. 2500" />
-                  {errors.trainingKcal && <span className="form-error">{errors.trainingKcal}</span>}
+            {/* Track Carbs & Fat */}
+            <div className="target-divider" style={{ margin: '8px 0' }} />
+            <div className="cycling-toggle-row" style={{ marginBottom: macrosEnabled ? 12 : 0 }}>
+              <span className="cycling-toggle-label">Track carbs &amp; fat</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="cycling-toggle-pills">
+                  <button type="button" className={`cycling-pill${!macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(false)}>Off</button>
+                  <button type="button" className={`cycling-pill${macrosEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleMacroToggle(true)}>On</button>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="settings-training-protein">Protein (g)</label>
-                  <input id="settings-training-protein" type="number" inputMode="numeric" value={trainingProtein} onChange={(e) => setTrainingProtein(e.target.value)} placeholder="e.g. 180" />
-                  {errors.trainingProtein && <span className="form-error">{errors.trainingProtein}</span>}
-                </div>
-                {macrosEnabled && (
-                  <div className="form-group">
-                    <label htmlFor="settings-training-carbs">Carbs (g)</label>
-                    <input id="settings-training-carbs" type="number" inputMode="numeric" value={trainingCarbs} onChange={(e) => setTrainingCarbs(e.target.value)} placeholder="Optional" />
-                  </div>
-                )}
-                {macrosEnabled && (
-                  <div className="form-group">
-                    <label htmlFor="settings-training-fat">Fat (g)</label>
-                    <input id="settings-training-fat" type="number" inputMode="numeric" value={trainingFat} onChange={(e) => setTrainingFat(e.target.value)} placeholder="Optional" />
-                  </div>
+                {macrosEnabled && !macroEditing && (
+                  <button type="button" className="edit-btn" onClick={() => { setCarbsTarget(targets.carbs ? String(targets.carbs) : ''); setFatTarget(targets.fat ? String(targets.fat) : ''); setMacroEditing(true); }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                    Edit
+                  </button>
                 )}
               </div>
             </div>
-            <div className="cycling-day-group">
-              <span className="cycling-day-label">Rest day</span>
-              <div className="cycling-day-inputs">
+            {macrosEnabled && macroEditing && (
+              <div className="targets-form">
                 <div className="form-group">
-                  <label htmlFor="settings-rest-kcal">Calories</label>
-                  <input id="settings-rest-kcal" type="number" inputMode="numeric" value={restKcal} onChange={(e) => setRestKcal(e.target.value)} placeholder="e.g. 1800" />
-                  {errors.restKcal && <span className="form-error">{errors.restKcal}</span>}
+                  <label htmlFor="settings-carbs">Carbs target (g / day)</label>
+                  <input id="settings-carbs" type="number" inputMode="numeric" value={carbsTarget} onChange={(e) => setCarbsTarget(e.target.value)} placeholder="e.g. 200" />
+                  {errors.carbs && <span className="form-error">{errors.carbs}</span>}
                 </div>
                 <div className="form-group">
-                  <label htmlFor="settings-rest-protein">Protein (g)</label>
-                  <input id="settings-rest-protein" type="number" inputMode="numeric" value={restProtein} onChange={(e) => setRestProtein(e.target.value)} placeholder="e.g. 120" />
-                  {errors.restProtein && <span className="form-error">{errors.restProtein}</span>}
+                  <label htmlFor="settings-fat">Fat target (g / day)</label>
+                  <input id="settings-fat" type="number" inputMode="numeric" value={fatTarget} onChange={(e) => setFatTarget(e.target.value)} placeholder="e.g. 65" />
+                  {errors.fat && <span className="form-error">{errors.fat}</span>}
                 </div>
-                {macrosEnabled && (
-                  <div className="form-group">
-                    <label htmlFor="settings-rest-carbs">Carbs (g)</label>
-                    <input id="settings-rest-carbs" type="number" inputMode="numeric" value={restCarbs} onChange={(e) => setRestCarbs(e.target.value)} placeholder="Optional" />
-                  </div>
-                )}
-                {macrosEnabled && (
-                  <div className="form-group">
-                    <label htmlFor="settings-rest-fat">Fat (g)</label>
-                    <input id="settings-rest-fat" type="number" inputMode="numeric" value={restFat} onChange={(e) => setRestFat(e.target.value)} placeholder="Optional" />
-                  </div>
-                )}
+                <div className="form-actions">
+                  <button type="button" className="btn-primary settings-save-btn" onClick={handleMacroSave}>Save</button>
+                </div>
+              </div>
+            )}
+            {macrosEnabled && !macroEditing && (
+              <div className="targets-display">
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-carbs)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span><span className="target-label">Carbs</span></div>
+                  <span className="target-value">{targets.carbs || 0} g / day</span>
+                </div>
+                <div className="target-divider" />
+                <div className="target-row">
+                  <div className="target-row-left"><span className="target-icon" style={{ color: 'var(--color-fat)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></span><span className="target-label">Fat</span></div>
+                  <span className="target-value">{targets.fat || 0} g / day</span>
+                </div>
+              </div>
+            )}
+
+            {/* Calorie Cycling */}
+            <div className="target-divider" style={{ margin: '8px 0' }} />
+            <div className="cycling-toggle-row" style={{ marginBottom: cyclingEnabled ? 12 : 0 }}>
+              <span className="cycling-toggle-label">Calorie cycling</span>
+              <div className="cycling-toggle-pills">
+                <button type="button" className={`cycling-pill${!cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(false)}>Off</button>
+                <button type="button" className={`cycling-pill${cyclingEnabled ? ' cycling-pill--active' : ''}`} onClick={() => handleCyclingToggle(true)}>On</button>
               </div>
             </div>
-            <div className="form-actions">
-              <button type="button" className="btn-primary settings-save-btn" onClick={handleCyclingSave}>Save</button>
-            </div>
-          </div>
-        )}
-        {cyclingEnabled && !cyclingEditing && (
-          <div className="cycling-display" onClick={() => { setCyclingEditing(true); }} style={{ cursor: 'pointer' }}>
-            <div className="cycling-display-row">
-              <span className="cycling-display-label">Training day</span>
-              <span className="cycling-display-value">
-                {cyclingConfig.trainingKcal} cal · {cyclingConfig.trainingProtein}g
-                {cyclingConfig.trainingCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.trainingCarbs}g</span></>}
-                {cyclingConfig.trainingFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.trainingFat}g</span></>}
-              </span>
-            </div>
-            <div className="cycling-display-row">
-              <span className="cycling-display-label">Rest day</span>
-              <span className="cycling-display-value">
-                {cyclingConfig.restKcal} cal · {cyclingConfig.restProtein}g
-                {cyclingConfig.restCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.restCarbs}g</span></>}
-                {cyclingConfig.restFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.restFat}g</span></>}
-              </span>
-            </div>
+            {cyclingEnabled && cyclingEditing && (
+              <div className="cycling-fields">
+                <div className="cycling-day-group">
+                  <span className="cycling-day-label">Training day</span>
+                  <div className="cycling-day-inputs">
+                    <div className="form-group">
+                      <label htmlFor="settings-training-kcal">Calories</label>
+                      <input id="settings-training-kcal" type="number" inputMode="numeric" value={trainingKcal} onChange={(e) => setTrainingKcal(e.target.value)} placeholder="e.g. 2500" />
+                      {errors.trainingKcal && <span className="form-error">{errors.trainingKcal}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="settings-training-protein">Protein (g)</label>
+                      <input id="settings-training-protein" type="number" inputMode="numeric" value={trainingProtein} onChange={(e) => setTrainingProtein(e.target.value)} placeholder="e.g. 180" />
+                      {errors.trainingProtein && <span className="form-error">{errors.trainingProtein}</span>}
+                    </div>
+                    {macrosEnabled && (
+                      <div className="form-group">
+                        <label htmlFor="settings-training-carbs">Carbs (g)</label>
+                        <input id="settings-training-carbs" type="number" inputMode="numeric" value={trainingCarbs} onChange={(e) => setTrainingCarbs(e.target.value)} placeholder="Optional" />
+                      </div>
+                    )}
+                    {macrosEnabled && (
+                      <div className="form-group">
+                        <label htmlFor="settings-training-fat">Fat (g)</label>
+                        <input id="settings-training-fat" type="number" inputMode="numeric" value={trainingFat} onChange={(e) => setTrainingFat(e.target.value)} placeholder="Optional" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="cycling-day-group">
+                  <span className="cycling-day-label">Rest day</span>
+                  <div className="cycling-day-inputs">
+                    <div className="form-group">
+                      <label htmlFor="settings-rest-kcal">Calories</label>
+                      <input id="settings-rest-kcal" type="number" inputMode="numeric" value={restKcal} onChange={(e) => setRestKcal(e.target.value)} placeholder="e.g. 1800" />
+                      {errors.restKcal && <span className="form-error">{errors.restKcal}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="settings-rest-protein">Protein (g)</label>
+                      <input id="settings-rest-protein" type="number" inputMode="numeric" value={restProtein} onChange={(e) => setRestProtein(e.target.value)} placeholder="e.g. 120" />
+                      {errors.restProtein && <span className="form-error">{errors.restProtein}</span>}
+                    </div>
+                    {macrosEnabled && (
+                      <div className="form-group">
+                        <label htmlFor="settings-rest-carbs">Carbs (g)</label>
+                        <input id="settings-rest-carbs" type="number" inputMode="numeric" value={restCarbs} onChange={(e) => setRestCarbs(e.target.value)} placeholder="Optional" />
+                      </div>
+                    )}
+                    {macrosEnabled && (
+                      <div className="form-group">
+                        <label htmlFor="settings-rest-fat">Fat (g)</label>
+                        <input id="settings-rest-fat" type="number" inputMode="numeric" value={restFat} onChange={(e) => setRestFat(e.target.value)} placeholder="Optional" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="form-actions">
+                  <button type="button" className="btn-primary settings-save-btn" onClick={handleCyclingSave}>Save</button>
+                </div>
+              </div>
+            )}
+            {cyclingEnabled && !cyclingEditing && (
+              <div className="cycling-display" onClick={() => { setCyclingEditing(true); }} style={{ cursor: 'pointer' }}>
+                <div className="cycling-display-row">
+                  <span className="cycling-display-label">Training day</span>
+                  <span className="cycling-display-value">
+                    {cyclingConfig.trainingKcal} cal · {cyclingConfig.trainingProtein}g
+                    {cyclingConfig.trainingCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.trainingCarbs}g</span></>}
+                    {cyclingConfig.trainingFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.trainingFat}g</span></>}
+                  </span>
+                </div>
+                <div className="cycling-display-row">
+                  <span className="cycling-display-label">Rest day</span>
+                  <span className="cycling-display-value">
+                    {cyclingConfig.restKcal} cal · {cyclingConfig.restProtein}g
+                    {cyclingConfig.restCarbs > 0 && <> · <span style={{ color: 'var(--color-carbs)' }}>C {cyclingConfig.restCarbs}g</span></>}
+                    {cyclingConfig.restFat > 0 && <> · <span style={{ color: 'var(--color-fat)' }}>F {cyclingConfig.restFat}g</span></>}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {saved && <p className="settings-message">Saved!</p>}
           </div>
         )}
       </div>
 
       {/* ——— My Ingredients ——— */}
-      <MyIngredientsSection />
+      <div className="settings-section">
+        <button type="button" className="section-toggle" onClick={() => toggle('ingredients')}>
+          <div className="section-toggle-left">
+            <span className="ing-section-emoji">🫙</span>
+            <h2>My Ingredients</h2>
+          </div>
+          <div className="section-toggle-right">
+            {ingredientCount > 0 && <span className="section-toggle-summary">{ingredientCount} ingredient{ingredientCount !== 1 ? 's' : ''}</span>}
+            <svg className={`section-chevron${openSection === 'ingredients' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
+        {openSection === 'ingredients' && (
+          <div className="section-collapse-body">
+            <MyIngredientsSection />
+          </div>
+        )}
+      </div>
 
       {/* ——— Appearance ——— */}
       <div className="settings-section">
-        <div className="cycling-toggle-row" style={{ marginBottom: 0 }}>
-          <span className="cycling-toggle-label">Dark mode</span>
-          <div className="cycling-toggle-pills">
-            <button type="button" className={`cycling-pill${theme === 'light' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('light')}>Light</button>
-            <button type="button" className={`cycling-pill${theme === 'dark' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
+        <button type="button" className="section-toggle" onClick={() => toggle('appearance')}>
+          <div className="section-toggle-left">
+            <h2>Appearance</h2>
           </div>
-        </div>
+          <div className="section-toggle-right">
+            <span className="section-toggle-summary">{theme === 'dark' ? 'Dark' : 'Light'}</span>
+            <svg className={`section-chevron${openSection === 'appearance' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
+        {openSection === 'appearance' && (
+          <div className="section-collapse-body">
+            <div className="cycling-toggle-row" style={{ marginBottom: 0 }}>
+              <span className="cycling-toggle-label">Dark mode</span>
+              <div className="cycling-toggle-pills">
+                <button type="button" className={`cycling-pill${theme === 'light' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('light')}>Light</button>
+                <button type="button" className={`cycling-pill${theme === 'dark' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ——— Data ——— */}
       <div className="settings-section">
-        <h2>Data</h2>
-
-        {/* Historical logs — import / export cards */}
-        <div className="historical-cards">
-          <button
-            className={`historical-card${showHistorical ? ' historical-card--active' : ''}`}
-            onClick={() => { setShowHistorical(!showHistorical); setShowExport(false); }}
-          >
-            <span className="historical-card-icon historical-card-icon--import">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-            </span>
-            <span className="historical-card-title">Import Logs</span>
-            <span className="historical-card-desc">Paste day-by-day data</span>
-          </button>
-          <button
-            className={`historical-card${showExport ? ' historical-card--active' : ''}`}
-            onClick={handleHistoricalExport}
-          >
-            <span className="historical-card-icon historical-card-icon--export">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </span>
-            <span className="historical-card-title">Export Logs</span>
-            <span className="historical-card-desc">Copy your daily totals</span>
-          </button>
-        </div>
-
-        {/* Import panel */}
-        {showHistorical && (
-          <div className="historical-import">
-            <p className="historical-hint">Paste your data below — one line per day.<br />Format: <strong>date, calories, protein</strong></p>
-            <p className="historical-example">2025-01-20, 1500, 120<br />2025-01-21, 1800, 95<br />Jan 22 2025, 1650, 110</p>
-            <textarea
-              className="historical-textarea"
-              rows={6}
-              value={historicalText}
-              onChange={(e) => setHistoricalText(e.target.value)}
-              placeholder="2025-01-20, 1500, 120&#10;2025-01-21, 1800, 95"
-            />
-            <div className="form-actions">
-              <button type="button" className="btn-primary settings-save-btn" onClick={handleHistoricalImport} disabled={!historicalText.trim()}>
-                Import
-              </button>
-              <button type="button" className="btn-cancel" onClick={() => { setShowHistorical(false); setHistoricalMsg(''); }}>Cancel</button>
-            </div>
-            {historicalMsg && <p className="settings-message">{historicalMsg}</p>}
+        <button type="button" className="section-toggle" onClick={() => toggle('data')}>
+          <div className="section-toggle-left">
+            <h2>Data</h2>
           </div>
-        )}
-
-        {/* Export panel */}
-        {showExport && (
-          <div className="historical-import">
-            <p className="historical-hint">Your daily totals — <strong>date, calories, protein</strong></p>
-            <textarea
-              className="historical-textarea"
-              rows={6}
-              value={exportText}
-              readOnly
-            />
-            <div className="form-actions">
-              <button type="button" className="btn-primary settings-save-btn" onClick={handleCopyExport}>
-                Copy to clipboard
-              </button>
-              <button type="button" className="btn-cancel" onClick={() => { setShowExport(false); setExportMsg(''); }}>Close</button>
-            </div>
-            {exportMsg && <p className="settings-message">{exportMsg}</p>}
+          <div className="section-toggle-right">
+            <svg className={`section-chevron${openSection === 'data' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
-        )}
-
-        <div className="settings-actions">
-          <button type="button" className="btn-secondary" onClick={handleExport}>Export (JSON)</button>
-          <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import (JSON)</button>
-          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
-          <button type="button" className="btn-secondary btn-danger-outline" onClick={() => { setConfirmAction('clear'); setClearError(''); }}>Clear all data</button>
-        </div>
-        {importMessage && <p className="settings-message">{importMessage}</p>}
-      </div>
-
-
-      {/* ——— Security ——— */}
-      <div className="settings-section">
-        <div className="section-header">
-          <h2>Security</h2>
-          {!showPasswordForm && (
-            <button type="button" className="edit-btn" onClick={() => { setShowPasswordForm(true); setPasswordError(''); setPasswordSuccess(''); setNewPassword(''); setConfirmPassword(''); }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Change Password
-            </button>
-          )}
-        </div>
-        {showPasswordForm && (
-          <form onSubmit={handleChangePassword} className="targets-form">
-            <div className="form-group">
-              <label htmlFor="profile-new-password">New password</label>
-              <input
-                id="profile-new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="profile-confirm-password">Confirm password</label>
-              <input
-                id="profile-confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter your password"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-            {passwordError && <span className="form-error">{passwordError}</span>}
-            {passwordSuccess && <p className="settings-message">{passwordSuccess}</p>}
-            <div className="form-actions">
-              <button type="submit" className="btn-primary settings-save-btn" disabled={passwordLoading}>
-                {passwordLoading ? 'Updating...' : 'Update Password'}
+        </button>
+        {openSection === 'data' && (
+          <div className="section-collapse-body">
+            <div className="historical-cards">
+              <button
+                className={`historical-card${showHistorical ? ' historical-card--active' : ''}`}
+                onClick={() => { setShowHistorical(!showHistorical); setShowExport(false); }}
+              >
+                <span className="historical-card-icon historical-card-icon--import">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </span>
+                <span className="historical-card-title">Import Logs</span>
+                <span className="historical-card-desc">Paste day-by-day data</span>
               </button>
-              <button type="button" className="btn-cancel" onClick={() => setShowPasswordForm(false)}>Cancel</button>
+              <button
+                className={`historical-card${showExport ? ' historical-card--active' : ''}`}
+                onClick={handleHistoricalExport}
+              >
+                <span className="historical-card-icon historical-card-icon--export">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </span>
+                <span className="historical-card-title">Export Logs</span>
+                <span className="historical-card-desc">Copy your daily totals</span>
+              </button>
             </div>
-          </form>
+
+            {showHistorical && (
+              <div className="historical-import">
+                <p className="historical-hint">Paste your data below — one line per day.<br />Format: <strong>date, calories, protein</strong></p>
+                <p className="historical-example">2025-01-20, 1500, 120<br />2025-01-21, 1800, 95<br />Jan 22 2025, 1650, 110</p>
+                <textarea
+                  className="historical-textarea"
+                  rows={6}
+                  value={historicalText}
+                  onChange={(e) => setHistoricalText(e.target.value)}
+                  placeholder="2025-01-20, 1500, 120&#10;2025-01-21, 1800, 95"
+                />
+                <div className="form-actions">
+                  <button type="button" className="btn-primary settings-save-btn" onClick={handleHistoricalImport} disabled={!historicalText.trim()}>
+                    Import
+                  </button>
+                  <button type="button" className="btn-cancel" onClick={() => { setShowHistorical(false); setHistoricalMsg(''); }}>Cancel</button>
+                </div>
+                {historicalMsg && <p className="settings-message">{historicalMsg}</p>}
+              </div>
+            )}
+
+            {showExport && (
+              <div className="historical-import">
+                <p className="historical-hint">Your daily totals — <strong>date, calories, protein</strong></p>
+                <textarea
+                  className="historical-textarea"
+                  rows={6}
+                  value={exportText}
+                  readOnly
+                />
+                <div className="form-actions">
+                  <button type="button" className="btn-primary settings-save-btn" onClick={handleCopyExport}>
+                    Copy to clipboard
+                  </button>
+                  <button type="button" className="btn-cancel" onClick={() => { setShowExport(false); setExportMsg(''); }}>Close</button>
+                </div>
+                {exportMsg && <p className="settings-message">{exportMsg}</p>}
+              </div>
+            )}
+
+            <div className="settings-actions">
+              <button type="button" className="btn-secondary" onClick={handleExport}>Export (JSON)</button>
+              <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import (JSON)</button>
+              <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+              <button type="button" className="btn-secondary btn-danger-outline" onClick={() => { setConfirmAction('clear'); setClearError(''); }}>Clear all data</button>
+            </div>
+            {importMessage && <p className="settings-message">{importMessage}</p>}
+          </div>
         )}
       </div>
 
+      {/* ——— Account (merged: security + sign out + delete) ——— */}
       <div className="settings-section">
-        <div className="settings-actions">
-          <button type="button" className="btn-secondary" style={{ width: '100%' }} onClick={signOut}>
-            Sign Out
-          </button>
-          <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={() => { setConfirmAction('delete'); setClearError(''); }}>
-            Delete Account
-          </button>
-        </div>
+        <button type="button" className="section-toggle" onClick={() => toggle('account')}>
+          <div className="section-toggle-left">
+            <h2>Account</h2>
+          </div>
+          <div className="section-toggle-right">
+            {user?.email && <span className="section-toggle-summary">{user.email}</span>}
+            <svg className={`section-chevron${openSection === 'account' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
+        {openSection === 'account' && (
+          <div className="section-collapse-body">
+            {/* Change password */}
+            <div className="section-header">
+              <h2 style={{ fontSize: '0.72rem', opacity: 0.6 }}>Security</h2>
+              {!showPasswordForm && (
+                <button type="button" className="edit-btn" onClick={() => { setShowPasswordForm(true); setPasswordError(''); setPasswordSuccess(''); setNewPassword(''); setConfirmPassword(''); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  Change Password
+                </button>
+              )}
+            </div>
+            {showPasswordForm && (
+              <form onSubmit={handleChangePassword} className="targets-form">
+                <div className="form-group">
+                  <label htmlFor="profile-new-password">New password</label>
+                  <input
+                    id="profile-new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="profile-confirm-password">Confirm password</label>
+                  <input
+                    id="profile-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </div>
+                {passwordError && <span className="form-error">{passwordError}</span>}
+                {passwordSuccess && <p className="settings-message">{passwordSuccess}</p>}
+                <div className="form-actions">
+                  <button type="submit" className="btn-primary settings-save-btn" disabled={passwordLoading}>
+                    {passwordLoading ? 'Updating...' : 'Update Password'}
+                  </button>
+                  <button type="button" className="btn-cancel" onClick={() => setShowPasswordForm(false)}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            <div className="target-divider" style={{ margin: '8px 0' }} />
+            <div className="settings-actions">
+              <button type="button" className="btn-secondary" style={{ width: '100%' }} onClick={signOut}>
+                Sign Out
+              </button>
+              <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={() => { setConfirmAction('delete'); setClearError(''); }}>
+                Delete Account
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="settings-section settings-about">

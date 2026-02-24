@@ -134,16 +134,16 @@ html[data-theme="dark"] {
 
 /* Dark mode overrides for hardcoded glass/card colors */
 [data-theme="dark"] .progress-card {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 [data-theme="dark"] .progress-card--empty {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 [data-theme="dark"] .progress-card--today {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 [data-theme="dark"] .wc-card {

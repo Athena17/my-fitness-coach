@@ -813,6 +813,16 @@ export default function Today() {
         })}
       </div>
 
+      {/* Training/Rest toggle (calorie cycling) — above tabs */}
+      {cyclingConfig.enabled && (
+        <div className="day-type-toggle">
+          <button className={`day-type-btn${selectedDayType === 'rest' ? ' day-type-btn--active' : ''}`}
+            onClick={() => setSelectedDayType('rest')}>Rest</button>
+          <button className={`day-type-btn${selectedDayType === 'training' ? ' day-type-btn--active' : ''}`}
+            onClick={() => setSelectedDayType('training')}>Training</button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="today-tabs">
         <button className={`today-tab ${activeTab === 'food' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('food')}>
@@ -853,16 +863,6 @@ export default function Today() {
                 <span className="daily-summary-item" style={{ color: 'var(--color-fat)' }}><span className="daily-summary-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F</span>
               </>}
             </div>
-
-            {/* Training/Rest toggle (calorie cycling) */}
-            {cyclingConfig.enabled && (
-              <div className="day-type-toggle">
-                <button className={`day-type-btn${selectedDayType === 'rest' ? ' day-type-btn--active' : ''}`}
-                  onClick={() => setSelectedDayType('rest')}>Rest</button>
-                <button className={`day-type-btn${selectedDayType === 'training' ? ' day-type-btn--active' : ''}`}
-                  onClick={() => setSelectedDayType('training')}>Training</button>
-              </div>
-            )}
 
             {/* Add entry bar: search saved meals + action pills */}
             <div className="add-entry-bar">

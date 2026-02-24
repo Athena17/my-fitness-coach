@@ -112,15 +112,15 @@
   gap: 3px;
   padding: 5px 0 4px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 52px;
 }
 
 .progress-card--empty {
-  background: rgba(0, 0, 0, 0.015);
-  border-color: rgba(0, 0, 0, 0.03);
+  background: var(--color-surface-highlight, rgba(245, 245, 245, 0.6));
+  border-color: rgba(0, 0, 0, 0.04);
 }
 
 .progress-card--future {
