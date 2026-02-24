@@ -3,7 +3,7 @@ import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { generateId } from '../utils/idGenerator.js';
-import { getToday, formatDateKey } from '../utils/dateUtils.js';
+import { getToday, formatDateKey, getWeekRange, getDayLabel } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import { sumNutrition, hasMacroTargets } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
@@ -34,10 +34,13 @@ function detectMeal(x, y) {
 
 export default function Today() {
   const { state, dispatch } = useApp();
-  const { todayEntries, caloriesBurned } = useDailyEntries();
+  const [selectedDate, setSelectedDate] = useState(getToday);
+  const { todayEntries, caloriesBurned } = useDailyEntries(selectedDate);
   const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat } = useEffectiveTargets();
   const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
+  const today = getToday();
+  const weekDays = useMemo(() => getWeekRange(), []);
 
   // Saved meals search
   const [mealQuery, setMealQuery] = useState('');
@@ -79,14 +82,13 @@ export default function Today() {
 
   // Recently eaten items (last 3 days, deduplicated by name, up to 10)
   const recentEntries = useMemo(() => {
-    const today = getToday();
     const d1 = new Date(); d1.setDate(d1.getDate() - 1);
     const d2 = new Date(); d2.setDate(d2.getDate() - 2);
     const d3 = new Date(); d3.setDate(d3.getDate() - 3);
     const recentKeys = new Set([formatDateKey(d1), formatDateKey(d2), formatDateKey(d3)]);
 
     const past = (state.entries || [])
-      .filter((e) => recentKeys.has(e.dateKey) && e.dateKey !== today)
+      .filter((e) => recentKeys.has(e.dateKey) && e.dateKey !== selectedDate)
       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
     const seen = new Set();
@@ -108,7 +110,7 @@ export default function Today() {
       if (unique.length >= 10) break;
     }
     return unique;
-  }, [state.entries]);
+  }, [state.entries, selectedDate]);
 
   // Drag-and-drop state (sections + entry reorder)
   const [dragItem, setDragItem] = useState(null);
@@ -359,7 +361,7 @@ export default function Today() {
           servingSize: 1,
           servingUnit: 'serving',
           timestamp: Date.now(),
-          dateKey: getToday(),
+          dateKey: selectedDate,
           ...(item.ingredients ? { ingredients: item.ingredients } : {}),
         },
       });
@@ -420,7 +422,7 @@ export default function Today() {
             carbs: Math.round(cVal * consumed),
             fat: Math.round(fVal * consumed),
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
-            timestamp: Date.now(), dateKey: getToday(),
+            timestamp: Date.now(), dateKey: selectedDate,
             fromLeftoverId: lo.id,
           },
         });
@@ -450,7 +452,7 @@ export default function Today() {
             carbs: Math.round(perServing.carbs * consumed),
             fat: Math.round(perServing.fat * consumed),
             meal: mealSlot, servingSize: consumed, servingUnit: 'serving',
-            timestamp: Date.now(), dateKey: getToday(),
+            timestamp: Date.now(), dateKey: selectedDate,
             ...(ingredients ? { ingredients } : {}),
           },
         });
@@ -794,6 +796,32 @@ export default function Today() {
 
         return (
           <>
+            {/* Day selector strip */}
+            <div className="day-strip">
+              {weekDays.map((dk) => {
+                const d = new Date(dk + 'T00:00:00');
+                const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = d.getDate();
+                const isActive = dk === selectedDate;
+                const isToday = dk === today;
+                return (
+                  <button
+                    key={dk}
+                    className={[
+                      'day-strip-btn',
+                      isActive && 'day-strip-btn--active',
+                      isToday && !isActive && 'day-strip-btn--today',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => setSelectedDate(dk)}
+                  >
+                    <span className="day-strip-name">{dayName}</span>
+                    <span className="day-strip-num">{dayNum}</span>
+                    {isToday && !isActive && <span className="day-strip-dot" />}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Daily summary */}
             <div className="daily-summary">
               <span className="daily-summary-item" style={{ color: 'var(--color-kcal)' }}><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
@@ -936,8 +964,8 @@ export default function Today() {
               );
             })()}
 
-            {/* Today's Log */}
-            <div className="meals-section-header">Today&apos;s Log</div>
+            {/* Day's Log */}
+            <div className="meals-section-header">{getDayLabel(selectedDate)}&apos;s Log</div>
             <div className="meals-section">
               {MEAL_CONFIG.map(({ key: meal, label }) => {
                 const entries = todayEntries.filter((e) => e.meal === meal);

@@ -3,20 +3,20 @@ import { useApp } from '../context/useApp.js';
 import { getToday, getWeekRange } from '../utils/dateUtils.js';
 import { sumNutrition } from '../utils/nutritionCalc.js';
 
-export function useDailyEntries() {
+export function useDailyEntries(dateKey) {
   const { state } = useApp();
-  const today = getToday();
+  const day = dateKey || getToday();
 
   const todayEntries = useMemo(
-    () => state.entries.filter((e) => e.dateKey === today),
-    [state.entries, today]
+    () => state.entries.filter((e) => e.dateKey === day),
+    [state.entries, day]
   );
 
   const todayTotals = useMemo(() => sumNutrition(todayEntries), [todayEntries]);
 
   const todayExerciseLogs = useMemo(
-    () => (state.exerciseLogs || []).filter((e) => e.dateKey === today),
-    [state.exerciseLogs, today]
+    () => (state.exerciseLogs || []).filter((e) => e.dateKey === day),
+    [state.exerciseLogs, day]
   );
 
   const caloriesBurned = useMemo(
@@ -25,8 +25,8 @@ export function useDailyEntries() {
   );
 
   const todayWaterLogs = useMemo(
-    () => (state.waterLogs || []).filter((e) => e.dateKey === today),
-    [state.waterLogs, today]
+    () => (state.waterLogs || []).filter((e) => e.dateKey === day),
+    [state.waterLogs, day]
   );
 
   const todayWaterTotal = useMemo(
