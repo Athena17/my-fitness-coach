@@ -234,6 +234,14 @@ html[data-theme="dark"] {
   background: rgba(77, 184, 217, 0.08);
   box-shadow: 0 0 0 3px rgba(77, 184, 217, 0.1), 0 2px 12px rgba(0, 0, 0, 0.2);
 }
+[data-theme="dark"] .add-entry-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .add-entry-pill:active {
+  background: rgba(77, 184, 217, 0.1);
+  border-color: rgba(77, 184, 217, 0.2);
+}
 [data-theme="dark"] .add-mode-back:hover {
   background: rgba(255, 255, 255, 0.06);
 }
@@ -329,16 +337,6 @@ html[data-theme="dark"] {
 }
 [data-theme="dark"] .dl-card-discard:active {
   background: rgba(248, 113, 113, 0.15);
-}
-[data-theme="dark"] .fab-menu-item {
-  background: rgba(20, 30, 48, 0.92);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-[data-theme="dark"] .fab-menu-item:active {
-  background: rgba(77, 184, 217, 0.08);
-}
-[data-theme="dark"] .fab-overlay {
-  background: rgba(0, 0, 0, 0.4);
 }
 [data-theme="dark"] .quick-add-confirm-overlay {
   background: rgba(15, 24, 35, 0.97);

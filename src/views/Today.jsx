@@ -40,8 +40,6 @@ export default function Today() {
   const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
 
-  // FAB menu
-  const [showFabMenu, setShowFabMenu] = useState(false);
 
   // Recently eaten items (last 3 days, deduplicated by name, up to 10)
   const recentEntries = useMemo(() => {
@@ -825,8 +823,20 @@ export default function Today() {
               </>}
             </div>
 
-            {/* Inline food search */}
-            <FoodSearch onSelect={handleFoodSearchSelect} />
+            {/* Food search + add pills */}
+            <div className="add-entry-bar">
+              <FoodSearch onSelect={handleFoodSearchSelect} />
+              <div className="add-entry-pills">
+                <button className="add-entry-pill" onClick={() => { setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  Log Meal
+                </button>
+                <button className="add-entry-pill" onClick={() => { setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3m0 0v7"/></svg>
+                  Cook
+                </button>
+              </div>
+            </div>
 
             {/* My Saved Meals section — hidden when empty */}
             {(() => {
@@ -1016,33 +1026,6 @@ export default function Today() {
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel />}
 
-      {/* Floating action button + menu */}
-      {activeTab === 'food' && (
-        <>
-          {showFabMenu && <div className="fab-overlay" onClick={() => setShowFabMenu(false)} />}
-          <div className="fab-wrap">
-            {showFabMenu && (
-              <div className="fab-menu">
-                <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  Log Meal
-                </button>
-                <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3m0 0v7"/></svg>
-                  Cook
-                </button>
-              </div>
-            )}
-            <button
-              className={`fab${showFabMenu ? ' fab--open' : ''}`}
-              onClick={() => setShowFabMenu(!showFabMenu)}
-              aria-label="Add"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-          </div>
-        </>
-      )}
     </div>
   );
 }

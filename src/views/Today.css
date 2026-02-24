@@ -99,6 +99,47 @@
   opacity: 0.3;
 }
 
+/* ——— Add entry bar (search + pills) ——— */
+.add-entry-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-entry-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.add-entry-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.15s;
+}
+
+.add-entry-pill:active {
+  transform: scale(0.95);
+  background: rgba(46, 142, 192, 0.08);
+  border-color: rgba(46, 142, 192, 0.2);
+  color: var(--color-primary);
+}
+
+.add-entry-pill svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
 /* ——— Meal log ——— */
 .meals-section-header {
   font-size: 0.72rem;
