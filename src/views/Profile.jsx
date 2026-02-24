@@ -280,7 +280,7 @@ function MyIngredientsSection() {
 
 export default function Profile() {
   const { state, dispatch } = useApp();
-  const { signOut } = useAuth();
+  const { signOut, changePassword } = useAuth();
   const [cyclingConfig, setCyclingConfig] = useCyclingConfig();
   const { entries, targets } = state;
   const today = getToday();
@@ -405,6 +405,12 @@ export default function Profile() {
   const [showExport, setShowExport] = useState(false);
   const [exportText, setExportText] = useState('');
   const [exportMsg, setExportMsg] = useState('');
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   function handleMacroToggle(enabled) {
     setMacrosEnabled(enabled);
@@ -656,6 +662,32 @@ export default function Profile() {
       setExportMsg('Copied!');
       setTimeout(() => setExportMsg(''), 2000);
     });
+  }
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await changePassword(newPassword);
+      setPasswordSuccess('Password updated!');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => { setPasswordSuccess(''); setShowPasswordForm(false); }, 2000);
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to update password.');
+    } finally {
+      setPasswordLoading(false);
+    }
   }
 
   const maintenanceKcal = targets.maintenanceKcal || targets.kcal;
@@ -1200,6 +1232,60 @@ export default function Profile() {
         {importMessage && <p className="settings-message">{importMessage}</p>}
       </div>
 
+
+      {/* ——— Security ——— */}
+      <div className="settings-section">
+        <div className="section-header">
+          <h2>Security</h2>
+          {!showPasswordForm && (
+            <button type="button" className="edit-btn" onClick={() => { setShowPasswordForm(true); setPasswordError(''); setPasswordSuccess(''); setNewPassword(''); setConfirmPassword(''); }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Change Password
+            </button>
+          )}
+        </div>
+        {showPasswordForm && (
+          <form onSubmit={handleChangePassword} className="targets-form">
+            <div className="form-group">
+              <label htmlFor="profile-new-password">New password</label>
+              <input
+                id="profile-new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                required
+                minLength={6}
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profile-confirm-password">Confirm password</label>
+              <input
+                id="profile-confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                required
+                minLength={6}
+                autoComplete="new-password"
+              />
+            </div>
+            {passwordError && <span className="form-error">{passwordError}</span>}
+            {passwordSuccess && <p className="settings-message">{passwordSuccess}</p>}
+            <div className="form-actions">
+              <button type="submit" className="btn-primary settings-save-btn" disabled={passwordLoading}>
+                {passwordLoading ? 'Updating...' : 'Update Password'}
+              </button>
+              <button type="button" className="btn-cancel" onClick={() => setShowPasswordForm(false)}>Cancel</button>
+            </div>
+          </form>
+        )}
+      </div>
 
       <div className="settings-section">
         <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={signOut}>

@@ -101,6 +101,30 @@
   margin: 0;
 }
 
+/* ── Forgot password ── */
+.auth-forgot {
+  align-self: flex-end;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-top: -4px;
+}
+
+.auth-forgot:hover {
+  color: var(--auth-accent);
+}
+
+.auth-forgot:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Submit button — colour follows mode ── */
 .auth-submit {
   width: 100%;

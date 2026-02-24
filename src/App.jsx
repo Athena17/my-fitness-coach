@@ -2,6 +2,7 @@ import { useApp } from './context/useApp.js';
 import { useAuth } from './context/useAuth.js';
 import { VIEWS } from './context/constants.js';
 import Auth from './views/Auth.jsx';
+import PasswordReset from './views/PasswordReset.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Today from './views/Today.jsx';
@@ -11,7 +12,7 @@ import GoalBar from './components/GoalBar.jsx';
 import './App.css';
 
 function App() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, recoveryMode } = useAuth();
   const { state, loading: dataLoading } = useApp();
 
   if (authLoading || dataLoading) {
@@ -24,6 +25,10 @@ function App() {
 
   if (!user) {
     return <Auth />;
+  }
+
+  if (recoveryMode) {
+    return <PasswordReset />;
   }
 
   if (!state.targets.onboardingComplete) {

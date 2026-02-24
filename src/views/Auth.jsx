@@ -2,14 +2,32 @@ import { useState } from 'react';
 import { useAuth } from '../context/useAuth.js';
 import './Auth.css';
 
+function friendlyAuthError(message) {
+  const msg = (message || '').toLowerCase();
+  if (msg.includes('invalid login credentials') || msg.includes('invalid_credentials'))
+    return 'Incorrect email or password.';
+  if (msg.includes('user already registered'))
+    return 'An account with this email already exists.';
+  if (msg.includes('email not confirmed'))
+    return 'Please confirm your email first.';
+  if (msg.includes('password') && (msg.includes('short') || msg.includes('at least')))
+    return 'Password must be at least 6 characters.';
+  if (msg.includes('rate limit') || msg.includes('too many'))
+    return 'Too many attempts. Please wait a moment.';
+  if (msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch'))
+    return 'Connection error. Check your internet.';
+  return message || 'Something went wrong. Please try again.';
+}
+
 export default function Auth() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const isSignUp = mode === 'signup';
 
@@ -27,7 +45,7 @@ export default function Auth() {
         await signIn(email, password);
       }
     } catch (err) {
-      setError(err.message);
+      setError(friendlyAuthError(err.message));
     } finally {
       setLoading(false);
     }
@@ -37,6 +55,24 @@ export default function Auth() {
     setMode(isSignUp ? 'signin' : 'signup');
     setError('');
     setConfirmMessage('');
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setError('Enter your email address first.');
+      return;
+    }
+    setError('');
+    setConfirmMessage('');
+    setForgotLoading(true);
+    try {
+      await resetPassword(email.trim());
+      setConfirmMessage('Password reset link sent! Check your email.');
+    } catch (err) {
+      setError(friendlyAuthError(err.message));
+    } finally {
+      setForgotLoading(false);
+    }
   }
 
   return (
@@ -76,6 +112,17 @@ export default function Auth() {
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
             </div>
+
+            {!isSignUp && (
+              <button
+                type="button"
+                className="auth-forgot"
+                onClick={handleForgotPassword}
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? 'Sending...' : 'Forgot password?'}
+              </button>
+            )}
 
             {error && <p className="auth-error">{error}</p>}
             {confirmMessage && <p className="auth-confirm">{confirmMessage}</p>}
