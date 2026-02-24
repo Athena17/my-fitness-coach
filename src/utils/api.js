@@ -576,31 +576,43 @@ export async function deletePersonalIngredient(id) {
   if (error) console.error('deletePersonalIngredient:', error);
 }
 
-// ─── Clear All User Data ────────────────────────────
+// ─── Clear / Delete User Data ───────────────────────
 
-export async function clearAllUserData(userId) {
-  const tables = [
-    'entries',
-    'exercise_logs',
-    'water_logs',
-    'recipes',
-    'leftovers',
-    'custom_meals',
-    'day_types',
-    'personal_ingredients',
-  ];
+const DATA_TABLES = [
+  'entries',
+  'exercise_logs',
+  'water_logs',
+  'recipes',
+  'leftovers',
+  'custom_meals',
+  'day_types',
+  'personal_ingredients',
+];
 
+async function deleteFromTables(userId, tables) {
   const failures = [];
-
-  // Delete all rows from each table — check .error since Supabase doesn't throw
   await Promise.all(
     tables.map(async (table) => {
       const { error } = await supabase.from(table).delete().eq('user_id', userId);
       if (error) failures.push({ table, error: error.message });
     })
   );
+  return failures;
+}
 
-  // Reset profile to defaults instead of deleting (keeps the row for the user)
+/** Clear logs & entries but keep profile/targets/account intact */
+export async function clearUserData(userId) {
+  const failures = await deleteFromTables(userId, DATA_TABLES);
+  if (failures.length > 0) {
+    console.error('clearUserData failures:', failures);
+    throw new Error(`Failed to clear: ${failures.map((f) => f.table).join(', ')}`);
+  }
+}
+
+/** Delete everything — data + reset profile to defaults (for account deletion) */
+export async function deleteAccountData(userId) {
+  const failures = await deleteFromTables(userId, DATA_TABLES);
+
   const { error: profileError } = await supabase.from('profiles').update({
     calorie_target: 2000,
     protein_target: 120,
@@ -632,7 +644,7 @@ export async function clearAllUserData(userId) {
   if (profileError) failures.push({ table: 'profiles', error: profileError.message });
 
   if (failures.length > 0) {
-    console.error('clearAllUserData failures:', failures);
-    throw new Error(`Failed to clear: ${failures.map((f) => f.table).join(', ')}`);
+    console.error('deleteAccountData failures:', failures);
+    throw new Error(`Failed to delete: ${failures.map((f) => f.table).join(', ')}`);
   }
 }

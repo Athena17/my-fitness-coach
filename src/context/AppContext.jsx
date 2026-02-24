@@ -189,7 +189,20 @@ function reducer(state, action) {
         leftovers: action.payload.leftovers || state.leftovers,
       };
 
-    case 'CLEAR_ALL_DATA':
+    case 'CLEAR_DATA':
+      return {
+        ...state,
+        entries: [],
+        exerciseLogs: [],
+        waterLogs: [],
+        recipes: [],
+        leftovers: [],
+        customMeals: [],
+        personalIngredients: [],
+        dayTypes: {},
+      };
+
+    case 'DELETE_ACCOUNT_DATA':
       return {
         ...init(),
         currentView: state.currentView,
@@ -415,7 +428,8 @@ export function AppProvider({ children }) {
         break;
       }
 
-      case 'CLEAR_ALL_DATA': {
+      case 'CLEAR_DATA':
+      case 'DELETE_ACCOUNT_DATA': {
         // API call + cache clear handled by caller (Profile.jsx) before dispatching
         rawDispatch(action);
         break;

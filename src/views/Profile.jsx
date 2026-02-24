@@ -5,7 +5,7 @@ import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData } from '../utils/storage.js';
-import { clearAllUserData } from '../utils/api.js';
+import { clearUserData, deleteAccountData } from '../utils/api.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
@@ -398,7 +398,7 @@ export default function Profile() {
   const [cyclingEditing, setCyclingEditing] = useState(!cyclingEnabled);
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // 'clear' | 'delete' | null
   const [clearLoading, setClearLoading] = useState(false);
   const [clearError, setClearError] = useState('');
   const [importMessage, setImportMessage] = useState('');
@@ -563,14 +563,30 @@ export default function Profile() {
     setClearLoading(true);
     setClearError('');
     try {
-      await clearAllUserData(user.id);
-      // Clear localStorage cache
+      await clearUserData(user.id);
       try { localStorage.removeItem(`nt_data_cache_${user.id}`); } catch { /* ignore */ }
-      dispatch({ type: 'CLEAR_ALL_DATA' });
-      setShowClearConfirm(false);
+      dispatch({ type: 'CLEAR_DATA' });
+      setConfirmAction(null);
     } catch (err) {
       console.error('Clear data failed:', err);
       setClearError('Failed to clear data. Please try again.');
+    } finally {
+      setClearLoading(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setClearLoading(true);
+    setClearError('');
+    try {
+      await deleteAccountData(user.id);
+      try { localStorage.removeItem(`nt_data_cache_${user.id}`); } catch { /* ignore */ }
+      dispatch({ type: 'DELETE_ACCOUNT_DATA' });
+      setConfirmAction(null);
+      await signOut();
+    } catch (err) {
+      console.error('Delete account failed:', err);
+      setClearError('Failed to delete account data. Please try again.');
     } finally {
       setClearLoading(false);
     }
@@ -1245,7 +1261,7 @@ export default function Profile() {
           <button type="button" className="btn-secondary" onClick={handleExport}>Export (JSON)</button>
           <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()}>Import (JSON)</button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
-          <button type="button" className="btn-secondary btn-danger-outline" onClick={() => setShowClearConfirm(true)}>Clear all data</button>
+          <button type="button" className="btn-secondary btn-danger-outline" onClick={() => { setConfirmAction('clear'); setClearError(''); }}>Clear all data</button>
         </div>
         {importMessage && <p className="settings-message">{importMessage}</p>}
       </div>
@@ -1306,24 +1322,42 @@ export default function Profile() {
       </div>
 
       <div className="settings-section">
-        <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={signOut}>
-          Sign Out
-        </button>
+        <div className="settings-actions">
+          <button type="button" className="btn-secondary" style={{ width: '100%' }} onClick={signOut}>
+            Sign Out
+          </button>
+          <button type="button" className="btn-secondary btn-danger-outline" style={{ width: '100%' }} onClick={() => { setConfirmAction('delete'); setClearError(''); }}>
+            Delete Account
+          </button>
+        </div>
       </div>
 
       <div className="settings-section settings-about">
         <p>Irada v1.3 — Data synced to cloud.</p>
       </div>
 
-      {showClearConfirm && (
-        <Modal title="Clear All Data" onClose={() => !clearLoading && setShowClearConfirm(false)}>
-          <p style={{ marginBottom: 16 }}>This will permanently delete all your entries and targets from the cloud. This cannot be undone.</p>
+      {confirmAction === 'clear' && (
+        <Modal title="Clear Data" onClose={() => !clearLoading && setConfirmAction(null)}>
+          <p style={{ marginBottom: 16 }}>This will delete all your food entries, exercises, water logs, recipes, and custom meals. Your account and targets will be kept.</p>
           {clearError && <p style={{ color: 'var(--color-danger)', fontSize: '0.8rem', marginBottom: 12 }}>{clearError}</p>}
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn-primary" style={{ flex: 1, background: 'var(--color-danger)', padding: '10px', opacity: clearLoading ? 0.6 : 1 }} onClick={handleClearData} disabled={clearLoading}>
-              {clearLoading ? 'Clearing...' : 'Clear Everything'}
+              {clearLoading ? 'Clearing...' : 'Clear Data'}
             </button>
-            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setShowClearConfirm(false)} disabled={clearLoading}>Cancel</button>
+            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setConfirmAction(null)} disabled={clearLoading}>Cancel</button>
+          </div>
+        </Modal>
+      )}
+
+      {confirmAction === 'delete' && (
+        <Modal title="Delete Account" onClose={() => !clearLoading && setConfirmAction(null)}>
+          <p style={{ marginBottom: 16 }}>This will permanently delete all your data and reset your account. You will be signed out. This cannot be undone.</p>
+          {clearError && <p style={{ color: 'var(--color-danger)', fontSize: '0.8rem', marginBottom: 12 }}>{clearError}</p>}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-danger)', padding: '10px', opacity: clearLoading ? 0.6 : 1 }} onClick={handleDeleteAccount} disabled={clearLoading}>
+              {clearLoading ? 'Deleting...' : 'Delete Everything'}
+            </button>
+            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setConfirmAction(null)} disabled={clearLoading}>Cancel</button>
           </div>
         </Modal>
       )}
