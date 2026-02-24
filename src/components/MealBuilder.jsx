@@ -31,11 +31,15 @@ function IngredientSearch({ value, onChange, onSelect }) {
   useEffect(() => {
     if (!open || results.length === 0) return;
     updateRect();
-    const appMain = document.querySelector('.app-main');
-    if (appMain) appMain.addEventListener('scroll', updateRect, { passive: true });
+    // Listen to all scrollable ancestors (modal-content, app-main, etc.)
+    const scrollables = [
+      inputRef.current?.closest('.modal-content'),
+      document.querySelector('.app-main'),
+    ].filter(Boolean);
+    scrollables.forEach((el) => el.addEventListener('scroll', updateRect, { passive: true }));
     window.addEventListener('resize', updateRect);
     return () => {
-      if (appMain) appMain.removeEventListener('scroll', updateRect);
+      scrollables.forEach((el) => el.removeEventListener('scroll', updateRect));
       window.removeEventListener('resize', updateRect);
     };
   }, [open, results.length, updateRect]);

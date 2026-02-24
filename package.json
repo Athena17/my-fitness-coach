@@ -1,7 +1,11 @@
 {
   "name": "irada",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Irada — calorie & macro tracking app. Track your daily nutrition with precision.",
+  "author": "Irada",
+  "license": "UNLICENSED",
+  "keywords": ["nutrition", "calorie-tracker", "macro-tracking", "health", "fitness", "pwa"],
   "type": "module",
   "scripts": {
     "dev": "vite",

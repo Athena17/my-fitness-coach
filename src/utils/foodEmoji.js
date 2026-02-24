@@ -12,6 +12,7 @@ export function getEmoji(name) {
   if (/coffee|latte|cappuccino|espresso/.test(n)) return '☕';
   if (/smoothie|shake|juice/.test(n)) return '🥤';
   if (/tea/.test(n)) return '🍵';
+  if (/chocolate/.test(n)) return '🍫';
   if (/milk/.test(n)) return '🥛';
   if (/water|drink|soda|cola/.test(n)) return '🥤';
   if (/protein\s*(shake|powder|bar)/.test(n)) return '💪';

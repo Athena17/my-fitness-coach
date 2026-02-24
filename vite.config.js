@@ -11,12 +11,34 @@ export default defineConfig({
       manifest: {
         name: 'Irada',
         short_name: 'Irada',
-        description: 'Calorie & macro tracking PWA',
+        description: 'Calorie & macro tracking app. Track your daily nutrition, set goals, and build healthy habits.',
         display: 'standalone',
+        orientation: 'portrait',
+        categories: ['health', 'fitness', 'lifestyle'],
         background_color: '#0f1823',
         theme_color: '#0f1823',
         start_url: '/my-fitness-coach/',
         scope: '/my-fitness-coach/',
+        shortcuts: [
+          {
+            name: 'Log Meal',
+            short_name: 'Log',
+            url: '/my-fitness-coach/?view=today',
+            icons: [{ src: 'icons/icon-96.webp', sizes: '96x96', type: 'image/webp' }],
+          },
+          {
+            name: 'View History',
+            short_name: 'History',
+            url: '/my-fitness-coach/?view=history',
+            icons: [{ src: 'icons/icon-96.webp', sizes: '96x96', type: 'image/webp' }],
+          },
+          {
+            name: 'Profile',
+            short_name: 'Profile',
+            url: '/my-fitness-coach/?view=profile',
+            icons: [{ src: 'icons/icon-96.webp', sizes: '96x96', type: 'image/webp' }],
+          },
+        ],
         icons: [
           { src: 'icons/icon-48.webp', sizes: '48x48', type: 'image/webp', purpose: 'any' },
           { src: 'icons/icon-72.webp', sizes: '72x72', type: 'image/webp', purpose: 'any' },
