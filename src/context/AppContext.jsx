@@ -222,13 +222,14 @@ export function AppProvider({ children }) {
 
   // Load data from Supabase when user becomes available
   const userIdRef = useRef(undefined); // undefined so first null check doesn't skip
+  const fetchIdRef = useRef(0); // tracks which fetch is current
   useEffect(() => {
     // Same user — skip re-fetch (avoids Supabase auth firing multiple events)
     const uid = user?.id ?? null;
     if (uid === userIdRef.current) return;
     userIdRef.current = uid;
 
-    let cancelled = false;
+    const fetchId = ++fetchIdRef.current;
 
     (async () => {
       if (!uid) {
@@ -268,21 +269,19 @@ export function AppProvider({ children }) {
           setTimeout(() => reject(new Error('Data load timeout')), 15000)
         );
         const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.race([dataPromise, timeoutPromise]);
-        if (cancelled) return;
+        if (fetchId !== fetchIdRef.current) return;
         const payload = { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes };
         rawDispatch({ type: 'INIT_DATA', payload });
         // Update cache for next load
         try { localStorage.setItem(cacheKey, JSON.stringify(payload)); } catch { /* quota */ }
       } catch (err) {
         console.error('Data load failed:', err);
-        if (cancelled) return;
+        if (fetchId !== fetchIdRef.current) return;
         if (!usedCache) rawDispatch({ type: 'INIT_DATA', payload: { targets: DEFAULT_TARGETS } });
       } finally {
-        if (!cancelled) setLoading(false);
+        if (fetchId === fetchIdRef.current) setLoading(false);
       }
     })();
-
-    return () => { cancelled = true; };
   }, [user]);
 
   // Dispatch wrapper that persists to Supabase
