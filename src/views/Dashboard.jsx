@@ -164,7 +164,7 @@ export default function Dashboard() {
   const { state, dispatch } = useApp();
   const { targets, entries } = state;
   const { todayTotals, caloriesBurned, todayWaterTotal } = useDailyEntries();
-  const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat, dayType, setDayType, cyclingEnabled } = useEffectiveTargets();
+  const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat, dayType, cyclingEnabled } = useEffectiveTargets();
   const macroFlags = hasMacroTargets(targets);
   const [mounted, setMounted] = useState(false);
   const [waterSplash, setWaterSplash] = useState(false);
@@ -499,22 +499,8 @@ export default function Dashboard() {
       })()}
 
       <div className="ov-today-strip ov-enter ov-enter--3">
-        <span className="ov-today-label">Today</span>
+        <span className="ov-today-label">Today{cyclingEnabled && ` (${dayType === 'training' ? 'Training' : 'Rest'})`}</span>
       </div>
-
-      {/* Day type toggle (calorie cycling) */}
-      {cyclingEnabled && (
-        <div className="ov-day-type-toggle ov-enter ov-enter--3">
-          <button
-            className={`ov-day-type-btn${dayType === 'rest' ? ' ov-day-type-btn--active' : ''}`}
-            onClick={() => setDayType('rest')}
-          >Rest</button>
-          <button
-            className={`ov-day-type-btn${dayType === 'training' ? ' ov-day-type-btn--active' : ''}`}
-            onClick={() => setDayType('training')}
-          >Training</button>
-        </div>
-      )}
 
       {/* 5. Rings — layout depends on macro tracking */}
       <div className={`ov-heroes ov-enter ov-enter--3${isPerfectDay ? ' ov-heroes--perfect' : ''}`}>
