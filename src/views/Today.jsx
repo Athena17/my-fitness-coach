@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
-import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
+import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { generateId } from '../utils/idGenerator.js';
 import { getToday, formatDateKey, getWeekRange, getDayLabel } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
@@ -36,7 +36,24 @@ export default function Today() {
   const { state, dispatch } = useApp();
   const [selectedDate, setSelectedDate] = useState(getToday);
   const { todayEntries, caloriesBurned } = useDailyEntries(selectedDate);
-  const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat } = useEffectiveTargets();
+  const [cyclingConfig] = useCyclingConfig();
+  const selectedDayType = state.dayTypes?.[selectedDate] || 'rest';
+  const setSelectedDayType = useCallback((type) => {
+    dispatch({ type: 'SET_DAY_TYPE', payload: { dateKey: selectedDate, dayType: type } });
+  }, [dispatch, selectedDate]);
+
+  const effectiveKcal = cyclingConfig.enabled
+    ? (selectedDayType === 'training' ? cyclingConfig.trainingKcal : cyclingConfig.restKcal)
+    : state.targets.kcal;
+  const effectiveProtein = cyclingConfig.enabled
+    ? (selectedDayType === 'training' ? cyclingConfig.trainingProtein : cyclingConfig.restProtein)
+    : state.targets.protein;
+  const effectiveCarbs = cyclingConfig.enabled
+    ? ((selectedDayType === 'training' ? cyclingConfig.trainingCarbs : cyclingConfig.restCarbs) || state.targets.carbs || 0)
+    : (state.targets.carbs ?? 0);
+  const effectiveFat = cyclingConfig.enabled
+    ? ((selectedDayType === 'training' ? cyclingConfig.trainingFat : cyclingConfig.restFat) || state.targets.fat || 0)
+    : (state.targets.fat ?? 0);
   const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
   const today = getToday();
@@ -770,6 +787,32 @@ export default function Today() {
 
   return (
     <div className="today">
+      {/* Day selector strip */}
+      <div className="day-strip">
+        {weekDays.map((dk) => {
+          const d = new Date(dk + 'T00:00:00');
+          const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+          const dayNum = d.getDate();
+          const isActive = dk === selectedDate;
+          const isToday = dk === today;
+          return (
+            <button
+              key={dk}
+              className={[
+                'day-strip-btn',
+                isActive && 'day-strip-btn--active',
+                isToday && !isActive && 'day-strip-btn--today',
+              ].filter(Boolean).join(' ')}
+              onClick={() => setSelectedDate(dk)}
+            >
+              <span className="day-strip-name">{dayName}</span>
+              <span className="day-strip-num">{dayNum}</span>
+              {isToday && !isActive && <span className="day-strip-dot" />}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Tabs */}
       <div className="today-tabs">
         <button className={`today-tab ${activeTab === 'food' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('food')}>
@@ -796,32 +839,6 @@ export default function Today() {
 
         return (
           <>
-            {/* Day selector strip */}
-            <div className="day-strip">
-              {weekDays.map((dk) => {
-                const d = new Date(dk + 'T00:00:00');
-                const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-                const dayNum = d.getDate();
-                const isActive = dk === selectedDate;
-                const isToday = dk === today;
-                return (
-                  <button
-                    key={dk}
-                    className={[
-                      'day-strip-btn',
-                      isActive && 'day-strip-btn--active',
-                      isToday && !isActive && 'day-strip-btn--today',
-                    ].filter(Boolean).join(' ')}
-                    onClick={() => setSelectedDate(dk)}
-                  >
-                    <span className="day-strip-name">{dayName}</span>
-                    <span className="day-strip-num">{dayNum}</span>
-                    {isToday && !isActive && <span className="day-strip-dot" />}
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Daily summary */}
             <div className="daily-summary">
               <span className="daily-summary-item" style={{ color: 'var(--color-kcal)' }}><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
@@ -836,6 +853,16 @@ export default function Today() {
                 <span className="daily-summary-item" style={{ color: 'var(--color-fat)' }}><span className="daily-summary-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F</span>
               </>}
             </div>
+
+            {/* Training/Rest toggle (calorie cycling) */}
+            {cyclingConfig.enabled && (
+              <div className="day-type-toggle">
+                <button className={`day-type-btn${selectedDayType === 'rest' ? ' day-type-btn--active' : ''}`}
+                  onClick={() => setSelectedDayType('rest')}>Rest</button>
+                <button className={`day-type-btn${selectedDayType === 'training' ? ' day-type-btn--active' : ''}`}
+                  onClick={() => setSelectedDayType('training')}>Training</button>
+              </div>
+            )}
 
             {/* Add entry bar: search saved meals + action pills */}
             <div className="add-entry-bar">
@@ -1019,7 +1046,7 @@ export default function Today() {
 
 
       {/* Exercise tab */}
-      {activeTab === 'exercise' && <ExercisePanel />}
+      {activeTab === 'exercise' && <ExercisePanel selectedDate={selectedDate} />}
 
     </div>
   );

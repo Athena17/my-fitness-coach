@@ -8,9 +8,10 @@ import { calculateCaloriesBurned } from '../utils/exerciseCalc.js';
 import Modal from './Modal.jsx';
 import './ExercisePanel.css';
 
-export default function ExercisePanel() {
+export default function ExercisePanel({ selectedDate }) {
   const { state, dispatch } = useApp();
-  const { todayExerciseLogs, caloriesBurned } = useDailyEntries();
+  const dateKey = selectedDate || getToday();
+  const { todayExerciseLogs, caloriesBurned } = useDailyEntries(dateKey);
   const [showForm, setShowForm] = useState(false);
   const [exerciseKey, setExerciseKey] = useState(EXERCISES[0].key);
   const [duration, setDuration] = useState('');
@@ -37,7 +38,7 @@ export default function ExercisePanel() {
         intensity,
         weightUsed: weightKg,
         caloriesBurned: cal,
-        dateKey: getToday(),
+        dateKey,
         timestamp: Date.now(),
       },
     });
@@ -127,7 +128,7 @@ export default function ExercisePanel() {
       {todayExerciseLogs.length > 0 && (
         <div className="exercise-log-section">
           <div className="exercise-log-header">
-            <span className="exercise-log-title">Today's Exercise</span>
+            <span className="exercise-log-title">{dateKey === getToday() ? "Today's" : 'Day'} Exercise</span>
             <span className="exercise-log-total">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
