@@ -22,6 +22,11 @@ workflows:
           fi
           npx cap sync ios
 
+      - name: Set export compliance (HTTPS only, exempt)
+        script: |
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist || \
+          /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
+
       - name: Generate app icon
         script: |
           # Generate square icon SVG from logo
