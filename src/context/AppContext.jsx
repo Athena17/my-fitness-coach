@@ -205,6 +205,21 @@ export function AppProvider({ children }) {
     stateRef.current = state;
   });
 
+  // Keep localStorage cache in sync with state (debounced)
+  const cacheTimerRef = useRef(null);
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid || loading) return;
+    clearTimeout(cacheTimerRef.current);
+    cacheTimerRef.current = setTimeout(() => {
+      try {
+        const { targets, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes } = stateRef.current;
+        localStorage.setItem(`nt_data_cache_${uid}`, JSON.stringify({ targets, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes }));
+      } catch { /* quota */ }
+    }, 1000);
+    return () => clearTimeout(cacheTimerRef.current);
+  }, [state, user, loading]);
+
   // Load data from Supabase when user becomes available
   const userIdRef = useRef(undefined); // undefined so first null check doesn't skip
   useEffect(() => {
@@ -222,7 +237,21 @@ export function AppProvider({ children }) {
         return;
       }
 
-      setLoading(true);
+      // Try to show cached data instantly while Supabase loads
+      const cacheKey = `nt_data_cache_${uid}`;
+      let usedCache = false;
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          rawDispatch({ type: 'INIT_DATA', payload: { ...parsed, targets: parsed.targets || DEFAULT_TARGETS } });
+          setLoading(false);
+          usedCache = true;
+        }
+      } catch { /* ignore cache errors */ }
+
+      if (!usedCache) setLoading(true);
+
       try {
         const dataPromise = Promise.all([
           fetchProfile(uid),
@@ -235,19 +264,19 @@ export function AppProvider({ children }) {
           fetchDayTypes(uid),
           fetchPersonalIngredients(uid),
         ]);
-        const timeoutPromise = new Promise((_, reject) =>
+        const timeoutPromise = new Promise((_resolve, reject) =>
           setTimeout(() => reject(new Error('Data load timeout')), 15000)
         );
         const [profile, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, dayTypes, personalIngredients] = await Promise.race([dataPromise, timeoutPromise]);
         if (cancelled) return;
-        rawDispatch({
-          type: 'INIT_DATA',
-          payload: { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes },
-        });
+        const payload = { targets: profile || DEFAULT_TARGETS, entries, exerciseLogs, waterLogs, recipes, leftovers, customMeals, personalIngredients, dayTypes };
+        rawDispatch({ type: 'INIT_DATA', payload });
+        // Update cache for next load
+        try { localStorage.setItem(cacheKey, JSON.stringify(payload)); } catch { /* quota */ }
       } catch (err) {
         console.error('Data load failed:', err);
         if (cancelled) return;
-        rawDispatch({ type: 'INIT_DATA', payload: { targets: DEFAULT_TARGETS } });
+        if (!usedCache) rawDispatch({ type: 'INIT_DATA', payload: { targets: DEFAULT_TARGETS } });
       } finally {
         if (!cancelled) setLoading(false);
       }
