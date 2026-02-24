@@ -74,6 +74,7 @@ export default function History() {
     const dayEntries = dayMap[dateKey];
     if (!dayEntries || dayEntries.length === 0) return { dateKey, hasData: false };
     const totals = sumNutrition(dayEntries);
+    if (totals.kcal <= 0 && totals.protein <= 0) return { dateKey, hasData: false };
     const burn = burnByDay[dateKey] || 0;
     const net = totals.kcal - burn;
     return {
@@ -92,8 +93,9 @@ export default function History() {
       const dateKey = formatDateKey(new Date(viewYear, viewMonth, d));
       const dayEntries = dayMap[dateKey];
       if (!dayEntries || dayEntries.length === 0) continue;
-      tracked++;
       const totals = sumNutrition(dayEntries);
+      if (totals.kcal <= 0 && totals.protein <= 0) continue;
+      tracked++;
       const burn = burnByDay[dateKey] || 0;
       const net = totals.kcal - burn;
       if (targets.kcal > 0 && net <= targets.kcal) calOkDays++;

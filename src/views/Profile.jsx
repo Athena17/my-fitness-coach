@@ -329,6 +329,7 @@ export default function Profile() {
     const dayEntries = dayMap[dateKey];
     if (!dayEntries || dayEntries.length === 0) return { dateKey, hasData: false };
     const totals = sumNutrition(dayEntries);
+    if (totals.kcal <= 0 && totals.protein <= 0) return { dateKey, hasData: false };
     const burn = burnByDay[dateKey] || 0;
     const net = totals.kcal - burn;
     const dayTargets = getTargetsForDay(dateKey);
@@ -347,8 +348,9 @@ export default function Profile() {
       const dateKey = formatDateKey(new Date(viewYear, viewMonth, d));
       const dayEntries = dayMap[dateKey];
       if (!dayEntries || dayEntries.length === 0) continue;
-      tracked++;
       const totals = sumNutrition(dayEntries);
+      if (totals.kcal <= 0 && totals.protein <= 0) continue;
+      tracked++;
       const burn = burnByDay[dateKey] || 0;
       const dt = (dayTypes && dayTypes[dateKey]) || 'rest';
       const dayTargets = cyclingConfig.enabled
