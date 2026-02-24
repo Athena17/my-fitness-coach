@@ -7,6 +7,7 @@ import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData } from '../utils/storage.js';
 import { clearUserData, deleteAccountData } from '../utils/api.js';
 import { generateId } from '../utils/idGenerator.js';
+import { useTheme } from '../hooks/useTheme.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
 
@@ -282,6 +283,7 @@ function MyIngredientsSection() {
 export default function Profile() {
   const { state, dispatch } = useApp();
   const { user, signOut, changePassword } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [cyclingConfig, setCyclingConfig] = useCyclingConfig();
   const { entries, targets } = state;
   const today = getToday();
@@ -1182,6 +1184,17 @@ export default function Profile() {
 
       {/* ——— My Ingredients ——— */}
       <MyIngredientsSection />
+
+      {/* ——— Appearance ——— */}
+      <div className="settings-section">
+        <div className="cycling-toggle-row" style={{ marginBottom: 0 }}>
+          <span className="cycling-toggle-label">Dark mode</span>
+          <div className="cycling-toggle-pills">
+            <button type="button" className={`cycling-pill${theme === 'light' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('light')}>Light</button>
+            <button type="button" className={`cycling-pill${theme === 'dark' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
+          </div>
+        </div>
+      </div>
 
       {/* ——— Data ——— */}
       <div className="settings-section">

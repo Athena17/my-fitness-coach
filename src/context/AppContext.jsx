@@ -13,6 +13,63 @@ import {
   fetchDayTypes, upsertDayType,
   fetchPersonalIngredients, insertPersonalIngredient as apiInsertPersonalIng, updatePersonalIngredient as apiUpdatePersonalIng, deletePersonalIngredient as apiDeletePersonalIng,
 } from '../utils/api.js';
+import { enqueue, getQueue, clearQueue, isOnline } from '../utils/offlineQueue.js';
+
+// Maps mutation type → API function. Used for offline queue replay.
+const API_MAP = {
+  SET_TARGETS: (uid, p) => upsertProfile(uid, p.targets),
+  ADD_ENTRY: (uid, p) => insertEntry(uid, p),
+  UPDATE_ENTRY: (_uid, p) => updateEntry(p),
+  DELETE_ENTRY: (_uid, p) => deleteEntry(p),
+  ADD_EXERCISE: (uid, p) => insertExerciseLog(uid, p),
+  DELETE_EXERCISE: (_uid, p) => deleteExerciseLog(p),
+  ADD_WATER: (uid, p) => insertWaterLog(uid, p),
+  DELETE_WATER: (_uid, p) => deleteWaterLog(p),
+  ADD_RECIPE: (uid, p) => apiInsertRecipe(uid, p),
+  UPDATE_RECIPE: (_uid, p) => apiUpdateRecipe(p),
+  DELETE_RECIPE: (_uid, p) => apiDeleteRecipe(p),
+  ADD_LEFTOVER: (uid, p) => apiInsertLeftover(uid, p),
+  UPDATE_LEFTOVER: (_uid, p) => apiUpdateLeftover(p),
+  DELETE_LEFTOVER: (_uid, p) => apiDeleteLeftover(p),
+  ADD_CUSTOM_MEAL: (uid, p) => apiInsertCustomMeal(uid, p),
+  UPDATE_CUSTOM_MEAL: (_uid, p) => apiUpdateCustomMeal(p),
+  DELETE_CUSTOM_MEAL: (_uid, p) => apiDeleteCustomMeal(p),
+  SET_DAY_TYPE: (uid, p) => upsertDayType(uid, p.dateKey, p.dayType),
+  ADD_PERSONAL_INGREDIENT: (uid, p) => apiInsertPersonalIng(uid, p, 0),
+  UPDATE_PERSONAL_INGREDIENT: (_uid, p) => apiUpdatePersonalIng(p),
+  DELETE_PERSONAL_INGREDIENT: (_uid, p) => apiDeletePersonalIng(p),
+};
+
+/** Try an API call; if offline or network error, enqueue for later */
+function tryApi(type, userId, payload) {
+  if (!isOnline()) {
+    enqueue({ type, userId, payload });
+    return;
+  }
+  const fn = API_MAP[type];
+  if (!fn) return;
+  fn(userId, payload).catch(() => {
+    // Network error while technically "online" — enqueue
+    enqueue({ type, userId, payload });
+  });
+}
+
+/** Replay all queued mutations sequentially */
+async function flushQueue() {
+  const queue = getQueue();
+  if (queue.length === 0) return;
+  clearQueue(); // clear first so re-enqueue on failure doesn't loop
+  for (const item of queue) {
+    const fn = API_MAP[item.type];
+    if (!fn) continue;
+    try {
+      await fn(item.userId, item.payload);
+    } catch {
+      // If still failing, re-enqueue remaining items
+      enqueue(item);
+    }
+  }
+}
 
 const DEFAULT_TARGETS = {
   kcal: 2000,
@@ -303,140 +360,38 @@ export function AppProvider({ children }) {
     })();
   }, [user]);
 
-  // Dispatch wrapper that persists to Supabase
+  // Flush offline queue when we come back online
+  useEffect(() => {
+    function handleOnline() { flushQueue(); }
+    window.addEventListener('online', handleOnline);
+    // Also flush on mount in case we loaded while online with a stale queue
+    flushQueue();
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
+
+  // Dispatch wrapper that persists to Supabase (with offline queue fallback)
   const dispatch = useCallback((action) => {
-    if (!user) {
-      rawDispatch(action);
+    rawDispatch(action);
+
+    if (!user) return;
+
+    const { type, payload } = action;
+
+    // SET_TARGETS is debounced
+    if (type === 'SET_TARGETS') {
+      clearTimeout(profileTimerRef.current);
+      profileTimerRef.current = setTimeout(() => {
+        tryApi('SET_TARGETS', user.id, { targets: stateRef.current.targets });
+      }, 500);
       return;
     }
 
-    switch (action.type) {
-      case 'SET_TARGETS': {
-        rawDispatch(action);
-        clearTimeout(profileTimerRef.current);
-        profileTimerRef.current = setTimeout(() => {
-          upsertProfile(user.id, stateRef.current.targets);
-        }, 500);
-        break;
-      }
+    // These are handled externally (Profile.jsx calls API directly)
+    if (type === 'CLEAR_DATA' || type === 'DELETE_ACCOUNT_DATA') return;
 
-      case 'ADD_ENTRY': {
-        rawDispatch(action);
-        insertEntry(user.id, action.payload);
-        break;
-      }
-      case 'UPDATE_ENTRY': {
-        rawDispatch(action);
-        updateEntry(action.payload);
-        break;
-      }
-      case 'DELETE_ENTRY': {
-        rawDispatch(action);
-        deleteEntry(action.payload);
-        break;
-      }
-
-      case 'ADD_EXERCISE': {
-        rawDispatch(action);
-        insertExerciseLog(user.id, action.payload);
-        break;
-      }
-      case 'DELETE_EXERCISE': {
-        rawDispatch(action);
-        deleteExerciseLog(action.payload);
-        break;
-      }
-
-      case 'ADD_WATER': {
-        rawDispatch(action);
-        insertWaterLog(user.id, action.payload);
-        break;
-      }
-      case 'DELETE_WATER': {
-        rawDispatch(action);
-        deleteWaterLog(action.payload);
-        break;
-      }
-
-      case 'ADD_RECIPE': {
-        rawDispatch(action);
-        apiInsertRecipe(user.id, action.payload);
-        break;
-      }
-      case 'UPDATE_RECIPE': {
-        rawDispatch(action);
-        apiUpdateRecipe(action.payload);
-        break;
-      }
-      case 'DELETE_RECIPE': {
-        rawDispatch(action);
-        apiDeleteRecipe(action.payload);
-        break;
-      }
-
-      case 'ADD_LEFTOVER': {
-        rawDispatch(action);
-        apiInsertLeftover(user.id, action.payload);
-        break;
-      }
-      case 'UPDATE_LEFTOVER': {
-        rawDispatch(action);
-        apiUpdateLeftover(action.payload);
-        break;
-      }
-      case 'DELETE_LEFTOVER': {
-        rawDispatch(action);
-        apiDeleteLeftover(action.payload);
-        break;
-      }
-
-      case 'ADD_CUSTOM_MEAL': {
-        rawDispatch(action);
-        apiInsertCustomMeal(user.id, action.payload);
-        break;
-      }
-      case 'UPDATE_CUSTOM_MEAL': {
-        rawDispatch(action);
-        apiUpdateCustomMeal(action.payload);
-        break;
-      }
-      case 'DELETE_CUSTOM_MEAL': {
-        rawDispatch(action);
-        apiDeleteCustomMeal(action.payload);
-        break;
-      }
-
-      case 'SET_DAY_TYPE': {
-        rawDispatch(action);
-        upsertDayType(user.id, action.payload.dateKey, action.payload.dayType);
-        break;
-      }
-
-      case 'ADD_PERSONAL_INGREDIENT': {
-        rawDispatch(action);
-        apiInsertPersonalIng(user.id, action.payload, 0).catch((e) => console.error('ADD_PERSONAL_INGREDIENT failed:', e));
-        break;
-      }
-      case 'UPDATE_PERSONAL_INGREDIENT': {
-        rawDispatch(action);
-        apiUpdatePersonalIng(action.payload).catch((e) => console.error('UPDATE_PERSONAL_INGREDIENT failed:', e));
-        break;
-      }
-      case 'DELETE_PERSONAL_INGREDIENT': {
-        rawDispatch(action);
-        apiDeletePersonalIng(action.payload).catch((e) => console.error('DELETE_PERSONAL_INGREDIENT failed:', e));
-        break;
-      }
-
-      case 'CLEAR_DATA':
-      case 'DELETE_ACCOUNT_DATA': {
-        // API call + cache clear handled by caller (Profile.jsx) before dispatching
-        rawDispatch(action);
-        break;
-      }
-
-      default:
-        rawDispatch(action);
+    // All other mutation types — try API with offline fallback
+    if (API_MAP[type]) {
+      tryApi(type, user.id, payload);
     }
   }, [user]);
 
