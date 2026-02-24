@@ -112,10 +112,9 @@
 
 .ov-bar-label svg { flex-shrink: 0; }
 
-/* Chart + goal label wrapper — no overflow clip */
+/* Chart + goal label wrapper */
 .ov-bar-chart-wrap {
   position: relative;
-  overflow: hidden;
 }
 
 /* Chart box: solid outer border, bars inside */
@@ -188,19 +187,20 @@
   pointer-events: none;
 }
 
-/* Goal label inside chart on the right */
+/* Goal label — sits to the right, above the dashed line */
 .ov-bar-goal-label {
   position: absolute;
-  right: 4px;
-  transform: translateY(50%);
+  right: -34px;
+  transform: translateY(-100%);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   font-size: 0.5rem;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1;
   white-space: nowrap;
   opacity: 0.7;
+  padding-bottom: 2px;
 }
 
 /* Day labels row below protein chart — aligned with chart columns */
