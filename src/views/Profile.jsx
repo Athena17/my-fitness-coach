@@ -465,7 +465,7 @@ export default function Profile() {
       setCyclingEditing(true);
     } else {
       setCyclingEditing(false);
-      setCyclingConfig({ enabled: false, trainingKcal: 0, trainingProtein: 0, trainingCarbs: 0, trainingFat: 0, restKcal: 0, restProtein: 0, restCarbs: 0, restFat: 0 });
+      setCyclingConfig({ ...cyclingConfig, enabled: false });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     }
