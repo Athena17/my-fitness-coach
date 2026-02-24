@@ -195,6 +195,466 @@ html[data-theme="dark"] {
 [data-theme="dark"] .update-toast-text { color: #0f1823; }
 [data-theme="dark"] .update-toast-btn { background: #0f1823; color: #e8edf4; }
 
+/* ——— Dark mode: Today.css overrides ——— */
+[data-theme="dark"] .today-tabs {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .today-tab--active {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .today-tab--active::after {
+  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.04) 42%, rgba(200, 230, 250, 0.08) 48%, rgba(56, 182, 230, 0.10) 50%, rgba(200, 230, 250, 0.08) 52%, rgba(56, 182, 230, 0.04) 58%, transparent 75%);
+}
+[data-theme="dark"] .meal-row {
+  background: rgba(255, 255, 255, 0.02);
+}
+[data-theme="dark"] .meal-add-btn {
+  background: rgba(77, 184, 217, 0.12);
+}
+[data-theme="dark"] .meal-empty-prompt {
+  border-color: rgba(77, 184, 217, 0.15);
+}
+[data-theme="dark"] .meal-empty-prompt:active {
+  background: rgba(77, 184, 217, 0.06);
+  border-color: rgba(77, 184, 217, 0.25);
+}
+[data-theme="dark"] .meal-row--filled {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .meal-row--filled::after {
+  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.03) 40%, rgba(255, 255, 255, 0.06) 46%, rgba(200, 230, 250, 0.08) 50%, rgba(255, 255, 255, 0.06) 54%, rgba(56, 182, 230, 0.03) 60%, transparent 75%);
+}
+[data-theme="dark"] .meal-row--drag-active {
+  border-color: rgba(77, 184, 217, 0.15);
+}
+[data-theme="dark"] .meal-row--drop-target {
+  background: rgba(77, 184, 217, 0.08);
+  box-shadow: 0 0 0 3px rgba(77, 184, 217, 0.1), 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .add-mode-back:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .confirm-hero {
+  background: linear-gradient(145deg, rgba(20, 30, 48, 0.7) 0%, rgba(15, 24, 40, 0.6) 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .confirm-hero::after {
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.06) 45%, rgba(255, 255, 255, 0.10) 50%, rgba(255, 255, 255, 0.06) 55%, transparent 65%);
+}
+[data-theme="dark"] .confirm-meal-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(77, 184, 217, 0.12);
+}
+[data-theme="dark"] .confirm-input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(77, 184, 217, 0.18);
+}
+[data-theme="dark"] .confirm-input:focus {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: var(--color-primary);
+}
+[data-theme="dark"] .confirm-ingredient-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .confirm-breakdown {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-meal-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 6px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .ilf-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-row--new {
+  background: rgba(232, 168, 64, 0.06);
+  border-color: rgba(232, 168, 64, 0.15);
+}
+[data-theme="dark"] .ilf-compact {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-field {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-dropdown-portal {
+  background: rgba(20, 30, 48, 0.92);
+}
+[data-theme="dark"] .ilf-dropdown-item:active {
+  background: rgba(77, 184, 217, 0.08);
+}
+[data-theme="dark"] .ilf-new-fields {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-footer {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ilf-my-meals-toggle {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .add-choose-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .direct-input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .confirm-meal-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .dl-card--kitchen {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(66, 133, 244, 0.06));
+  border-color: rgba(66, 133, 244, 0.25);
+}
+[data-theme="dark"] .dl-card--meal {
+  background: linear-gradient(135deg, rgba(138, 155, 181, 0.06), rgba(138, 155, 181, 0.03));
+  border-color: rgba(138, 155, 181, 0.15);
+}
+[data-theme="dark"] .dl-card-discard {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .dl-card-discard:active {
+  background: rgba(248, 113, 113, 0.15);
+}
+[data-theme="dark"] .fab-menu-item {
+  background: rgba(20, 30, 48, 0.92);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dark"] .fab-menu-item:active {
+  background: rgba(77, 184, 217, 0.08);
+}
+[data-theme="dark"] .fab-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .quick-add-confirm-overlay {
+  background: rgba(15, 24, 35, 0.97);
+}
+
+/* ——— Dark mode: Dashboard.css overrides ——— */
+[data-theme="dark"] .overview {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(46, 142, 192, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(56, 182, 230, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 40%, rgba(46, 158, 197, 0.03) 0%, transparent 50%);
+}
+[data-theme="dark"] .ov-week {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .ov-week::after,
+[data-theme="dark"] .ov-wc::after,
+[data-theme="dark"] .ov-insight-card::after {
+  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.03) 40%, rgba(255, 255, 255, 0.06) 46%, rgba(200, 230, 250, 0.08) 50%, rgba(255, 255, 255, 0.06) 54%, rgba(56, 182, 230, 0.03) 60%, transparent 75%);
+}
+[data-theme="dark"] .ov-bar-chart {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .ov-bar-col {
+  border-right-color: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .ov-bar-tip {
+  background: rgba(20, 30, 48, 0.88);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .ov-streak {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .ov-wc {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .ov-wc--done {
+  background: rgba(52, 211, 153, 0.06);
+  border-color: rgba(52, 211, 153, 0.15);
+  box-shadow: 0 2px 16px rgba(52, 211, 153, 0.08);
+}
+[data-theme="dark"] .ov-wc-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .ov-wc-ms-dot {
+  background: rgba(20, 30, 48, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .ov-water-float--low {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dark"] .ov-water-float--mid {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(80, 191, 232, 0.15);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dark"] .ov-water-float--good {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(58, 172, 212, 0.18);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dark"] .ov-water-float--done {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(58, 172, 212, 0.22);
+  box-shadow: 0 2px 16px rgba(58, 172, 212, 0.08);
+}
+[data-theme="dark"] .ov-water-ctrl {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .ov-water-ctrl:hover {
+  background: rgba(80, 191, 232, 0.1);
+  border-color: rgba(80, 191, 232, 0.15);
+}
+[data-theme="dark"] .ov-insight-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+[data-theme="dark"] .ov-insight-text {
+  color: var(--color-text-secondary);
+}
+[data-theme="dark"] .ov-insight-dot {
+  background: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .ov-insight-dot--active {
+  background: rgba(255, 255, 255, 0.35);
+}
+[data-theme="dark"] .ov-insight-badge--neutral {
+  background: rgba(255, 255, 255, 0.15);
+}
+[data-theme="dark"] .ov-insight-back:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ov-day-type-toggle {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ov-day-type-btn--active {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .ov-perfect {
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.15);
+}
+
+/* ——— Dark mode: History.css overrides ——— */
+[data-theme="dark"] .progress-grid {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .progress-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ——— Dark mode: NavBar.css overrides ——— */
+[data-theme="dark"] .navbar {
+  background: rgba(15, 24, 35, 0.75);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ——— Dark mode: Modal.css overrides ——— */
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+[data-theme="dark"] .modal-content {
+  background: rgba(20, 30, 48, 0.88);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ——— Dark mode: FoodSearch.css overrides ——— */
+[data-theme="dark"] .food-search-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .food-search-dropdown {
+  background: rgba(20, 30, 48, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .food-search-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ——— Dark mode: FoodEntryCard.css overrides ——— */
+[data-theme="dark"] .fec-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .fec-delete {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .fec-ghost {
+  background: rgba(20, 30, 48, 0.92);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ——— Dark mode: ScrollStrip.css overrides ——— */
+[data-theme="dark"] .ss-arrow {
+  background: rgba(20, 30, 48, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ——— Dark mode: MealBuilder.css overrides ——— */
+[data-theme="dark"] .mb-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .mb-dropdown-item:not(:last-child) {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .mb-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .mb-add-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .mb-remove:hover {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+/* ——— Dark mode: ExercisePanel.css overrides ——— */
+[data-theme="dark"] .exercise-select,
+[data-theme="dark"] .exercise-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .exercise-intensity {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .exercise-log-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .exercise-log-item:not(:last-child) {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .exercise-log-delete:hover {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+/* ——— Dark mode: WaterPanel.css overrides ——— */
+[data-theme="dark"] .water-manual-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .water-log-item:not(:last-child) {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ——— Dark mode: FoodLog.css overrides ——— */
+[data-theme="dark"] .food-log-form .form-group input,
+[data-theme="dark"] .food-log-form .form-group select {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ——— Dark mode: CookFlow.css overrides ——— */
+[data-theme="dark"] .cf-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .cf-meal-chip {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .cf-meal-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .cf-back-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ——— Dark mode: NaturalInput.css overrides ——— */
+[data-theme="dark"] .natural-input-btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .preview-edit {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ——— Dark mode: Onboarding.css overrides ——— */
+[data-theme="dark"] .ob-dot {
+  background: rgba(20, 30, 48, 0.8);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .ob-progress-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .ob-card::after {
+  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.03) 40%, rgba(255, 255, 255, 0.04) 46%, rgba(200, 230, 250, 0.06) 50%, rgba(255, 255, 255, 0.04) 54%, rgba(56, 182, 230, 0.03) 60%, transparent 75%);
+}
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .ob-input-row input,
+[data-theme="dark"] .ob-target-value input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .sex-btn {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .option-card {
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .option-card--active {
+  background: rgba(77, 184, 217, 0.08);
+}
+[data-theme="dark"] .ob-target-card {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .btn-back {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .btn-back:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+[data-theme="dark"] .qm-card-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ——— Dark mode: Profile.css overrides ——— */
+[data-theme="dark"] .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .settings-list-delete:hover {
+  background: rgba(248, 113, 113, 0.08);
+}
+[data-theme="dark"] .settings-list-consume:hover {
+  background: rgba(77, 184, 217, 0.08);
+}
+[data-theme="dark"] .settings-list-info--tap:active {
+  background: rgba(139, 195, 74, 0.06);
+}
+[data-theme="dark"] .edit-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .cycling-pill--active {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .ing-input {
+  background: rgba(139, 195, 74, 0.06);
+  border-color: rgba(139, 195, 74, 0.18);
+}
+[data-theme="dark"] .ing-select {
+  background: rgba(139, 195, 74, 0.06);
+  border-color: rgba(139, 195, 74, 0.18);
+}
+[data-theme="dark"] .ing-form--add {
+  background: rgba(139, 195, 74, 0.04);
+  border-color: rgba(139, 195, 74, 0.15);
+}
+
+/* ——— Dark mode: Auth.css overrides ——— */
+[data-theme="dark"] .auth-card::after {
+  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.03) 40%, rgba(255, 255, 255, 0.04) 46%, rgba(200, 230, 250, 0.06) 50%, rgba(255, 255, 255, 0.04) 54%, rgba(56, 182, 230, 0.03) 60%, transparent 75%);
+}
+
 html, body {
   overflow-x: hidden;
   overscroll-behavior-x: none;
