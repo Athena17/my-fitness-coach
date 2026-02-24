@@ -169,7 +169,7 @@
 }
 
 .progress-card--empty {
-  background: #f3f3f3;
+  background: #f0f0f0;
   border-color: rgba(0, 0, 0, 0.04);
 }
 
@@ -178,8 +178,8 @@
 }
 
 .progress-card--pad {
-  background: transparent;
-  border-color: transparent;
+  background: transparent !important;
+  border-color: transparent !important;
   min-height: 0;
 }
 
@@ -189,6 +189,21 @@
   box-shadow: 0 2px 8px rgba(46, 142, 192, 0.1);
   transform: scale(1.04);
   z-index: 1;
+}
+
+/* Dark mode — same file to avoid cross-file specificity issues */
+[data-theme="dark"] .progress-card {
+  background: #2c2c30;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .progress-card.progress-card--empty {
+  background: #1a1a1e;
+  border-color: rgba(255, 255, 255, 0.04);
+}
+[data-theme="dark"] .progress-card.progress-card--today {
+  background: #33333a;
+  border-color: rgba(46, 142, 192, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .progress-card-day {

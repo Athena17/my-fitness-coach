@@ -133,19 +133,7 @@ html[data-theme="dark"] {
 }
 
 /* Dark mode overrides for hardcoded glass/card colors */
-[data-theme="dark"] .progress-card {
-  background: #2a2a2e;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-[data-theme="dark"] .progress-card--empty {
-  background: #1e1e22;
-  border-color: rgba(255, 255, 255, 0.04);
-}
-[data-theme="dark"] .progress-card--today {
-  background: #2f2f34;
-  border-color: rgba(46, 142, 192, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
+/* progress-card overrides moved to Profile.css / History.css to avoid specificity conflicts */
 [data-theme="dark"] .wc-card {
   background: linear-gradient(145deg, rgba(20, 30, 48, 0.7) 0%, rgba(15, 24, 40, 0.6) 100%);
   border-color: rgba(255, 255, 255, 0.08);
