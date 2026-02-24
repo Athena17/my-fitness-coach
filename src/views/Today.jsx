@@ -10,7 +10,6 @@ import ExercisePanel from '../components/ExercisePanel.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import { getEmoji } from '../utils/foodEmoji.js';
-import FoodSearch from '../components/FoodSearch.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -39,6 +38,43 @@ export default function Today() {
   const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat } = useEffectiveTargets();
   const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
+
+  // Saved meals search
+  const [mealQuery, setMealQuery] = useState('');
+  const [mealSearchOpen, setMealSearchOpen] = useState(false);
+  const mealSearchRef = useRef(null);
+
+  const savedMealResults = useMemo(() => {
+    const meals = state.customMeals || [];
+    if (!mealQuery.trim()) return meals.sort((a, b) => (b.useCount || 0) - (a.useCount || 0));
+    const q = mealQuery.toLowerCase();
+    return meals.filter((m) => m.name.toLowerCase().includes(q));
+  }, [state.customMeals, mealQuery]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (mealSearchRef.current && !mealSearchRef.current.contains(e.target)) {
+        setMealSearchOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  function handleSavedMealSelect(meal) {
+    setMealQuery('');
+    setMealSearchOpen(false);
+    handleQuickAddSelect({
+      type: 'meal',
+      id: meal.id,
+      name: meal.name,
+      kcal: meal.kcal,
+      protein: meal.protein,
+      carbs: meal.carbs || 0,
+      fat: meal.fat || 0,
+      ingredients: meal.ingredients,
+    });
+  }
 
 
   // Recently eaten items (last 3 days, deduplicated by name, up to 10)
@@ -251,56 +287,6 @@ export default function Today() {
         dispatch({ type: 'ADD_LEFTOVER', payload: { id: entry.fromLeftoverId, recipeId: entry.recipeId, name: entry.name, perServing: { kcal: entry.kcal, protein: entry.protein }, remainingServings: 1, totalServings: 1, dateCooked: entry.dateKey, timestamp: Date.now() } });
       }
     }
-  }
-
-  // --- Food search handler ---
-
-  function handleFoodSearchSelect(food) {
-    if (food.isCustomMeal && food.ingredients) {
-      // Custom meal with ingredients → confirm step
-      setCustomDraft({
-        name: food.name,
-        kcal: food.serving.kcal,
-        protein: food.serving.protein,
-        carbs: food.serving.carbs || 0,
-        fat: food.serving.fat || 0,
-        ingredients: food.ingredients,
-        servingsYield: 1,
-        servingsConsumed: 1,
-        mealSlot: getDefaultMeal(),
-      });
-      setCustomStep('confirm');
-      return;
-    }
-    if (food.isLeftover) {
-      setCustomDraft({
-        name: food.name,
-        kcal: food.serving.kcal,
-        protein: food.serving.protein,
-        carbs: food.serving.carbs || 0,
-        fat: food.serving.fat || 0,
-        servingsYield: food.remainingServings,
-        servingsConsumed: 1,
-        mealSlot: getDefaultMeal(),
-        isLeftover: true,
-        leftover: (state.leftovers || []).find((l) => l.id === food.leftoverId),
-      });
-      setCustomStep('confirm');
-      return;
-    }
-    // Regular food / recent → confirm step
-    setCustomDraft({
-      name: food.name,
-      kcal: food.serving.kcal,
-      protein: food.serving.protein,
-      carbs: food.serving.carbs || 0,
-      fat: food.serving.fat || 0,
-      ingredients: food.ingredients,
-      servingsYield: 1,
-      servingsConsumed: 1,
-      mealSlot: getDefaultMeal(),
-    });
-    setCustomStep('confirm');
   }
 
   // --- Quick add handler ---
@@ -823,9 +809,37 @@ export default function Today() {
               </>}
             </div>
 
-            {/* Food search + add pills */}
+            {/* Add entry bar: search saved meals + action pills */}
             <div className="add-entry-bar">
-              <FoodSearch onSelect={handleFoodSearchSelect} />
+              <div className="add-entry-search" ref={mealSearchRef}>
+                <svg className="add-entry-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="add-entry-search-input"
+                  type="text"
+                  placeholder="Search saved meals…"
+                  value={mealQuery}
+                  onChange={(e) => { setMealQuery(e.target.value); setMealSearchOpen(true); }}
+                  onFocus={() => setMealSearchOpen(true)}
+                />
+                {mealSearchOpen && savedMealResults.length > 0 && (
+                  <ul className="add-entry-dropdown">
+                    {savedMealResults.map((m) => (
+                      <li key={m.id}>
+                        <button className="add-entry-dropdown-item" onClick={() => handleSavedMealSelect(m)}>
+                          <span className="add-entry-dropdown-emoji">{getEmoji(m.name)}</span>
+                          <div className="add-entry-dropdown-info">
+                            <span className="add-entry-dropdown-name">{m.name}</span>
+                            <span className="add-entry-dropdown-meta">{Math.round(m.kcal)} cal · {Math.round(m.protein)}g</span>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {mealSearchOpen && mealQuery.trim() && savedMealResults.length === 0 && (
+                  <div className="add-entry-dropdown add-entry-dropdown--empty">No saved meals found</div>
+                )}
+              </div>
               <div className="add-entry-pills">
                 <button className="add-entry-pill" onClick={() => { setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -838,52 +852,35 @@ export default function Today() {
               </div>
             </div>
 
-            {/* My Saved Meals section — hidden when empty */}
-            {(() => {
-              const customMeals = state.customMeals || [];
-              const mealItems = customMeals
-                .map((m, i) => ({
-                  type: 'meal',
-                  id: m.id || `meal-${i}`,
-                  name: m.name,
-                  kcal: m.kcal,
-                  protein: m.protein,
-                  carbs: m.carbs || 0,
-                  fat: m.fat || 0,
-                  ingredients: m.ingredients,
-                  useCount: m.useCount || 0,
-                }))
-                .sort((a, b) => b.useCount - a.useCount);
-              if (mealItems.length === 0) return null;
-              return (
-                <div className="dl-section">
-                  <div className="dl-section-header">
-                    <span className="dl-section-title">My Saved Meals</span>
-                    {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
-                  </div>
-                  <ScrollStrip className="dl-section-scroll">
-                    {mealItems.map((item) => (
-                      <button
-                        key={item.id}
-                        className={[
-                          'dl-card dl-card--meal',
-                          dragItem?.id === item.id && 'dl-card--dragging',
-                        ].filter(Boolean).join(' ')}
-                        onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
-                        onPointerCancel={handlePointerCancel}
-                        style={{ touchAction: 'pan-x' }}
-                      >
-                        <span className="dl-card-emoji">{getEmoji(item.name)}</span>
-                        <span className="dl-card-name">{item.name}</span>
-                        <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
-                      </button>
-                    ))}
-                  </ScrollStrip>
+            {/* Recently Eaten section — hidden when empty */}
+            {recentEntries.length > 0 && (
+              <div className="dl-section">
+                <div className="dl-section-header">
+                  <span className="dl-section-title">Recently Eaten</span>
+                  {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
                 </div>
-              );
-            })()}
+                <ScrollStrip className="dl-section-scroll">
+                  {recentEntries.map((item) => (
+                    <button
+                      key={item.id}
+                      className={[
+                        'dl-card dl-card--recent',
+                        dragItem?.id === item.id && 'dl-card--dragging',
+                      ].filter(Boolean).join(' ')}
+                      onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
+                      onPointerCancel={handlePointerCancel}
+                      style={{ touchAction: 'pan-x' }}
+                    >
+                      <span className="dl-card-emoji">{getEmoji(item.name)}</span>
+                      <span className="dl-card-name">{item.name}</span>
+                      <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
+                    </button>
+                  ))}
+                </ScrollStrip>
+              </div>
+            )}
 
             {/* My Kitchen section — hidden when empty */}
             {(() => {
@@ -938,36 +935,6 @@ export default function Today() {
                 </div>
               );
             })()}
-
-            {/* Recently Eaten section — hidden when empty */}
-            {recentEntries.length > 0 && (
-              <div className="dl-section">
-                <div className="dl-section-header">
-                  <span className="dl-section-title">Recently Eaten</span>
-                  {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
-                </div>
-                <ScrollStrip className="dl-section-scroll">
-                  {recentEntries.map((item) => (
-                    <button
-                      key={item.id}
-                      className={[
-                        'dl-card dl-card--recent',
-                        dragItem?.id === item.id && 'dl-card--dragging',
-                      ].filter(Boolean).join(' ')}
-                      onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
-                      onPointerMove={handlePointerMove}
-                      onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
-                      onPointerCancel={handlePointerCancel}
-                      style={{ touchAction: 'pan-x' }}
-                    >
-                      <span className="dl-card-emoji">{getEmoji(item.name)}</span>
-                      <span className="dl-card-name">{item.name}</span>
-                      <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
-                    </button>
-                  ))}
-                </ScrollStrip>
-              </div>
-            )}
 
             {/* Today's Log */}
             <div className="meals-section-header">Today&apos;s Log</div>

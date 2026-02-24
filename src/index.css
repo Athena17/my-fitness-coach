@@ -234,6 +234,16 @@ html[data-theme="dark"] {
   background: rgba(77, 184, 217, 0.08);
   box-shadow: 0 0 0 3px rgba(77, 184, 217, 0.1), 0 2px 12px rgba(0, 0, 0, 0.2);
 }
+[data-theme="dark"] .add-entry-search-input {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .add-entry-dropdown {
+  background: rgba(20, 30, 48, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .add-entry-dropdown-item:active {
+  background: rgba(77, 184, 217, 0.08);
+}
 [data-theme="dark"] .add-entry-pill {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.08);

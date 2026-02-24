@@ -106,6 +106,119 @@
   gap: 8px;
 }
 
+.add-entry-search {
+  position: relative;
+}
+
+.add-entry-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.add-entry-search-input {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  background: rgba(255, 255, 255, 0.5);
+  min-height: 36px;
+  color: var(--color-text);
+}
+
+.add-entry-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+}
+
+.add-entry-search-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+.add-entry-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 50;
+  margin-top: 4px;
+}
+
+.add-entry-dropdown--empty {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  padding: 14px 12px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.add-entry-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.1s;
+}
+
+.add-entry-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.add-entry-dropdown-item:active {
+  background: rgba(46, 142, 192, 0.06);
+}
+
+.add-entry-dropdown-emoji {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.add-entry-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.add-entry-dropdown-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-entry-dropdown-meta {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
 .add-entry-pills {
   display: flex;
   gap: 8px;
