@@ -590,10 +590,14 @@ export async function clearAllUserData(userId) {
     'personal_ingredients',
   ];
 
-  const results = await Promise.allSettled(
-    tables.map((table) =>
-      supabase.from(table).delete().eq('user_id', userId)
-    )
+  const failures = [];
+
+  // Delete all rows from each table — check .error since Supabase doesn't throw
+  await Promise.all(
+    tables.map(async (table) => {
+      const { error } = await supabase.from(table).delete().eq('user_id', userId);
+      if (error) failures.push({ table, error: error.message });
+    })
   );
 
   // Reset profile to defaults instead of deleting (keeps the row for the user)
@@ -625,7 +629,10 @@ export async function clearAllUserData(userId) {
     cycling_rest_fat: 0,
   }).eq('id', userId);
 
-  const errors = results.filter((r) => r.status === 'rejected');
-  if (errors.length > 0) console.error('clearAllUserData partial failures:', errors);
-  if (profileError) console.error('clearAllUserData profile reset:', profileError);
+  if (profileError) failures.push({ table: 'profiles', error: profileError.message });
+
+  if (failures.length > 0) {
+    console.error('clearAllUserData failures:', failures);
+    throw new Error(`Failed to clear: ${failures.map((f) => f.table).join(', ')}`);
+  }
 }

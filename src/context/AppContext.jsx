@@ -12,7 +12,6 @@ import {
   fetchCustomMeals, insertCustomMeal as apiInsertCustomMeal, updateCustomMeal as apiUpdateCustomMeal, deleteCustomMeal as apiDeleteCustomMeal,
   fetchDayTypes, upsertDayType,
   fetchPersonalIngredients, insertPersonalIngredient as apiInsertPersonalIng, updatePersonalIngredient as apiUpdatePersonalIng, deletePersonalIngredient as apiDeletePersonalIng,
-  clearAllUserData,
 } from '../utils/api.js';
 
 const DEFAULT_TARGETS = {
@@ -417,10 +416,8 @@ export function AppProvider({ children }) {
       }
 
       case 'CLEAR_ALL_DATA': {
+        // API call + cache clear handled by caller (Profile.jsx) before dispatching
         rawDispatch(action);
-        clearAllUserData(user.id).catch((e) => console.error('CLEAR_ALL_DATA failed:', e));
-        // Clear localStorage cache
-        try { localStorage.removeItem(`nt_data_cache_${user.id}`); } catch { /* ignore */ }
         break;
       }
 

@@ -5,6 +5,7 @@ import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { formatDateKey, getToday } from '../utils/dateUtils.js';
 import { sumNutrition, calcWeightChange } from '../utils/nutritionCalc.js';
 import { exportData, importData } from '../utils/storage.js';
+import { clearAllUserData } from '../utils/api.js';
 import { generateId } from '../utils/idGenerator.js';
 import Modal from '../components/Modal.jsx';
 import './Profile.css';
@@ -280,7 +281,7 @@ function MyIngredientsSection() {
 
 export default function Profile() {
   const { state, dispatch } = useApp();
-  const { signOut, changePassword } = useAuth();
+  const { user, signOut, changePassword } = useAuth();
   const [cyclingConfig, setCyclingConfig] = useCyclingConfig();
   const { entries, targets } = state;
   const today = getToday();
@@ -398,6 +399,8 @@ export default function Profile() {
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
+  const [clearError, setClearError] = useState('');
   const [importMessage, setImportMessage] = useState('');
   const [showHistorical, setShowHistorical] = useState(false);
   const [historicalText, setHistoricalText] = useState('');
@@ -556,9 +559,21 @@ export default function Profile() {
     e.target.value = '';
   }
 
-  function handleClearData() {
-    dispatch({ type: 'CLEAR_ALL_DATA' });
-    setShowClearConfirm(false);
+  async function handleClearData() {
+    setClearLoading(true);
+    setClearError('');
+    try {
+      await clearAllUserData(user.id);
+      // Clear localStorage cache
+      try { localStorage.removeItem(`nt_data_cache_${user.id}`); } catch { /* ignore */ }
+      dispatch({ type: 'CLEAR_ALL_DATA' });
+      setShowClearConfirm(false);
+    } catch (err) {
+      console.error('Clear data failed:', err);
+      setClearError('Failed to clear data. Please try again.');
+    } finally {
+      setClearLoading(false);
+    }
   }
 
   function handleHistoricalImport() {
@@ -1301,11 +1316,14 @@ export default function Profile() {
       </div>
 
       {showClearConfirm && (
-        <Modal title="Clear All Data" onClose={() => setShowClearConfirm(false)}>
-          <p style={{ marginBottom: 16 }}>This will permanently delete all your entries and targets. This cannot be undone.</p>
+        <Modal title="Clear All Data" onClose={() => !clearLoading && setShowClearConfirm(false)}>
+          <p style={{ marginBottom: 16 }}>This will permanently delete all your entries and targets from the cloud. This cannot be undone.</p>
+          {clearError && <p style={{ color: 'var(--color-danger)', fontSize: '0.8rem', marginBottom: 12 }}>{clearError}</p>}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-danger)', padding: '10px' }} onClick={handleClearData}>Clear Everything</button>
-            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setShowClearConfirm(false)}>Cancel</button>
+            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-danger)', padding: '10px', opacity: clearLoading ? 0.6 : 1 }} onClick={handleClearData} disabled={clearLoading}>
+              {clearLoading ? 'Clearing...' : 'Clear Everything'}
+            </button>
+            <button className="btn-primary" style={{ flex: 1, background: 'var(--color-text-secondary)', padding: '10px' }} onClick={() => setShowClearConfirm(false)} disabled={clearLoading}>Cancel</button>
           </div>
         </Modal>
       )}
