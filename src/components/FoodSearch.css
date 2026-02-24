@@ -80,6 +80,21 @@
   background: #6b8e23;
 }
 
+.food-search-badge--recent {
+  background: #ff6b2b;
+}
+
+.food-search-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  padding: 8px 12px 4px;
+  opacity: 0.7;
+}
+
 .food-search-meta {
   font-size: 0.75rem;
   color: var(--color-text-secondary);

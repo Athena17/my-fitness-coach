@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { generateId } from '../utils/idGenerator.js';
-import { getToday } from '../utils/dateUtils.js';
+import { getToday, formatDateKey } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import { sumNutrition, hasMacroTargets } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
@@ -41,6 +41,39 @@ export default function Today() {
 
   // FAB menu
   const [showFabMenu, setShowFabMenu] = useState(false);
+
+  // Recently eaten items (last 3 days, deduplicated by name, up to 10)
+  const recentEntries = useMemo(() => {
+    const today = getToday();
+    const d1 = new Date(); d1.setDate(d1.getDate() - 1);
+    const d2 = new Date(); d2.setDate(d2.getDate() - 2);
+    const d3 = new Date(); d3.setDate(d3.getDate() - 3);
+    const recentKeys = new Set([formatDateKey(d1), formatDateKey(d2), formatDateKey(d3)]);
+
+    const past = (state.entries || [])
+      .filter((e) => recentKeys.has(e.dateKey) && e.dateKey !== today)
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    const seen = new Set();
+    const unique = [];
+    for (const e of past) {
+      const key = e.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push({
+        type: 'meal',
+        id: `recent-${e.id}`,
+        name: e.name,
+        kcal: e.kcal,
+        protein: e.protein,
+        carbs: e.carbs || 0,
+        fat: e.fat || 0,
+        ingredients: e.ingredients,
+      });
+      if (unique.length >= 10) break;
+    }
+    return unique;
+  }, [state.entries]);
 
   // Drag-and-drop state (sections + entry reorder)
   const [dragItem, setDragItem] = useState(null);
@@ -841,6 +874,36 @@ export default function Today() {
                 </div>
               );
             })()}
+
+            {/* Recently Eaten section — hidden when empty */}
+            {recentEntries.length > 0 && (
+              <div className="dl-section">
+                <div className="dl-section-header">
+                  <span className="dl-section-title">Recently Eaten</span>
+                  {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
+                </div>
+                <ScrollStrip className="dl-section-scroll">
+                  {recentEntries.map((item) => (
+                    <button
+                      key={item.id}
+                      className={[
+                        'dl-card dl-card--recent',
+                        dragItem?.id === item.id && 'dl-card--dragging',
+                      ].filter(Boolean).join(' ')}
+                      onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
+                      onPointerCancel={handlePointerCancel}
+                      style={{ touchAction: 'pan-x' }}
+                    >
+                      <span className="dl-card-emoji">{getEmoji(item.name)}</span>
+                      <span className="dl-card-name">{item.name}</span>
+                      <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
+                    </button>
+                  ))}
+                </ScrollStrip>
+              </div>
+            )}
 
             {/* Today's Log */}
             <div className="meals-section-header">Today&apos;s Log</div>

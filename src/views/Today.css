@@ -1533,6 +1533,14 @@
   box-shadow: none;
 }
 
+.dl-card--recent {
+  background: linear-gradient(135deg, rgba(255, 107, 43, 0.06), rgba(240, 160, 64, 0.04));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px dashed rgba(255, 107, 43, 0.25);
+  box-shadow: none;
+}
+
 .dl-card--dragging {
   opacity: 0.3;
   transform: scale(0.95);

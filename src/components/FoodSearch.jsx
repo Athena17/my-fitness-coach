@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import foodDatabase from '../data/foodDatabase.js';
 import { useApp } from '../context/useApp.js';
 import { hasMacroTargets } from '../utils/nutritionCalc.js';
@@ -13,6 +13,37 @@ export default function FoodSearch({ onSelect }) {
   const customMeals = state.customMeals || [];
   const wrapperRef = useRef(null);
 
+  // Build up to 8 unique recent foods from entries, sorted by timestamp desc
+  const recentFoods = useMemo(() => {
+    const entries = state.entries || [];
+    const sorted = [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    const seen = new Set();
+    const recent = [];
+    for (const e of sorted) {
+      const key = e.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      recent.push({
+        name: e.name,
+        category: 'Recent',
+        per100g: { kcal: 0, protein: 0 },
+        serving: {
+          size: e.servingSize || 1,
+          unit: e.servingUnit || 'serving',
+          label: `${e.servingSize || 1} ${e.servingUnit || 'serving'}`,
+          kcal: e.kcal,
+          protein: e.protein,
+          carbs: e.carbs || 0,
+          fat: e.fat || 0,
+        },
+        ingredients: e.ingredients,
+        isRecent: true,
+      });
+      if (recent.length >= 8) break;
+    }
+    return recent;
+  }, [state.entries]);
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -23,11 +54,22 @@ export default function FoodSearch({ onSelect }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  function showRecentDropdown() {
+    if (recentFoods.length > 0) {
+      setResults(recentFoods);
+      setIsOpen(true);
+    }
+  }
+
   function handleSearch(value) {
     setQuery(value);
     if (value.trim().length < 2) {
-      setResults([]);
-      setIsOpen(false);
+      if (value.trim().length === 0 && recentFoods.length > 0) {
+        showRecentDropdown();
+      } else {
+        setResults([]);
+        setIsOpen(false);
+      }
       return;
     }
     const q = value.toLowerCase();
@@ -75,13 +117,18 @@ export default function FoodSearch({ onSelect }) {
         isCustomMeal: true,
       }));
 
+    // Boost recently-used items to the top
+    const recentMatches = recentFoods
+      .filter((r) => r.name.toLowerCase().includes(q))
+      .map((r) => ({ ...r, isRecent: true }));
+
     // Search food database
-    const usedSlots = leftoverMatches.length + recipeMatches.length + customMatches.length;
+    const usedSlots = leftoverMatches.length + recipeMatches.length + customMatches.length + recentMatches.length;
     const dbMatches = foodDatabase.filter(
       (f) => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
     ).slice(0, Math.max(10 - usedSlots, 3));
 
-    const matches = [...leftoverMatches, ...recipeMatches, ...customMatches, ...dbMatches];
+    const matches = [...recentMatches, ...leftoverMatches, ...recipeMatches, ...customMatches, ...dbMatches];
     setResults(matches);
     setIsOpen(matches.length > 0);
   }
@@ -100,15 +147,22 @@ export default function FoodSearch({ onSelect }) {
         placeholder="Search foods, meals, or leftovers…"
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
-        onFocus={() => results.length > 0 && setIsOpen(true)}
+        onFocus={() => {
+          if (results.length > 0) { setIsOpen(true); }
+          else if (!query.trim() && recentFoods.length > 0) { showRecentDropdown(); }
+        }}
         className="food-search-input"
       />
       {isOpen && (
         <ul className="food-search-dropdown">
+          {!query.trim() && results.length > 0 && results[0].isRecent && (
+            <li className="food-search-section-label">Recently Eaten</li>
+          )}
           {results.map((food, i) => (
             <li key={i}>
               <button className="food-search-item" onClick={() => handleSelect(food)}>
                 <span className="food-search-name">
+                  {food.isRecent && <span className="food-search-badge food-search-badge--recent">Recent</span>}
                   {food.isLeftover && <span className="food-search-badge food-search-badge--leftover">Leftover</span>}
                   {food.isRecipe && <span className="food-search-badge food-search-badge--recipe">Recipe</span>}
                   {food.isCustomMeal && <span className="food-search-badge">My Meal</span>}

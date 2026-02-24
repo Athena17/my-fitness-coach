@@ -320,6 +320,10 @@ html[data-theme="dark"] {
   background: linear-gradient(135deg, rgba(138, 155, 181, 0.06), rgba(138, 155, 181, 0.03));
   border-color: rgba(138, 155, 181, 0.15);
 }
+[data-theme="dark"] .dl-card--recent {
+  background: linear-gradient(135deg, rgba(255, 139, 85, 0.08), rgba(240, 160, 64, 0.05));
+  border-color: rgba(255, 139, 85, 0.20);
+}
 [data-theme="dark"] .dl-card-discard {
   background: rgba(255, 255, 255, 0.06);
 }
