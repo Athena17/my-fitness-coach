@@ -465,7 +465,7 @@ export default function Today() {
           payload: {
             id: generateId(), name, perServing,
             remainingServings: remaining, totalServings: yieldN,
-            dateCooked: getToday(), timestamp: Date.now(),
+            dateCooked: selectedDate, timestamp: Date.now(),
           },
         });
       }
