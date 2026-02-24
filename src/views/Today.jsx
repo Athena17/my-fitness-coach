@@ -10,6 +10,7 @@ import ExercisePanel from '../components/ExercisePanel.jsx';
 import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import { getEmoji } from '../utils/foodEmoji.js';
+import FoodSearch from '../components/FoodSearch.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -252,6 +253,56 @@ export default function Today() {
         dispatch({ type: 'ADD_LEFTOVER', payload: { id: entry.fromLeftoverId, recipeId: entry.recipeId, name: entry.name, perServing: { kcal: entry.kcal, protein: entry.protein }, remainingServings: 1, totalServings: 1, dateCooked: entry.dateKey, timestamp: Date.now() } });
       }
     }
+  }
+
+  // --- Food search handler ---
+
+  function handleFoodSearchSelect(food) {
+    if (food.isCustomMeal && food.ingredients) {
+      // Custom meal with ingredients → confirm step
+      setCustomDraft({
+        name: food.name,
+        kcal: food.serving.kcal,
+        protein: food.serving.protein,
+        carbs: food.serving.carbs || 0,
+        fat: food.serving.fat || 0,
+        ingredients: food.ingredients,
+        servingsYield: 1,
+        servingsConsumed: 1,
+        mealSlot: getDefaultMeal(),
+      });
+      setCustomStep('confirm');
+      return;
+    }
+    if (food.isLeftover) {
+      setCustomDraft({
+        name: food.name,
+        kcal: food.serving.kcal,
+        protein: food.serving.protein,
+        carbs: food.serving.carbs || 0,
+        fat: food.serving.fat || 0,
+        servingsYield: food.remainingServings,
+        servingsConsumed: 1,
+        mealSlot: getDefaultMeal(),
+        isLeftover: true,
+        leftover: (state.leftovers || []).find((l) => l.id === food.leftoverId),
+      });
+      setCustomStep('confirm');
+      return;
+    }
+    // Regular food / recent → confirm step
+    setCustomDraft({
+      name: food.name,
+      kcal: food.serving.kcal,
+      protein: food.serving.protein,
+      carbs: food.serving.carbs || 0,
+      fat: food.serving.fat || 0,
+      ingredients: food.ingredients,
+      servingsYield: 1,
+      servingsConsumed: 1,
+      mealSlot: getDefaultMeal(),
+    });
+    setCustomStep('confirm');
   }
 
   // --- Quick add handler ---
@@ -773,6 +824,9 @@ export default function Today() {
                 <span className="daily-summary-item" style={{ color: 'var(--color-fat)' }}><span className="daily-summary-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F</span>
               </>}
             </div>
+
+            {/* Inline food search */}
+            <FoodSearch onSelect={handleFoodSearchSelect} />
 
             {/* My Saved Meals section — hidden when empty */}
             {(() => {
