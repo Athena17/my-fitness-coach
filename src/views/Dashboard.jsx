@@ -47,7 +47,6 @@ function WeekScorecard({ weekData, targets }) {
             })}
           </div>
           <div className="ov-bar-goal-label" style={{ bottom: `${goalKcalPct}%`, color: '#ff6b2b' }}>
-            <span>Goal</span>
             <span>{targets.kcal}</span>
           </div>
         </div>
@@ -79,7 +78,6 @@ function WeekScorecard({ weekData, targets }) {
             })}
           </div>
           <div className="ov-bar-goal-label" style={{ bottom: `${goalProtPct}%`, color: '#9575cd' }}>
-            <span>Goal</span>
             <span>{Math.round(targets.protein)}g</span>
           </div>
         </div>
