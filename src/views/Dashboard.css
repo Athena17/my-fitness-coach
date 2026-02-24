@@ -187,11 +187,10 @@
   pointer-events: none;
 }
 
-/* Goal label — sits to the right, above the dashed line */
+/* Goal label — sits to the right, just above the dashed line */
 .ov-bar-goal-label {
   position: absolute;
   right: -34px;
-  transform: translateY(-100%);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -200,7 +199,7 @@
   line-height: 1;
   white-space: nowrap;
   opacity: 0.7;
-  padding-bottom: 2px;
+  padding-bottom: 1px;
 }
 
 /* Day labels row below protein chart — aligned with chart columns */
