@@ -190,7 +190,7 @@
 /* Goal label — sits to the right, just above the dashed line */
 .ov-bar-goal-label {
   position: absolute;
-  right: -34px;
+  right: -28px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
