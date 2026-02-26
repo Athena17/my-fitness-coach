@@ -91,7 +91,7 @@ export function getInsights(entries, targets) {
 
   // Pattern: sustainable deficit
   if (avgDeficit >= -500 && avgDeficit <= -250) {
-    insights.push('You are in a sustainable deficit range.');
+    insights.push('You are in a sustainable deficit range (250\u2013500 kcal/day).');
   }
 
   // Top meal contributor

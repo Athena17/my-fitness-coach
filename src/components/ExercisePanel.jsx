@@ -115,7 +115,7 @@ export default function ExercisePanel({ selectedDate }) {
 
           {preview !== null && (
             <div className="exercise-preview">
-              ~{preview} cal burn
+              ~{preview} cal burn <span className="exercise-cite">MET formula</span>
             </div>
           )}
 

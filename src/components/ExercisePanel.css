@@ -124,6 +124,14 @@
   padding: 4px 0;
 }
 
+.exercise-cite {
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
 .exercise-submit {
   padding: 10px;
   font-size: 0.82rem;

@@ -1200,4 +1200,43 @@
 .ov-wc::after          { animation: water-shimmer 10s ease-in-out 3s infinite; }
 .ov-insight-card::after { animation: water-shimmer 10s ease-in-out 6s infinite; }
 
+/* ——— Sources disclaimer ——— */
+.ov-sources-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 160, 0, 0.04);
+  border: 1px solid rgba(255, 160, 0, 0.10);
+}
+
+.ov-sources-note svg {
+  flex-shrink: 0;
+  color: #cca000;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
+.ov-sources-note span {
+  font-size: 0.58rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.ov-sources-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: 0.58rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 

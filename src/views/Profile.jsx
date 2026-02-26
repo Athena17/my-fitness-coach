@@ -960,7 +960,7 @@ export default function Profile() {
             </div>
 
             {/* Footnote */}
-            <span className="wc-footnote">Estimated from food log · since {since}</span>
+            <span className="wc-footnote">Estimated from food log · 7,700 kcal/kg · since {since}</span>
           </div>
         );
       })()}
