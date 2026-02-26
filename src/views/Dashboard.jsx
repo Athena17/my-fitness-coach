@@ -695,14 +695,6 @@ export default function Dashboard() {
         );
       })()}
 
-      {/* Sources disclaimer */}
-      <div className="ov-sources-note ov-enter ov-enter--4">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
-        </svg>
-        <span>All targets and estimates are based on peer-reviewed formulas for general guidance only — not medical advice. <button type="button" className="ov-sources-link" onClick={() => dispatch({ type: 'SET_VIEW', payload: 'profile' })}>View sources</button></span>
-      </div>
-
       {/* 7. Swipeable insights */}
       {insights.length > 0 && (
         <div
@@ -752,6 +744,14 @@ export default function Dashboard() {
           )}
         </div>
       )}
+
+      {/* Sources disclaimer */}
+      <div className="ov-sources-note ov-enter ov-enter--4">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+        </svg>
+        <span>All targets and estimates are based on peer-reviewed formulas for general guidance only — not medical advice. <button type="button" className="ov-sources-link" onClick={() => dispatch({ type: 'SET_VIEW', payload: 'profile' })}>View sources</button></span>
+      </div>
 
     </div>
   );
