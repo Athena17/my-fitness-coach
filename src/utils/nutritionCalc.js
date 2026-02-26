@@ -16,6 +16,12 @@ export function hasMacroTargets(targets) {
   return { showCarbs, showFat, showEither: showCarbs || showFat };
 }
 
+/**
+ * Activity multipliers adapted from Harris-Benedict revisions.
+ * Source: Harris JA, Benedict FG. A Biometric Study of Human Basal Metabolism.
+ * Proc Natl Acad Sci USA. 1918;4(12):370-373.
+ * https://doi.org/10.1073/pnas.4.12.370
+ */
 const ACTIVITY_FACTORS = {
   sedentary: 1.2,
   light: 1.375,
@@ -24,6 +30,11 @@ const ACTIVITY_FACTORS = {
   extreme: 1.9,
 };
 
+/**
+ * Mifflin-St Jeor equation for Basal Metabolic Rate.
+ * Source: Mifflin MD, St Jeor ST, et al. Am J Clin Nutr. 1990;51(2):241-247.
+ * https://doi.org/10.1093/ajcn/51.2.241
+ */
 export function calculateBMR(weight, height, age, sex) {
   const base = 10 * weight + 6.25 * height - 5 * age;
   return sex === 'male' ? base + 5 : base - 161;
@@ -35,6 +46,11 @@ export function calculateMaintenance(weight, height, age, sex, activityLevel) {
   return Math.round(bmr * factor);
 }
 
+/**
+ * Suggest daily calorie and protein targets.
+ * Protein: 1.6 g/kg — Morton RW et al. Br J Sports Med. 2018;52(6):376-384.
+ * https://doi.org/10.1136/bjsports-2017-097608
+ */
 export function suggestTargets(maintenance, weight, goal) {
   let kcal = maintenance;
   if (goal === 'lose') kcal = maintenance - 300;
@@ -48,6 +64,11 @@ export function calcPercentage(current, target) {
   return Math.min(Math.round((current / target) * 100), 100);
 }
 
+/**
+ * Caloric equivalent of 1 kg body weight.
+ * Source: Wishnofsky M. Am J Clin Nutr. 1958;6(5):542-546.
+ * https://doi.org/10.1093/ajcn/6.5.542
+ */
 const CAL_PER_KG = 7700;
 
 export function calcWeightChange(entries, exerciseLogs, targets) {

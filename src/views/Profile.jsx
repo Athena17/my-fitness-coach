@@ -9,6 +9,7 @@ import { clearUserData, deleteAccountData } from '../utils/api.js';
 import { generateId } from '../utils/idGenerator.js';
 import { useTheme } from '../hooks/useTheme.js';
 import Modal from '../components/Modal.jsx';
+import SourcesSection from '../components/SourcesSection.jsx';
 import './Profile.css';
 
 /* ——— Monthly scorecard helpers ——— */
@@ -1406,6 +1407,8 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      <SourcesSection />
 
       <div className="settings-section settings-about">
         <p>Irada v1.0 — Data synced to cloud.</p>

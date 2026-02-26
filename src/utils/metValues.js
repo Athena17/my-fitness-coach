@@ -2,6 +2,10 @@
  * MET (Metabolic Equivalent of Task) values for common exercises.
  * Base MET values represent moderate intensity.
  * Intensity multipliers adjust the base value.
+ *
+ * Source: Ainsworth BE, Haskell WL, Herrmann SD, et al.
+ * 2011 Compendium of Physical Activities. Med Sci Sports Exerc. 2011;43(8):1575-1581.
+ * https://doi.org/10.1249/MSS.0b013e31821ece12
  */
 
 export const EXERCISES = [

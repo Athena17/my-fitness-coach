@@ -1,0 +1,75 @@
+.cf-wrap {
+  display: inline;
+}
+
+.cf-anchor {
+  position: relative;
+  display: inline;
+}
+
+.cf-sup {
+  display: inline;
+  background: none;
+  border: none;
+  padding: 0 1px;
+  font-size: 0.58em;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  vertical-align: super;
+  line-height: 1;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cf-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 100;
+  animation: cf-pop 0.15s ease-out;
+}
+
+@keyframes cf-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.cf-popover-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.cf-popover-ref {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  font-family: var(--font-sans);
+}
+
+.cf-popover-link {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  align-self: flex-start;
+}
+
+.cf-popover-link:hover {
+  text-decoration: underline;
+}

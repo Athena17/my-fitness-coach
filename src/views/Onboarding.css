@@ -787,3 +787,13 @@
 .tut-add-more:active {
   transform: scale(0.98);
 }
+
+/* ——— Disclaimer text ——— */
+.ob-disclaimer {
+  font-size: 0.62rem;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  margin: 2px 0 0;
+  font-style: italic;
+  font-family: var(--font-sans);
+}

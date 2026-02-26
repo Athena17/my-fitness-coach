@@ -1,6 +1,9 @@
 /**
  * Compute recommended daily water intake.
  * Formula: 35 ml x bodyweight (kg), converted to liters, rounded to 1 decimal.
+ * Source: EFSA. Scientific Opinion on Dietary Reference Values for water.
+ * EFSA Journal. 2010;8(3):1459.
+ * https://doi.org/10.2903/j.efsa.2010.1459
  */
 export function recommendedWaterLiters(weightKg) {
   return Math.round((weightKg * 35) / 100) / 10;

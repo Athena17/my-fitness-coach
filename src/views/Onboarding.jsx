@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useApp } from '../context/useApp.js';
 import { calculateMaintenance } from '../utils/nutritionCalc.js';
 import { recommendedWaterLiters } from '../utils/waterCalc.js';
+import CitationFootnote from '../components/CitationFootnote.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import './Onboarding.css';
 
@@ -321,7 +322,7 @@ export default function Onboarding() {
               <div className="maintenance-result">
                 <div className="maintenance-icon">{ICONS.fireFill}</div>
                 <div className="maintenance-text">
-                  <span className="maintenance-label">Your maintenance</span>
+                  <span className="maintenance-label">Your maintenance <CitationFootnote ids={[1, 2]} /></span>
                   <span className="maintenance-value">{maintenance} cal/day</span>
                 </div>
               </div>
@@ -370,7 +371,7 @@ export default function Onboarding() {
                       </div>
                     </div>
 
-                    <p className="form-hint">How fast do you want to get there?</p>
+                    <p className="form-hint">How fast do you want to get there? <CitationFootnote ids={[7, 6]} /></p>
                     <div className="option-list option-list--compact">
                       {INTENSITY_OPTIONS.map((opt) => (
                         <button
@@ -456,7 +457,8 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                <p className="form-hint">Auto-calculated from your profile. Tap to adjust.</p>
+                <p className="form-hint">Auto-calculated from your profile. Tap to adjust. <CitationFootnote ids={[1, 3, 4]} /></p>
+                <p className="ob-disclaimer">Estimates for general guidance only, not medical advice.</p>
               </div>
             </div>
 
