@@ -9,6 +9,7 @@ export default function BarcodeScanner({ onResult, onClose }) {
   const [manualCode, setManualCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const timerRef = useRef(null);
   const processedRef = useRef(false);
@@ -121,12 +122,22 @@ export default function BarcodeScanner({ onResult, onClose }) {
       const detector = await getDetector();
       if (!detector || !mountedRef.current) return;
 
+      // Create offscreen canvas for frame capture (needed for iOS compatibility)
+      const canvas = document.createElement('canvas');
+      canvasRef.current = canvas;
+      const ctx = canvas.getContext('2d');
+
       let busy = false;
       timerRef.current = setInterval(async () => {
         if (busy || !mountedRef.current || processedRef.current || !video || video.readyState < 2) return;
         busy = true;
         try {
-          const results = await detector.detect(video);
+          // Draw video frame to canvas then scan — works on iOS where direct video detect fails
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const results = await detector.detect(imageData);
           if (results.length > 0 && mountedRef.current && !processedRef.current) {
             doLookup(results[0].rawValue);
           }
