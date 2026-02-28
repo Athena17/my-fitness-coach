@@ -5,6 +5,7 @@ import { useApp } from '../context/useApp.js';
 import { toGrams } from '../utils/ingredientCalc.js';
 import { generateId } from '../utils/idGenerator.js';
 import { hasMacroTargets } from '../utils/nutritionCalc.js';
+import BarcodeScanner from './BarcodeScanner.jsx';
 
 const GRAM_PORTION = { label: 'g', grams: 1 };
 
@@ -336,6 +337,7 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
   // "Create new ingredient" full-screen step
   const [creatingIngredient, setCreatingIngredient] = useState(null);
   // creatingIngredient = { rowIndex, name, refAmount, refUnit, kcal, protein, carbs, fat }
+  const [scanningIngredient, setScanningIngredient] = useState(false);
 
   // True when any confirmed row is expanded — locks all other interactions
   const editingRowIndex = rows.findIndex((r) => (r.matched || r.isNew) && r.editing);
@@ -564,6 +566,28 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
     onSave({ name: finalName, kcal: totals.kcal, protein: totals.protein, carbs: totals.carbs, fat: totals.fat, ingredients });
   }
 
+  // Full-screen barcode scan for ingredient
+  if (scanningIngredient) {
+    return (
+      <BarcodeScanner
+        onResult={(product) => {
+          setScanningIngredient(false);
+          setCreatingIngredient((prev) => ({
+            ...prev,
+            name: product.name,
+            refAmount: 100,
+            refUnit: 'g',
+            kcal: String(product.per100g.kcal),
+            protein: String(product.per100g.protein),
+            carbs: String(product.per100g.carbs),
+            fat: String(product.per100g.fat),
+          }));
+        }}
+        onClose={() => setScanningIngredient(false)}
+      />
+    );
+  }
+
   // Full-screen "Create New Ingredient" step
   if (creatingIngredient) {
     const ci = creatingIngredient;
@@ -579,6 +603,13 @@ export default function IngredientListFlow({ onSave, onCancel, initialData }) {
         </div>
 
         <div className="ilf-create-card">
+          <button type="button" className="ilf-scan-btn" onClick={() => setScanningIngredient(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Scan barcode to auto-fill
+          </button>
+
           <div className="ilf-create-field-group">
             <label className="ilf-create-label">Name</label>
             <input

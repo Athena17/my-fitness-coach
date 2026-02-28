@@ -9,6 +9,7 @@ import { sumNutrition, hasMacroTargets } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import { getEmoji } from '../utils/foodEmoji.js';
+import BarcodeScanner from '../components/BarcodeScanner.jsx';
 import './Today.css';
 
 const MEAL_CONFIG = [
@@ -270,7 +271,13 @@ export default function Today() {
 
   function handleConfirmSave() {
     if (!customDraft || !customDraft.mealSlot) return;
-    const { name, kcal, protein, carbs: draftCarbs, fat: draftFat, ingredients, servingsYield, servingsConsumed, mealSlot } = customDraft;
+    const { kcal, protein, carbs: draftCarbs, fat: draftFat, ingredients, servingsYield, servingsConsumed, mealSlot } = customDraft;
+    // For scanned items, append the total grams to the name so you know what the macros are for
+    let name = customDraft.name;
+    if (customDraft.scanned && customDraft.servingGrams && customDraft.numServings) {
+      const totalGrams = Math.round(customDraft.servingGrams * customDraft.numServings);
+      name = `${name} (${totalGrams}g)`;
+    }
     const cVal = draftCarbs || 0;
     const fVal = draftFat || 0;
     const yieldN = Math.max(1, servingsYield);
@@ -561,6 +568,33 @@ export default function Today() {
           />
         )}
 
+        {customStep === 'scan' && (
+          <BarcodeScanner
+            onResult={(product) => {
+              setCustomDraft({
+                name: product.name,
+                // Total macros = per serving × number of servings (starts at 1)
+                kcal: product.perServing.kcal,
+                protein: product.perServing.protein,
+                carbs: product.perServing.carbs,
+                fat: product.perServing.fat,
+                // Scan-specific fields
+                scanned: true,
+                perServing: product.perServing,
+                servingLabel: product.servingSize || `${product.servingGrams}g`,
+                servingGrams: product.servingGrams,
+                numServings: 1,
+                servingsYield: 1,
+                servingsConsumed: 1,
+                mealSlot: getDefaultMeal(),
+                saveToMyMeals: true,
+              });
+              navigateTo('confirm');
+            }}
+            onClose={handleCustomClose}
+          />
+        )}
+
         {customStep === 'confirm' && customDraft && (() => {
           const perServing = customDraft.servingsYield > 1
             ? { kcal: Math.round(customDraft.kcal / customDraft.servingsYield), protein: Math.round(customDraft.protein / customDraft.servingsYield) }
@@ -600,6 +634,39 @@ export default function Today() {
                 </div>
               </div>
 
+              {customDraft.scanned && customDraft.perServing && (
+                <div className="confirm-card">
+                  <div className="confirm-serving-info">
+                    <span className="confirm-serving-label">1 serving = {customDraft.servingLabel}</span>
+                    <span className="confirm-serving-macros">
+                      {customDraft.perServing.kcal} cal · {customDraft.perServing.protein}g protein
+                    </span>
+                  </div>
+                  <div className="confirm-servings-count">
+                    <label className="confirm-label">How many servings?</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      className="confirm-input"
+                      min="0.5"
+                      step="0.5"
+                      value={customDraft.numServings}
+                      onChange={(e) => setCustomDraft((d) => {
+                        const n = Math.max(0, Number(e.target.value) || 0);
+                        return {
+                          ...d,
+                          numServings: n,
+                          kcal: Math.round(d.perServing.kcal * n),
+                          protein: Math.round(d.perServing.protein * n),
+                          carbs: Math.round(d.perServing.carbs * n),
+                          fat: Math.round(d.perServing.fat * n),
+                        };
+                      })}
+                    />
+                  </div>
+                </div>
+              )}
+
               {customDraft.ingredients && customDraft.ingredients.length > 0 && (
                 <div className="confirm-ingredients">
                   <div className="confirm-ingredients-header">
@@ -636,52 +703,54 @@ export default function Today() {
                 </div>
               </div>
 
-              <div className="confirm-card">
-                <div className="confirm-servings-row">
-                  <div className="confirm-serving-group">
-                    <label className="confirm-label">{customDraft.isLeftover ? 'Available' : 'Servings prepped'}</label>
-                    {customDraft.isLeftover ? (
-                      <span className="confirm-input confirm-input--static">{customDraft.servingsYield}</span>
-                    ) : (
+              {!customDraft.scanned && (
+                <div className="confirm-card">
+                  <div className="confirm-servings-row">
+                    <div className="confirm-serving-group">
+                      <label className="confirm-label">{customDraft.isLeftover ? 'Available' : 'Servings prepped'}</label>
+                      {customDraft.isLeftover ? (
+                        <span className="confirm-input confirm-input--static">{customDraft.servingsYield}</span>
+                      ) : (
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          className="confirm-input"
+                          min="1"
+                          value={customDraft.servingsYield}
+                          onChange={(e) => setCustomDraft((d) => {
+                            const newYield = Math.max(1, Number(e.target.value) || 1);
+                            return { ...d, servingsYield: newYield, servingsConsumed: Math.min(d.servingsConsumed, newYield) };
+                          })}
+                        />
+                      )}
+                    </div>
+                    <div className="confirm-serving-group">
+                      <label className="confirm-label">{customDraft.isLeftover ? 'Eating now' : 'Having now'}</label>
                       <input
                         type="number"
                         inputMode="numeric"
                         className="confirm-input"
-                        min="1"
-                        value={customDraft.servingsYield}
-                        onChange={(e) => setCustomDraft((d) => {
-                          const newYield = Math.max(1, Number(e.target.value) || 1);
-                          return { ...d, servingsYield: newYield, servingsConsumed: Math.min(d.servingsConsumed, newYield) };
-                        })}
+                        min="0"
+                        max={customDraft.servingsYield}
+                        value={customDraft.servingsConsumed}
+                        onChange={(e) => setCustomDraft((d) => ({ ...d, servingsConsumed: Math.min(Math.max(0, Number(e.target.value) || 0), d.servingsYield) }))}
                       />
-                    )}
+                    </div>
                   </div>
-                  <div className="confirm-serving-group">
-                    <label className="confirm-label">{customDraft.isLeftover ? 'Eating now' : 'Having now'}</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      className="confirm-input"
-                      min="0"
-                      max={customDraft.servingsYield}
-                      value={customDraft.servingsConsumed}
-                      onChange={(e) => setCustomDraft((d) => ({ ...d, servingsConsumed: Math.min(Math.max(0, Number(e.target.value) || 0), d.servingsYield) }))}
-                    />
-                  </div>
-                </div>
 
-                {customDraft.servingsYield > 1 && (
-                  <div className="confirm-breakdown">
-                    <span className="confirm-breakdown-item">{perServing.kcal} cal · {perServing.protein}g per serving</span>
-                    {!customDraft.isLeftover && leftover > 0 && (
-                      <span className="confirm-breakdown-kitchen">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/></svg>
-                        {leftover} serving{leftover !== 1 ? 's' : ''} saved to kitchen
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
+                  {customDraft.servingsYield > 1 && (
+                    <div className="confirm-breakdown">
+                      <span className="confirm-breakdown-item">{perServing.kcal} cal · {perServing.protein}g per serving</span>
+                      {!customDraft.isLeftover && leftover > 0 && (
+                        <span className="confirm-breakdown-kitchen">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/></svg>
+                          {leftover} serving{leftover !== 1 ? 's' : ''} saved to kitchen
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button className="confirm-log-btn" onClick={handleConfirmSave}>
                 Log it
@@ -829,6 +898,15 @@ export default function Today() {
                   <span className="food-add-option-text">
                     <span className="food-add-option-title">Quick log</span>
                     <span className="food-add-option-desc">Enter name &amp; macros</span>
+                  </span>
+                </button>
+                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomStep('scan'); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                  <span className="food-add-option-text">
+                    <span className="food-add-option-title">Scan barcode</span>
+                    <span className="food-add-option-desc">Look up nutrition info</span>
                   </span>
                 </button>
                 </div>

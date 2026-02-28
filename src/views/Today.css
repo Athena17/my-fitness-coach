@@ -1631,6 +1631,33 @@
   opacity: 0.7;
 }
 
+.confirm-serving-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.confirm-serving-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.confirm-serving-macros {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.confirm-servings-count {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .confirm-log-btn {
   padding: 14px 24px;
   border-radius: 14px;
@@ -2100,6 +2127,28 @@
 
 .ilf-create-save-btn:active:not(:disabled) {
   opacity: 0.85;
+}
+
+/* Scan barcode button in New Ingredient form */
+.ilf-scan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.14), rgba(74, 143, 231, 0.06));
+  color: var(--color-primary);
+  border: 1px dashed rgba(74, 143, 231, 0.25);
+  margin-bottom: 10px;
+}
+
+.ilf-scan-btn:active {
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.28), rgba(74, 143, 231, 0.16));
 }
 
 /* Done button */

@@ -10,6 +10,7 @@ import { generateId } from '../utils/idGenerator.js';
 import { useTheme } from '../hooks/useTheme.js';
 import Modal from '../components/Modal.jsx';
 import SourcesSection from '../components/SourcesSection.jsx';
+import BarcodeScanner from '../components/BarcodeScanner.jsx';
 import './Profile.css';
 
 /* ——— Monthly scorecard helpers ——— */
@@ -163,6 +164,7 @@ function MyIngredientsSection() {
   const ingredients = state.personalIngredients || [];
   const [editingId, setEditingId] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const emptyForm = { name: '', amount: '', unit: 'g', kcal: '', protein: '', carbs: '', fat: '' };
   const [form, setForm] = useState(emptyForm);
 
@@ -221,13 +223,39 @@ function MyIngredientsSection() {
     setAdding(false);
   }
 
+  function handleScanResult(product) {
+    setScanning(false);
+    setForm({
+      name: product.name,
+      amount: '100',
+      unit: 'g',
+      kcal: String(product.per100g.kcal),
+      protein: String(product.per100g.protein),
+      carbs: String(product.per100g.carbs),
+      fat: String(product.per100g.fat),
+    });
+    setAdding(true);
+    setEditingId(null);
+  }
+
+  if (scanning) {
+    return <BarcodeScanner onResult={handleScanResult} onClose={() => setScanning(false)} />;
+  }
+
   return (
     <>
       <div className="section-header" style={{ marginTop: 4 }}>
         <span style={{ fontSize: '0.72rem', opacity: 0.6, fontWeight: 600 }}>Ingredients List</span>
-        <button type="button" className="ing-add-btn" onClick={startAdd} aria-label="Add ingredient">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
+        <div className="ing-header-actions">
+          <button type="button" className="ing-add-btn ing-scan-btn" onClick={() => { setScanning(true); setAdding(false); setEditingId(null); }} aria-label="Scan barcode">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </button>
+          <button type="button" className="ing-add-btn" onClick={startAdd} aria-label="Add ingredient">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
       </div>
       {adding && (
         <IngredientForm form={form} setForm={setForm} onSave={handleAddSave} onCancel={() => setAdding(false)} saveLabel="Add" />

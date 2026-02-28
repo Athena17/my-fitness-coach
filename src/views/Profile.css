@@ -1198,6 +1198,21 @@
   background: linear-gradient(135deg, rgba(139, 195, 74, 0.30), rgba(139, 195, 74, 0.20));
 }
 
+.ing-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ing-scan-btn {
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.15), rgba(74, 143, 231, 0.08));
+  color: var(--color-primary);
+}
+
+.ing-scan-btn:active {
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.30), rgba(74, 143, 231, 0.20));
+}
+
 .ing-form--add {
   background: rgba(139, 195, 74, 0.04);
   border: 1px dashed rgba(139, 195, 74, 0.22);
