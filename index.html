@@ -11,22 +11,23 @@
     <title>Irada</title>
     <meta name="description" content="Irada — calorie & macro tracking app. Track your daily nutrition, set goals, and build healthy habits." />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0f1823" />
+    <meta name="theme-color" content="#c9dff0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Irada" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/my-fitness-coach/icons/apple-touch-icon.png" />
-    <script type="module" crossorigin src="/my-fitness-coach/assets/index-B4y5EJB9.js"></script>
-    <link rel="stylesheet" crossorigin href="/my-fitness-coach/assets/index-Cw7UkFx0.css">
+    <script type="module" crossorigin src="/my-fitness-coach/assets/index-CeGYGDdD.js"></script>
+    <link rel="stylesheet" crossorigin href="/my-fitness-coach/assets/index-Dy3C8nQj.css">
   <link rel="manifest" href="/my-fitness-coach/manifest.webmanifest"></head>
   <body>
     <script>
       // Apply saved theme before first paint to prevent flash
       (function(){
         var t = localStorage.getItem('nt_theme');
-        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme:dark)').matches)) {
-          document.documentElement.setAttribute('data-theme','dark');
-        }
+        var isDark = t === 'dark' || (!t && matchMedia('(prefers-color-scheme:dark)').matches);
+        if (isDark) document.documentElement.setAttribute('data-theme','dark');
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', isDark ? '#0f1823' : '#c9dff0');
       })();
     </script>
     <div id="root"></div>
