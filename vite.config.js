@@ -15,8 +15,8 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         categories: ['health', 'fitness', 'lifestyle'],
-        background_color: '#0f1823',
-        theme_color: '#0f1823',
+        background_color: '#c9dff0',
+        theme_color: '#c9dff0',
         start_url: '/my-fitness-coach/',
         scope: '/my-fitness-coach/',
         shortcuts: [

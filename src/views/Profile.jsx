@@ -726,6 +726,7 @@ export default function Profile() {
   const toggle = (key) => setOpenSection((prev) => (prev === key ? null : key));
 
   const ingredientCount = (state.personalIngredients || []).length;
+  const mealCount = (state.customMeals || []).length;
 
   return (
     <div className="profile">
@@ -965,8 +966,9 @@ export default function Profile() {
         );
       })()}
 
-      {/* ——— Nutrition Targets (merged: targets + macros + cycling) ——— */}
+      {/* ——— Nutrition & Food (grouped card) ——— */}
       <div className="settings-section">
+        {/* Nutrition Targets */}
         <button type="button" className="section-toggle" onClick={() => toggle('nutrition')}>
           <div className="section-toggle-left">
             <h2>Nutrition Targets</h2>
@@ -1195,10 +1197,55 @@ export default function Profile() {
             {saved && <p className="settings-message">Saved!</p>}
           </div>
         )}
-      </div>
 
-      {/* ——— My Ingredients ——— */}
-      <div className="settings-section">
+        <div className="settings-group-divider" />
+
+        {/* My Meals */}
+        <button type="button" className="section-toggle" onClick={() => toggle('meals')}>
+          <div className="section-toggle-left">
+            <span className="ing-section-emoji">🍽️</span>
+            <h2>My Meals</h2>
+          </div>
+          <div className="section-toggle-right">
+            {mealCount > 0 && <span className="section-toggle-summary">{mealCount} meal{mealCount !== 1 ? 's' : ''}</span>}
+            <svg className={`section-chevron${openSection === 'meals' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </button>
+        {openSection === 'meals' && (
+          <div className="section-collapse-body">
+            {mealCount === 0 ? (
+              <p className="settings-empty">No saved meals yet — meals you cook or save will appear here</p>
+            ) : (
+              <div className="settings-list">
+                {(state.customMeals || []).map((meal) => (
+                  <div key={meal.id} className="settings-list-item">
+                    <div className="settings-list-info">
+                      <span className="settings-list-name">{meal.name}</span>
+                      <span className="settings-list-meta">
+                        {Math.round(meal.kcal)} cal · {Math.round(meal.protein)}g protein
+                        {(meal.useCount || 0) > 0 && ` · used ${meal.useCount}×`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="settings-list-delete"
+                      onClick={() => dispatch({ type: 'DELETE_CUSTOM_MEAL', payload: meal.id })}
+                      aria-label="Delete meal"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="settings-group-divider" />
+
+        {/* My Ingredients */}
         <button type="button" className="section-toggle" onClick={() => toggle('ingredients')}>
           <div className="section-toggle-left">
             <span className="ing-section-emoji">🫙</span>
@@ -1216,32 +1263,20 @@ export default function Profile() {
         )}
       </div>
 
-      {/* ——— Appearance ——— */}
+      {/* ——— Preferences (Appearance + Data) ——— */}
       <div className="settings-section">
-        <button type="button" className="section-toggle" onClick={() => toggle('appearance')}>
-          <div className="section-toggle-left">
-            <h2>Appearance</h2>
+        {/* Appearance — inline, no collapse needed */}
+        <div className="cycling-toggle-row" style={{ marginBottom: 0 }}>
+          <span className="cycling-toggle-label">Appearance</span>
+          <div className="cycling-toggle-pills">
+            <button type="button" className={`cycling-pill${theme === 'light' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('light')}>Light</button>
+            <button type="button" className={`cycling-pill${theme === 'dark' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
           </div>
-          <div className="section-toggle-right">
-            <span className="section-toggle-summary">{theme === 'dark' ? 'Dark' : 'Light'}</span>
-            <svg className={`section-chevron${openSection === 'appearance' ? ' section-chevron--open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </button>
-        {openSection === 'appearance' && (
-          <div className="section-collapse-body">
-            <div className="cycling-toggle-row" style={{ marginBottom: 0 }}>
-              <span className="cycling-toggle-label">Dark mode</span>
-              <div className="cycling-toggle-pills">
-                <button type="button" className={`cycling-pill${theme === 'light' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('light')}>Light</button>
-                <button type="button" className={`cycling-pill${theme === 'dark' ? ' cycling-pill--active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
 
-      {/* ——— Data ——— */}
-      <div className="settings-section">
+        <div className="settings-group-divider" />
+
+        {/* Data — collapsible */}
         <button type="button" className="section-toggle" onClick={() => toggle('data')}>
           <div className="section-toggle-left">
             <h2>Data</h2>
@@ -1406,14 +1441,16 @@ export default function Profile() {
             </div>
           </div>
         )}
+
+        {/* About footer inside Account card */}
+        <div className="settings-group-divider" />
+        <div className="settings-about-inline">
+          <span>Irada v1.0 — Data synced to cloud.</span>
+          <button type="button" className="privacy-link" onClick={() => setShowPrivacy(true)}>Privacy Policy</button>
+        </div>
       </div>
 
       <SourcesSection />
-
-      <div className="settings-section settings-about">
-        <p>Irada v1.0 — Data synced to cloud.</p>
-        <button type="button" className="privacy-link" onClick={() => setShowPrivacy(true)}>Privacy Policy</button>
-      </div>
 
       {showPrivacy && (
         <Modal title="Privacy Policy" onClose={() => setShowPrivacy(false)}>

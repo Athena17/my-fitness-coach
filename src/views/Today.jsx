@@ -3,11 +3,10 @@ import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useCyclingConfig } from '../hooks/useCyclingConfig.js';
 import { generateId } from '../utils/idGenerator.js';
-import { getToday, formatDateKey, getWeekRange, getDayLabel } from '../utils/dateUtils.js';
+import { getToday, formatDateKey } from '../utils/dateUtils.js';
 import FoodEntryCard from '../components/FoodEntryCard.jsx';
 import { sumNutrition, hasMacroTargets } from '../utils/nutritionCalc.js';
 import ExercisePanel from '../components/ExercisePanel.jsx';
-import ScrollStrip from '../components/ScrollStrip.jsx';
 import IngredientListFlow from '../components/IngredientListFlow.jsx';
 import { getEmoji } from '../utils/foodEmoji.js';
 import './Today.css';
@@ -19,23 +18,13 @@ const MEAL_CONFIG = [
   { key: 'Snack', label: 'Snacks' },
 ];
 
-const LONG_PRESS_MS = 300;
-const TAP_THRESHOLD_PX = 8;
-
-function preventTouchScroll(e) { e.preventDefault(); }
-
-function detectMeal(x, y) {
-  for (const el of document.elementsFromPoint(x, y)) {
-    const row = el.closest('[data-meal]');
-    if (row) return row.dataset.meal;
-  }
-  return null;
-}
 
 export default function Today() {
   const { state, dispatch } = useApp();
   const [selectedDate, setSelectedDate] = useState(getToday);
-  const { todayEntries, caloriesBurned } = useDailyEntries(selectedDate);
+  const { todayEntries, caloriesBurned, todayWaterLogs, todayWaterTotal } = useDailyEntries(selectedDate);
+  const [addFoodOpen, setAddFoodOpen] = useState(false);
+  const [waterExpanded, setWaterExpanded] = useState(false);
   const [cyclingConfig] = useCyclingConfig();
   const selectedDayType = state.dayTypes?.[selectedDate] || 'rest';
   const setSelectedDayType = useCallback((type) => {
@@ -57,11 +46,20 @@ export default function Today() {
   const macroFlags = hasMacroTargets(state.targets);
   const [activeTab, setActiveTab] = useState('food');
   const today = getToday();
-  const weekDays = useMemo(() => getWeekRange(), []);
+
+  const navigateDay = useCallback((offset) => {
+    setSelectedDate(prev => {
+      const d = new Date(prev + 'T00:00:00');
+      d.setDate(d.getDate() + offset);
+      return formatDateKey(d);
+    });
+  }, []);
+
+  const selectedDateObj = useMemo(() => new Date(selectedDate + 'T00:00:00'), [selectedDate]);
+  const isToday = selectedDate === today;
 
   // Saved meals search
   const [mealQuery, setMealQuery] = useState('');
-  const [mealSearchOpen, setMealSearchOpen] = useState(false);
   const mealSearchRef = useRef(null);
 
   const savedMealResults = useMemo(() => {
@@ -71,19 +69,8 @@ export default function Today() {
     return meals.filter((m) => m.name.toLowerCase().includes(q));
   }, [state.customMeals, mealQuery]);
 
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (mealSearchRef.current && !mealSearchRef.current.contains(e.target)) {
-        setMealSearchOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   function handleSavedMealSelect(meal) {
     setMealQuery('');
-    setMealSearchOpen(false);
     handleQuickAddSelect({
       type: 'meal',
       id: meal.id,
@@ -129,126 +116,34 @@ export default function Today() {
     return unique;
   }, [state.entries, selectedDate]);
 
-  // Drag-and-drop state (sections + entry reorder)
-  const [dragItem, setDragItem] = useState(null);
+  // Quick-add meals: top 5 from saved meals + recent entries, deduplicated
+  const quickAddMeals = useMemo(() => {
+    const seen = new Set();
+    const result = [];
+    const saved = (state.customMeals || []).slice().sort((a, b) => (b.useCount || 0) - (a.useCount || 0));
+    for (const m of saved) {
+      const key = m.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push({ id: m.id, name: m.name, kcal: m.kcal, protein: m.protein, carbs: m.carbs || 0, fat: m.fat || 0, ingredients: m.ingredients });
+      if (result.length >= 5) break;
+    }
+    if (result.length < 5) {
+      for (const e of recentEntries) {
+        const key = e.name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push({ id: e.id, name: e.name, kcal: e.kcal, protein: e.protein, carbs: e.carbs || 0, fat: e.fat || 0, ingredients: e.ingredients });
+        if (result.length >= 5) break;
+      }
+    }
+    return result;
+  }, [state.customMeals, recentEntries]);
+
+  // Drag-and-drop state (entry reorder between meal slots)
   const [dragEntryId, setDragEntryId] = useState(null);
   const [dragOverMeal, setDragOverMeal] = useState(null);
 
-  // Drag refs
-  const dragRef = useRef(null);
-  const docRef = useRef(null);
-  const dropRef = useRef(null);
-
-  const removeGhost = useCallback(() => {
-    const el = document.querySelector('.qmr-ghost');
-    if (el) el.remove();
-  }, []);
-
-  const cleanupAll = useCallback(() => {
-    if (dragRef.current?.timerId) clearTimeout(dragRef.current.timerId);
-    dragRef.current = null;
-    removeGhost();
-    if (docRef.current) {
-      document.removeEventListener('pointermove', docRef.current.move);
-      document.removeEventListener('pointerup', docRef.current.up);
-      document.removeEventListener('pointercancel', docRef.current.cancel);
-      document.removeEventListener('touchmove', preventTouchScroll);
-      docRef.current = null;
-    }
-  }, [removeGhost]);
-
-  useEffect(() => cleanupAll, [cleanupAll]);
-
-  const handlePointerDown = useCallback((e, item, cardEl) => {
-    if (e.button !== 0) return;
-    const startX = e.clientX;
-    const startY = e.clientY;
-
-    const timerId = setTimeout(() => {
-      if (!dragRef.current) return;
-      dragRef.current.isDragging = true;
-      dragRef.current.item = item;
-      setDragItem(item);
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      const ghost = cardEl.cloneNode(true);
-      ghost.className = 'qmr-ghost';
-      const rect = cardEl.getBoundingClientRect();
-      ghost.style.width = rect.width + 'px';
-      ghost.style.left = (startX - rect.width / 2) + 'px';
-      ghost.style.top = (startY - rect.height / 2) + 'px';
-      document.body.appendChild(ghost);
-      dragRef.current.ghost = ghost;
-
-      const docMove = (ev) => {
-        ev.preventDefault();
-        const d = dragRef.current;
-        if (!d?.ghost) return;
-        const w = parseFloat(d.ghost.style.width);
-        const h = d.ghost.getBoundingClientRect().height;
-        d.ghost.style.left = (ev.clientX - w / 2) + 'px';
-        d.ghost.style.top = (ev.clientY - h / 2) + 'px';
-        setDragOverMeal(detectMeal(ev.clientX, ev.clientY));
-      };
-
-      const docUp = (ev) => {
-        const droppedItem = dragRef.current?.item;
-        const meal = detectMeal(ev.clientX, ev.clientY);
-        cleanupAll();
-        if (meal && droppedItem) {
-          dropRef.current(droppedItem, meal);
-        } else {
-          setDragItem(null);
-          setDragOverMeal(null);
-        }
-      };
-
-      const docCancel = () => {
-        cleanupAll();
-        setDragItem(null);
-        setDragOverMeal(null);
-      };
-
-      docRef.current = { move: docMove, up: docUp, cancel: docCancel };
-      document.addEventListener('pointermove', docMove);
-      document.addEventListener('pointerup', docUp);
-      document.addEventListener('pointercancel', docCancel);
-      document.addEventListener('touchmove', preventTouchScroll, { passive: false });
-    }, LONG_PRESS_MS);
-
-    dragRef.current = { startX, startY, timerId, isDragging: false, ghost: null, item };
-  }, [cleanupAll]);
-
-  const handlePointerMove = useCallback((e) => {
-    const d = dragRef.current;
-    if (!d || d.isDragging) return;
-    const dx = e.clientX - d.startX;
-    const dy = e.clientY - d.startY;
-    if (Math.abs(dx) > TAP_THRESHOLD_PX || Math.abs(dy) > TAP_THRESHOLD_PX) {
-      clearTimeout(d.timerId);
-      dragRef.current = null;
-    }
-  }, []);
-
-  const handlePointerUp = useCallback((e, onSelect) => {
-    const d = dragRef.current;
-    if (!d || d.isDragging) return;
-    const dx = e.clientX - d.startX;
-    const dy = e.clientY - d.startY;
-    clearTimeout(d.timerId);
-    const item = d.item;
-    dragRef.current = null;
-    if (Math.abs(dx) < TAP_THRESHOLD_PX && Math.abs(dy) < TAP_THRESHOLD_PX) {
-      onSelect(item);
-    }
-  }, []);
-
-  const handlePointerCancel = useCallback(() => {
-    const d = dragRef.current;
-    if (!d || d.isDragging) return;
-    clearTimeout(d.timerId);
-    dragRef.current = null;
-  }, []);
 
   // Helper: increment useCount on a custom meal by name
   function incrementMealUseCount(name) {
@@ -343,52 +238,6 @@ export default function Today() {
     setCustomStep('confirm');
   }
 
-  // --- Drop handler (drag-and-drop) ---
-
-  function handleDrop(item, mealKey) {
-    if (!item || !mealKey) return;
-
-    if (item.type === 'leftover') {
-      // Leftovers → open confirm step with meal pre-set
-      setCustomDraft({
-        name: item.name,
-        kcal: item.kcal,
-        protein: item.protein,
-        carbs: item.carbs || 0,
-        fat: item.fat || 0,
-        servingsYield: item.remaining,
-        servingsConsumed: 1,
-        mealSlot: mealKey,
-        isLeftover: true,
-        leftover: item.leftover,
-      });
-      setCustomStep('confirm');
-    } else {
-      // Meals (1 serving) → directly add entry
-      dispatch({
-        type: 'ADD_ENTRY',
-        payload: {
-          id: generateId(),
-          name: item.name,
-          kcal: Math.round(item.kcal),
-          protein: Math.round(item.protein),
-          carbs: Math.round(item.carbs || 0),
-          fat: Math.round(item.fat || 0),
-          meal: mealKey,
-          servingSize: 1,
-          servingUnit: 'serving',
-          timestamp: Date.now(),
-          dateKey: selectedDate,
-          ...(item.ingredients ? { ingredients: item.ingredients } : {}),
-        },
-      });
-      incrementMealUseCount(item.name);
-    }
-    setDragItem(null);
-    setDragOverMeal(null);
-  }
-  useEffect(() => { dropRef.current = handleDrop; });
-
   // --- Entry reorder drop handler ---
 
   function handleEntryDrop(entry, newMealKey) {
@@ -405,6 +254,7 @@ export default function Today() {
     if (h < 20) return 'Dinner';
     return 'Snack';
   }
+
 
   function handleListDone(result) {
     setCustomDraft((d) => ({
@@ -556,6 +406,66 @@ export default function Today() {
   if (customStep) {
     return (
       <div className="today">
+        {customStep === 'search' && (
+          <div className="add-mode-view">
+            <div className="add-mode-header">
+              <button className="add-mode-back" onClick={navigateBack}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              <span className="add-mode-title">Find a Meal</span>
+            </div>
+            <div className="search-flow">
+              <div className="search-flow-bar" ref={mealSearchRef}>
+                <svg className="add-entry-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  className="add-entry-search-input"
+                  type="text"
+                  placeholder="Search meals &amp; food…"
+                  value={mealQuery}
+                  onChange={(e) => setMealQuery(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              {/* Search results */}
+              {savedMealResults.length > 0 && (
+                <div className="search-flow-results">
+                  {savedMealResults.map((m) => (
+                    <button key={m.id} className="search-flow-item" onClick={() => handleSavedMealSelect(m)}>
+                      <span className="search-flow-emoji">{getEmoji(m.name)}</span>
+                      <div className="search-flow-info">
+                        <span className="search-flow-name">{m.name}</span>
+                        <span className="search-flow-meta">{Math.round(m.kcal)} cal · {Math.round(m.protein)}g protein</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {mealQuery.trim() && savedMealResults.length === 0 && (
+                <div className="search-flow-empty">
+                  <span className="search-flow-empty-msg">No meals found for &ldquo;{mealQuery.trim()}&rdquo;</span>
+                </div>
+              )}
+              {/* Recently Eaten in search */}
+              {!mealQuery.trim() && recentEntries.length > 0 && (
+                <div className="search-flow-section">
+                  <span className="search-flow-section-title">Recently Eaten</span>
+                  <div className="search-flow-results">
+                    {recentEntries.map((item) => (
+                      <button key={item.id} className="search-flow-item" onClick={() => handleQuickAddSelect(item)}>
+                        <span className="search-flow-emoji">{getEmoji(item.name)}</span>
+                        <div className="search-flow-info">
+                          <span className="search-flow-name">{item.name}</span>
+                          <span className="search-flow-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g protein</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {customStep === 'direct' && (
           <div className="add-mode-view">
             <div className="add-mode-header">
@@ -786,259 +696,288 @@ export default function Today() {
   // --- Main daily log ---
 
   return (
-    <div className="today">
-      {/* Day selector strip */}
-      <div className="day-strip">
-        {weekDays.map((dk) => {
-          const d = new Date(dk + 'T00:00:00');
-          const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-          const dayNum = d.getDate();
-          const isActive = dk === selectedDate;
-          const isToday = dk === today;
-          return (
-            <button
-              key={dk}
-              className={[
-                'day-strip-btn',
-                isActive && 'day-strip-btn--active',
-                isToday && !isActive && 'day-strip-btn--today',
-              ].filter(Boolean).join(' ')}
-              onClick={() => setSelectedDate(dk)}
-            >
-              <span className="day-strip-name">{dayName}</span>
-              <span className="day-strip-num">{dayNum}</span>
-              {isToday && !isActive && <span className="day-strip-dot" />}
+    <div className={`today${cyclingConfig.enabled && selectedDayType === 'training' ? ' today--training' : ''}`}>
+      {/* Date selector */}
+      <div className="date-selector">
+        <button className="date-nav-btn" onClick={() => navigateDay(-1)} aria-label="Previous day">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div className="date-selector-center">
+          <span className="date-selector-label">
+            {isToday
+              ? 'Today'
+              : selectedDateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          </span>
+          {!isToday && (
+            <button className="date-today-btn" onClick={() => setSelectedDate(today)}>
+              Back to today
             </button>
-          );
-        })}
+          )}
+        </div>
+        <button className="date-nav-btn" onClick={() => navigateDay(1)} aria-label="Next day" disabled={isToday}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
 
       {/* Training/Rest toggle (calorie cycling) — above tabs */}
       {cyclingConfig.enabled && (
         <div className="day-type-toggle">
-          <button className={`day-type-btn${selectedDayType === 'rest' ? ' day-type-btn--active' : ''}`}
-            onClick={() => setSelectedDayType('rest')}>Rest</button>
-          <button className={`day-type-btn${selectedDayType === 'training' ? ' day-type-btn--active' : ''}`}
-            onClick={() => setSelectedDayType('training')}>Training</button>
+          <button
+            className={`day-type-btn day-type-btn--rest${selectedDayType === 'rest' ? ' day-type-btn--active' : ''}`}
+            onClick={() => setSelectedDayType('rest')}
+          >Rest</button>
+          <button
+            className={`day-type-btn day-type-btn--training${selectedDayType === 'training' ? ' day-type-btn--active' : ''}`}
+            onClick={() => setSelectedDayType('training')}
+          >Train</button>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="today-tabs">
-        <button className={`today-tab ${activeTab === 'food' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('food')}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-          </svg>
-          Food
-        </button>
-        <button className={`today-tab ${activeTab === 'exercise' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('exercise')}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
-          </svg>
-          Exercise
-          {caloriesBurned > 0 && <span className="today-tab-burned">-{caloriesBurned}</span>}
-        </button>
-      </div>
+      {/* Tabs + content panel */}
+      <div className="today-tab-panel">
+        <div className="today-tabs">
+          <button className={`today-tab ${activeTab === 'food' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('food')}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+            </svg>
+            Food
+          </button>
+          <button className={`today-tab ${activeTab === 'exercise' ? 'today-tab--active' : ''}`} onClick={() => setActiveTab('exercise')}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M12 6.5v11"/><rect x="2" y="4" width="4" height="16" rx="1"/><rect x="18" y="4" width="4" height="16" rx="1"/>
+            </svg>
+            Exercise
+            {caloriesBurned > 0 && <span className="today-tab-burned">-{caloriesBurned}</span>}
+          </button>
+        </div>
 
+        <div className="today-tab-content">
       {/* Food tab */}
       {activeTab === 'food' && (() => {
-        const activeMealKey = getDefaultMeal();
         const dailyTotals = sumNutrition(todayEntries);
-        const calTarget = effectiveKcal || state.targets?.kcal || 2000;
-        const protTarget = effectiveProtein || state.targets?.protein || 120;
+        const waterTarget = state.targets?.waterTargetLiters || 2.5;
+        const waterPct = waterTarget > 0 ? Math.min(todayWaterTotal / waterTarget, 1) : 0;
+        const waterDone = todayWaterTotal >= waterTarget;
 
         return (
           <>
-            {/* Daily summary */}
-            <div className="daily-summary">
-              <span className="daily-summary-item" style={{ color: 'var(--color-kcal)' }}><span className="daily-summary-value">{Math.round(dailyTotals.kcal)}</span> / {calTarget} cal</span>
-              <span className="daily-summary-sep" />
-              <span className="daily-summary-item" style={{ color: 'var(--color-protein)' }}><span className="daily-summary-value">{Math.round(dailyTotals.protein)}</span> / {protTarget}g P</span>
-              {macroFlags.showCarbs && <>
-                <span className="daily-summary-sep" />
-                <span className="daily-summary-item" style={{ color: 'var(--color-carbs)' }}><span className="daily-summary-value">{Math.round(dailyTotals.carbs)}</span> / {effectiveCarbs}g C</span>
-              </>}
-              {macroFlags.showFat && <>
-                <span className="daily-summary-sep" />
-                <span className="daily-summary-item" style={{ color: 'var(--color-fat)' }}><span className="daily-summary-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F</span>
-              </>}
-            </div>
+            {/* Add Food button */}
+            <button
+              className={`food-add-btn ${addFoodOpen ? 'food-add-btn--active' : ''}`}
+              onClick={() => setAddFoodOpen(!addFoodOpen)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {addFoodOpen
+                  ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+                  : <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>
+                }
+              </svg>
+              {addFoodOpen ? 'Cancel' : 'Add Food'}
+            </button>
 
-            {/* Add entry bar: search saved meals + action pills */}
-            <div className="add-entry-bar">
-              <div className="add-entry-search" ref={mealSearchRef}>
-                <svg className="add-entry-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input
-                  className="add-entry-search-input"
-                  type="text"
-                  placeholder="Search saved meals…"
-                  value={mealQuery}
-                  onChange={(e) => { setMealQuery(e.target.value); setMealSearchOpen(true); }}
-                  onFocus={() => setMealSearchOpen(true)}
-                />
-                {mealSearchOpen && savedMealResults.length > 0 && (
-                  <ul className="add-entry-dropdown">
-                    {savedMealResults.map((m) => (
-                      <li key={m.id}>
-                        <button className="add-entry-dropdown-item" onClick={() => handleSavedMealSelect(m)}>
-                          <span className="add-entry-dropdown-emoji">{getEmoji(m.name)}</span>
-                          <div className="add-entry-dropdown-info">
-                            <span className="add-entry-dropdown-name">{m.name}</span>
-                            <span className="add-entry-dropdown-meta">{Math.round(m.kcal)} cal · {Math.round(m.protein)}g</span>
-                          </div>
+            {addFoodOpen && (
+              <div className="food-add-panel">
+                {quickAddMeals.length > 0 && (
+                  <div className="food-quick-add">
+                    <span className="food-quick-add-label">Quick add</span>
+                    <div className="food-quick-add-scroll">
+                      {quickAddMeals.map((meal) => (
+                        <button
+                          key={meal.id}
+                          className="food-quick-add-chip"
+                          onClick={() => {
+                            setAddFoodOpen(false);
+                            handleQuickAddSelect({ type: 'meal', ...meal });
+                          }}
+                        >
+                          <span className="food-quick-add-emoji">{getEmoji(meal.name)}</span>
+                          <span className="food-quick-add-name">{meal.name}</span>
+                          <span className="food-quick-add-cal">{Math.round(meal.kcal)}</span>
                         </button>
-                      </li>
-                    ))}
-                  </ul>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                {mealSearchOpen && mealQuery.trim() && savedMealResults.length === 0 && (
-                  <div className="add-entry-dropdown add-entry-dropdown--empty">No saved meals found</div>
-                )}
-              </div>
-              <div className="add-entry-pills">
-                <button className="add-entry-pill" onClick={() => { setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  Quick Log
+                <div className="food-add-options">
+                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setMealQuery(''); setCustomStep('search'); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <span className="food-add-option-text">
+                    <span className="food-add-option-title">Find a meal</span>
+                    <span className="food-add-option-desc">Search saved &amp; database</span>
+                  </span>
                 </button>
-                <button className="add-entry-pill" onClick={() => { setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3m0 0v7"/></svg>
-                  Cook
+                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2C9 2 4 3.5 4 8c0 3 2 5 2 5h12s2-2 2-5c0-4.5-5-6-8-6z"/>
+                    <path d="M6 13v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"/>
+                  </svg>
+                  <span className="food-add-option-text">
+                    <span className="food-add-option-title">Cook a meal</span>
+                    <span className="food-add-option-desc">Build from ingredients</span>
+                  </span>
                 </button>
-              </div>
-            </div>
-
-            {/* Recently Eaten section — hidden when empty */}
-            {recentEntries.length > 0 && (
-              <div className="dl-section">
-                <div className="dl-section-header">
-                  <span className="dl-section-title">Recently Eaten</span>
-                  {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
+                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                  <span className="food-add-option-text">
+                    <span className="food-add-option-title">Quick log</span>
+                    <span className="food-add-option-desc">Enter name &amp; macros</span>
+                  </span>
+                </button>
                 </div>
-                <ScrollStrip className="dl-section-scroll">
-                  {recentEntries.map((item) => (
-                    <button
-                      key={item.id}
-                      className={[
-                        'dl-card dl-card--recent',
-                        dragItem?.id === item.id && 'dl-card--dragging',
-                      ].filter(Boolean).join(' ')}
-                      onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget)}
-                      onPointerMove={handlePointerMove}
-                      onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
-                      onPointerCancel={handlePointerCancel}
-                      style={{ touchAction: 'pan-x' }}
-                    >
-                      <span className="dl-card-emoji">{getEmoji(item.name)}</span>
-                      <span className="dl-card-name">{item.name}</span>
-                      <span className="dl-card-meta">{Math.round(item.kcal)} cal · {Math.round(item.protein)}g</span>
-                    </button>
-                  ))}
-                </ScrollStrip>
               </div>
             )}
 
-            {/* My Kitchen section — hidden when empty */}
-            {(() => {
-              const kitchenItems = (state.leftovers || [])
-                .filter((l) => l.remainingServings > 0)
-                .map((l) => ({
-                  type: 'leftover',
-                  id: l.id,
-                  name: l.name,
-                  kcal: l.perServing.kcal,
-                  protein: l.perServing.protein,
-                  carbs: l.perServing.carbs || 0,
-                  fat: l.perServing.fat || 0,
-                  remaining: l.remainingServings,
-                  leftover: l,
-                }));
-              if (kitchenItems.length === 0) return null;
-              return (
-                <div className="dl-section">
-                  <div className="dl-section-header">
-                    <span className="dl-section-title">My Kitchen</span>
-                    {dragItem && <span className="dl-drag-hint">Drop on a meal below</span>}
-                  </div>
-                  <ScrollStrip className="dl-section-scroll">
-                    {kitchenItems.map((item) => (
-                      <div key={item.id} className="dl-card-wrap">
-                        <button
-                          className={[
-                            'dl-card dl-card--kitchen',
-                            dragItem?.id === item.id && 'dl-card--dragging',
-                          ].filter(Boolean).join(' ')}
-                          onPointerDown={(e) => handlePointerDown(e, item, e.currentTarget.closest('.dl-card-wrap').querySelector('.dl-card'))}
-                          onPointerMove={handlePointerMove}
-                          onPointerUp={(e) => handlePointerUp(e, handleQuickAddSelect)}
-                          onPointerCancel={handlePointerCancel}
-                          style={{ touchAction: 'pan-x' }}
-                        >
-                          <span className="dl-card-emoji">{getEmoji(item.name)}</span>
-                          <span className="dl-card-name">{item.name}</span>
-                          <span className="dl-card-tag">{item.remaining} left · {Math.round(item.kcal)} cal</span>
-                        </button>
-                        <button
-                          className="dl-card-discard"
-                          onClick={() => dispatch({ type: 'DELETE_LEFTOVER', payload: item.id })}
-                          aria-label="Discard"
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                        </button>
+            {/* Food log card — targets + meal categories */}
+            <div className="daily-progress">
+              <div className="daily-progress-macros">
+                <span className="daily-progress-macro">
+                  <span className="daily-progress-value">{Math.round(dailyTotals.kcal)}</span> / {effectiveKcal} cal
+                </span>
+                <span className="daily-progress-sep" />
+                <span className="daily-progress-macro">
+                  <span className="daily-progress-value">{Math.round(dailyTotals.protein)}</span> / {effectiveProtein}g P
+                </span>
+                {macroFlags.showCarbs && <>
+                  <span className="daily-progress-sep" />
+                  <span className="daily-progress-macro">
+                    <span className="daily-progress-value">{Math.round(dailyTotals.carbs)}</span> / {effectiveCarbs}g C
+                  </span>
+                </>}
+                {macroFlags.showFat && <>
+                  <span className="daily-progress-sep" />
+                  <span className="daily-progress-macro">
+                    <span className="daily-progress-value">{Math.round(dailyTotals.fat)}</span> / {effectiveFat}g F
+                  </span>
+                </>}
+              </div>
+              <div className="meals-section">
+                {MEAL_CONFIG.map(({ key: meal, label }) => {
+                  const entries = todayEntries.filter((e) => e.meal === meal);
+                  const totals = sumNutrition(entries);
+                  const isFilled = entries.length > 0;
+
+                  const anyDragging = dragEntryId;
+                  const classes = [
+                    'meal-category',
+                    isFilled && 'meal-category--filled',
+                    anyDragging && 'meal-category--drag-active',
+                    dragOverMeal === meal && 'meal-category--drop-target',
+                  ].filter(Boolean).join(' ');
+
+                  return (
+                    <div key={meal} className={classes} data-meal={meal}>
+                      <div className="meal-category-header">
+                        <span className="meal-label">{label}</span>
+                        {isFilled ? (
+                          <span className="meal-category-summary">
+                            {Math.round(totals.kcal)} cal{totals.protein > 0 ? ` · ${Math.round(totals.protein)}g P` : ''}
+                          </span>
+                        ) : (
+                          <span className="meal-category-empty">—</span>
+                        )}
                       </div>
-                    ))}
-                  </ScrollStrip>
-                </div>
-              );
-            })()}
-
-            {/* Day's Log */}
-            <div className="meals-section-header">{getDayLabel(selectedDate)}&apos;s Log</div>
-            <div className="meals-section">
-              {MEAL_CONFIG.map(({ key: meal, label }) => {
-                const entries = todayEntries.filter((e) => e.meal === meal);
-                const totals = sumNutrition(entries);
-                const isActive = meal === activeMealKey;
-                const isFilled = entries.length > 0;
-
-                const anyDragging = dragItem || dragEntryId;
-                const classes = [
-                  'meal-row',
-                  isFilled && 'meal-row--filled',
-                  isActive && 'meal-row--active',
-                  anyDragging && 'meal-row--drag-active',
-                  dragOverMeal === meal && 'meal-row--drop-target',
-                ].filter(Boolean).join(' ');
-
-                return (
-                  <div key={meal} className={classes} data-meal={meal}>
-                    <div className="meal-row-header">
-                      <span className="meal-label">{label}</span>
                       {isFilled && (
-                        <span className="meal-totals-compact">
-                          {Math.round(totals.kcal)} cal · {Math.round(totals.protein)}g
-                          {macroFlags.showCarbs && totals.carbs > 0 ? ` · C ${Math.round(totals.carbs)}g` : ''}
-                          {macroFlags.showFat && totals.fat > 0 ? ` · F ${Math.round(totals.fat)}g` : ''}
-                        </span>
+                        <div className="meal-entries-scroll">
+                          {entries.map((entry) => (
+                            <FoodEntryCard
+                              key={entry.id}
+                              entry={entry}
+                              onDelete={handleDeleteEntry}
+                              dragEntryId={dragEntryId}
+                              setDragEntryId={setDragEntryId}
+                              setDragOverMeal={setDragOverMeal}
+                              onEntryDrop={handleEntryDrop}
+                            />
+                          ))}
+                        </div>
                       )}
                     </div>
-                    {isFilled && (
-                      <ScrollStrip className="meal-entries-scroll">
-                        {entries.map((entry) => (
-                          <FoodEntryCard
-                            key={entry.id}
-                            entry={entry}
-                            onDelete={handleDeleteEntry}
-                            dragEntryId={dragEntryId}
-                            setDragEntryId={setDragEntryId}
-                            setDragOverMeal={setDragOverMeal}
-                            onEntryDrop={handleEntryDrop}
-                          />
-                        ))}
-                      </ScrollStrip>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ——— Water section ——— */}
+            <div className="food-tab-divider" />
+
+            {/* Add Water button */}
+            <button
+              className={`water-add-btn ${waterExpanded ? 'water-add-btn--active' : ''}`}
+              onClick={() => setWaterExpanded(!waterExpanded)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {waterExpanded
+                  ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+                  : <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>
+                }
+              </svg>
+              {waterExpanded ? 'Cancel' : 'Add Water'}
+            </button>
+
+            {waterExpanded && (
+              <div className="water-add-options">
+                {[0.15, 0.25, 0.5, 0.75, 1].map((amt) => (
+                  <button
+                    key={amt}
+                    className="water-add-option"
+                    onClick={() => {
+                      dispatch({
+                        type: 'ADD_WATER',
+                        payload: { id: generateId(), amountLiters: amt, dateKey: selectedDate, timestamp: Date.now() },
+                      });
+                      setWaterExpanded(false);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#50bfe8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+                    </svg>
+                    <span className="water-add-option-text">{amt >= 1 ? `${amt}L` : `${Math.round(amt * 1000)}ml`}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Water progress */}
+            <div className={`water-progress${waterDone ? ' water-progress--done' : ''}`}>
+              <div className="water-progress-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#50bfe8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+                </svg>
+                <span className="water-progress-amount">{todayWaterTotal.toFixed(1)}L <span className="water-progress-target">/ {waterTarget}L</span></span>
+                <div className="water-progress-bar">
+                  <div className="water-progress-bar-fill" style={{ width: `${waterPct * 100}%` }} />
+                </div>
+                {waterDone && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#50bfe8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 13 4 4L18 7"/></svg>
+                )}
+              </div>
+              {todayWaterLogs.length > 0 && (
+                <div className="water-log">
+                  {todayWaterLogs.map((log) => (
+                    <div key={log.id} className="water-log-item">
+                      <span className="water-log-amt">+{log.amountLiters >= 1 ? `${log.amountLiters}L` : `${Math.round(log.amountLiters * 1000)}ml`}</span>
+                      <span className="water-log-time">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <button
+                        className="water-log-delete"
+                        onClick={() => dispatch({ type: 'DELETE_WATER', payload: log.id })}
+                        aria-label="Delete"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         );
@@ -1047,6 +986,8 @@ export default function Today() {
 
       {/* Exercise tab */}
       {activeTab === 'exercise' && <ExercisePanel selectedDate={selectedDate} />}
+        </div>
+      </div>
 
       {/* Sources disclaimer */}
       <div className="ov-sources-note">

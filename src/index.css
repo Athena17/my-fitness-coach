@@ -63,7 +63,31 @@
 [data-theme="dark"] html,
 html[data-theme="dark"] {
   background: #0f1823;
-  background:
+}
+
+[data-theme="dark"] body {
+  background-color: #0f1823;
+  background-image:
+    radial-gradient(ellipse at 80% 0%,
+      rgba(46, 142, 192, 0.12) 0%,
+      rgba(56, 182, 230, 0.05) 30%,
+      transparent 60%
+    ),
+    radial-gradient(ellipse at 50% 40%,
+      rgba(56, 182, 230, 0.08) 0%,
+      rgba(46, 142, 192, 0.03) 35%,
+      transparent 65%
+    ),
+    radial-gradient(ellipse at -5% 85%,
+      rgba(26, 111, 160, 0.10) 0%,
+      rgba(46, 142, 192, 0.04) 25%,
+      transparent 55%
+    ),
+    linear-gradient(to top,
+      rgba(46, 142, 192, 0.10) 0%,
+      rgba(56, 182, 230, 0.04) 12%,
+      transparent 25%
+    ),
     linear-gradient(
       155deg,
       #0c1520 0%,
@@ -76,61 +100,7 @@ html[data-theme="dark"] {
     );
 }
 
-[data-theme="dark"] body::before {
-  background: radial-gradient(circle at center,
-    rgba(46, 142, 192, 0.18) 0%,
-    rgba(56, 182, 230, 0.10) 40%,
-    rgba(46, 158, 197, 0.04) 65%,
-    transparent 80%
-  );
-}
 
-[data-theme="dark"] body::after {
-  background: radial-gradient(circle at center,
-    rgba(26, 111, 160, 0.15) 0%,
-    rgba(46, 142, 192, 0.08) 35%,
-    rgba(56, 182, 230, 0.03) 60%,
-    transparent 80%
-  );
-}
-
-[data-theme="dark"] #root::before {
-  background: radial-gradient(circle at center,
-    rgba(56, 182, 230, 0.12) 0%,
-    rgba(46, 142, 192, 0.06) 40%,
-    rgba(47, 184, 130, 0.02) 65%,
-    transparent 80%
-  );
-}
-
-[data-theme="dark"] #root::after {
-  background:
-    linear-gradient(to top,
-      rgba(46, 142, 192, 0.12) 0%,
-      rgba(56, 182, 230, 0.07) 22%,
-      rgba(56, 182, 230, 0.03) 48%,
-      transparent 72%
-    );
-  box-shadow: 0 -14px 45px rgba(46, 142, 192, 0.06);
-}
-
-[data-theme="dark"] .app-shell::before {
-  background:
-    linear-gradient(to top,
-      rgba(56, 182, 230, 0.08) 0%,
-      rgba(46, 158, 197, 0.04) 30%,
-      transparent 60%
-    );
-}
-
-[data-theme="dark"] .app-shell::after {
-  background:
-    linear-gradient(to top,
-      rgba(46, 142, 192, 0.06) 0%,
-      rgba(56, 182, 230, 0.02) 40%,
-      transparent 100%
-    );
-}
 
 /* Dark mode overrides for hardcoded glass/card colors */
 /* progress-card overrides moved to Profile.css / History.css to avoid specificity conflicts */
@@ -184,9 +154,25 @@ html[data-theme="dark"] {
 [data-theme="dark"] .update-toast-btn { background: #0f1823; color: #e8edf4; }
 
 /* ——— Dark mode: Today.css overrides ——— */
-[data-theme="dark"] .today-tabs {
+[data-theme="dark"] .day-type-toggle {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .day-type-btn--rest.day-type-btn--active {
+  background: rgba(46, 142, 192, 0.2);
+  color: var(--color-primary-light);
+}
+[data-theme="dark"] .day-type-btn--training.day-type-btn--active {
+  background: rgba(255, 107, 43, 0.2);
+  color: #ff8c5a;
+}
+[data-theme="dark"] .today-tab-panel {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .today-tabs {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
 }
 [data-theme="dark"] .today-tab--active {
   background: rgba(255, 255, 255, 0.10);
@@ -195,39 +181,26 @@ html[data-theme="dark"] {
 [data-theme="dark"] .today-tab--active::after {
   background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.04) 42%, rgba(200, 230, 250, 0.08) 48%, rgba(56, 182, 230, 0.10) 50%, rgba(200, 230, 250, 0.08) 52%, rgba(56, 182, 230, 0.04) 58%, transparent 75%);
 }
-[data-theme="dark"] .day-strip-btn--active {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+[data-theme="dark"] .date-selector {
+  background: var(--color-surface);
+  border-color: var(--glass-border);
 }
-[data-theme="dark"] .day-strip-btn--today {
-  background: rgba(77, 184, 217, 0.10);
-}
-[data-theme="dark"] .day-strip-dot {
-  background: var(--color-primary);
-}
-[data-theme="dark"] .meal-row {
-  background: rgba(255, 255, 255, 0.02);
-}
-[data-theme="dark"] .meal-add-btn {
+[data-theme="dark"] .date-nav-btn:active {
   background: rgba(77, 184, 217, 0.12);
 }
-[data-theme="dark"] .meal-empty-prompt {
+[data-theme="dark"] .date-today-btn {
+  background: rgba(77, 184, 217, 0.12);
+}
+[data-theme="dark"] .daily-progress {
+  background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="dark"] .meals-section {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .meal-category--drag-active {
   border-color: rgba(77, 184, 217, 0.15);
 }
-[data-theme="dark"] .meal-empty-prompt:active {
-  background: rgba(77, 184, 217, 0.06);
-  border-color: rgba(77, 184, 217, 0.25);
-}
-[data-theme="dark"] .meal-row--filled {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-[data-theme="dark"] .meal-row--filled::after {
-  background: linear-gradient(110deg, transparent 25%, rgba(56, 182, 230, 0.03) 40%, rgba(255, 255, 255, 0.06) 46%, rgba(200, 230, 250, 0.08) 50%, rgba(255, 255, 255, 0.06) 54%, rgba(56, 182, 230, 0.03) 60%, transparent 75%);
-}
-[data-theme="dark"] .meal-row--drag-active {
-  border-color: rgba(77, 184, 217, 0.15);
-}
-[data-theme="dark"] .meal-row--drop-target {
+[data-theme="dark"] .meal-category--drop-target {
   background: rgba(77, 184, 217, 0.08);
   box-shadow: 0 0 0 3px rgba(77, 184, 217, 0.1), 0 2px 12px rgba(0, 0, 0, 0.2);
 }
@@ -675,7 +648,38 @@ html {
   line-height: 1.5;
   color: var(--color-text);
   background: #c9dff0;
-  background:
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100dvh;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  background-color: #c9dff0;
+  background-image:
+    radial-gradient(ellipse at 80% 0%,
+      rgba(46, 142, 192, 0.25) 0%,
+      rgba(56, 182, 230, 0.12) 30%,
+      transparent 60%
+    ),
+    radial-gradient(ellipse at 50% 40%,
+      rgba(56, 182, 230, 0.15) 0%,
+      rgba(46, 142, 192, 0.06) 35%,
+      transparent 65%
+    ),
+    radial-gradient(ellipse at -5% 85%,
+      rgba(26, 111, 160, 0.20) 0%,
+      rgba(46, 142, 192, 0.10) 25%,
+      transparent 55%
+    ),
+    linear-gradient(to top,
+      rgba(46, 142, 192, 0.18) 0%,
+      rgba(56, 182, 230, 0.08) 12%,
+      transparent 25%
+    ),
     linear-gradient(
       155deg,
       #c4dff5 0%,
@@ -686,76 +690,9 @@ html {
       #c2ddf3 85%,
       #d2e6f6 100%
     );
-  background-attachment: fixed;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  min-height: 100dvh;
-  position: relative;
-  width: 100%;
-  max-width: 100vw;
-}
-
-/* Animated ocean blobs for glass morphism depth */
-body::before,
-body::after {
-  content: '';
-  position: fixed;
-  border-radius: 50%;
-  z-index: -1;
-  pointer-events: none;
-  will-change: transform;
-}
-
-body::before {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle at center,
-    rgba(46, 142, 192, 0.35) 0%,
-    rgba(56, 182, 230, 0.20) 40%,
-    rgba(46, 158, 197, 0.08) 65%,
-    transparent 80%
-  );
-  top: -140px;
-  right: -100px;
-  filter: blur(50px);
-  animation: bg-float-1 16s ease-in-out infinite;
-}
-
-body::after {
-  width: 650px;
-  height: 650px;
-  background: radial-gradient(circle at center,
-    rgba(26, 111, 160, 0.30) 0%,
-    rgba(46, 142, 192, 0.18) 35%,
-    rgba(56, 182, 230, 0.06) 60%,
-    transparent 80%
-  );
-  bottom: -60px;
-  left: -120px;
-  filter: blur(55px);
-  animation: bg-float-2 20s ease-in-out infinite;
-}
-
-@keyframes bg-float-1 {
-  0% { transform: translate(0, 0) scale(1); }
-  15% { transform: translate(20px, 16px) scale(1.04); }
-  35% { transform: translate(35px, 28px) scale(1.08); }
-  55% { transform: translate(14px, 35px) scale(1.03); }
-  75% { transform: translate(-12px, 10px) scale(0.96); }
-  100% { transform: translate(0, 0) scale(1); }
-}
-
-@keyframes bg-float-2 {
-  0% { transform: translate(0, 0) scale(1); }
-  20% { transform: translate(-24px, -10px) scale(1.05); }
-  45% { transform: translate(-14px, -22px) scale(0.97); }
-  70% { transform: translate(18px, -8px) scale(1.04); }
-  100% { transform: translate(0, 0) scale(1); }
-}
+/* Ocean blobs baked into body background — no separate GPU layers */
 
 #root {
   min-height: 100dvh;
@@ -763,101 +700,52 @@ body::after {
   flex-direction: column;
   overflow-x: hidden;
   width: 100%;
+  background-color: #c9dff0;
 }
 
-/* Third accent blob — ocean center glow */
-#root::before {
-  content: '';
-  position: fixed;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center,
-    rgba(56, 182, 230, 0.25) 0%,
-    rgba(46, 142, 192, 0.12) 40%,
-    rgba(47, 184, 130, 0.05) 65%,
-    transparent 80%
-  );
-  top: 35%;
-  left: 50%;
-  transform: translateX(-50%);
-  filter: blur(60px);
-  z-index: -1;
-  pointer-events: none;
-  will-change: transform;
-  animation: bg-float-3 22s ease-in-out infinite;
+[data-theme="dark"] #root {
+  background-color: #0f1823;
 }
 
-@keyframes bg-float-3 {
-  0% { transform: translateX(-50%) translate(0, 0) scale(1); }
-  25% { transform: translateX(-50%) translate(14px, -18px) scale(1.06); }
-  50% { transform: translateX(-50%) translate(-8px, -24px) scale(1.10); }
-  75% { transform: translateX(-50%) translate(-16px, -6px) scale(1.03); }
-  100% { transform: translateX(-50%) translate(0, 0) scale(1); }
-}
-
-/* ——— Ocean waves at screen bottom (3 layers) ——— */
-#root::after {
+/* ——— Ocean waves at screen bottom (lightweight, no blur) ——— */
+.app-shell::before {
   content: '';
   position: fixed;
   bottom: -6px;
   left: -8%;
   width: 116%;
-  height: 170px;
+  height: 160px;
   background:
     linear-gradient(to top,
-      rgba(46, 142, 192, 0.24) 0%,
-      rgba(56, 182, 230, 0.16) 22%,
-      rgba(56, 182, 230, 0.09) 48%,
-      rgba(46, 158, 197, 0.03) 72%,
+      rgba(46, 142, 192, 0.22) 0%,
+      rgba(56, 182, 230, 0.14) 22%,
+      rgba(56, 182, 230, 0.07) 48%,
       transparent 100%
     );
   border-radius: 50% 50% 0 0;
   pointer-events: none;
   z-index: 0;
   animation: bottom-wave-1 4s ease-in-out infinite;
-  box-shadow: 0 -14px 45px rgba(46, 142, 192, 0.12);
+  box-shadow: 0 -10px 40px rgba(46, 142, 192, 0.10);
 }
 
-/* Second wave layer — offset rhythm */
-.app-shell::before {
+.app-shell::after {
   content: '';
   position: fixed;
   bottom: -10px;
   left: -6%;
   width: 112%;
-  height: 130px;
+  height: 120px;
   background:
     linear-gradient(to top,
-      rgba(56, 182, 230, 0.18) 0%,
-      rgba(46, 158, 197, 0.10) 30%,
-      rgba(46, 142, 192, 0.04) 60%,
-      transparent 100%
+      rgba(56, 182, 230, 0.16) 0%,
+      rgba(46, 158, 197, 0.08) 30%,
+      transparent 60%
     );
   border-radius: 45% 55% 0 0;
   pointer-events: none;
   z-index: 0;
   animation: bottom-wave-2 5.5s ease-in-out infinite;
-}
-
-/* Third wave layer — subtle, slow */
-.app-shell::after {
-  content: '';
-  position: fixed;
-  bottom: -4px;
-  left: -10%;
-  width: 120%;
-  height: 100px;
-  background:
-    linear-gradient(to top,
-      rgba(46, 142, 192, 0.14) 0%,
-      rgba(56, 182, 230, 0.06) 40%,
-      transparent 100%
-    );
-  border-radius: 55% 45% 0 0;
-  pointer-events: none;
-  z-index: 0;
-  animation: bottom-wave-3 7s ease-in-out infinite;
 }
 
 @keyframes bottom-wave-1 {
@@ -872,9 +760,24 @@ body::after {
   70% { transform: translateY(-10px) scaleX(1.01); }
 }
 
-@keyframes bottom-wave-3 {
-  0%, 100% { transform: translateY(0) scaleX(1); }
-  50% { transform: translateY(-5px) scaleX(1.02); }
+/* Dark mode waves — subtler */
+[data-theme="dark"] .app-shell::before {
+  background:
+    linear-gradient(to top,
+      rgba(46, 142, 192, 0.12) 0%,
+      rgba(56, 182, 230, 0.06) 22%,
+      transparent 72%
+    );
+  box-shadow: 0 -10px 40px rgba(46, 142, 192, 0.05);
+}
+
+[data-theme="dark"] .app-shell::after {
+  background:
+    linear-gradient(to top,
+      rgba(56, 182, 230, 0.08) 0%,
+      rgba(46, 158, 197, 0.03) 30%,
+      transparent 60%
+    );
 }
 
 /* ——— Ocean shimmer shared keyframe ——— */

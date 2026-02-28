@@ -13,6 +13,8 @@ export function useTheme() {
     setThemeState(t);
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('nt_theme', t);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#0f1823' : '#c9dff0');
   }, []);
 
   // Sync on mount (in case HTML script and React disagree)

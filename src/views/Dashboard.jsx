@@ -1,10 +1,9 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/useApp.js';
 import { useDailyEntries } from '../hooks/useDailyEntries.js';
 import { useEffectiveTargets } from '../hooks/useEffectiveTargets.js';
 import { sumNutrition, calcWeightChange, hasMacroTargets } from '../utils/nutritionCalc.js';
 import { getWeekRange, getToday } from '../utils/dateUtils.js';
-import { generateId } from '../utils/idGenerator.js';
 import './Dashboard.css';
 
 /* Hero ring constants */
@@ -167,31 +166,10 @@ export default function Dashboard() {
   const { kcal: effectiveKcal, protein: effectiveProtein, carbs: effectiveCarbs, fat: effectiveFat, dayType, cyclingEnabled } = useEffectiveTargets();
   const macroFlags = hasMacroTargets(targets);
   const [mounted, setMounted] = useState(false);
-  const [waterSplash, setWaterSplash] = useState(false);
-  const [waterFlood, setWaterFlood] = useState(false);
-  const [lastWaterAmt, setLastWaterAmt] = useState(null);
 
   useEffect(() => { requestAnimationFrame(() => setMounted(true)); }, []);
 
   const waterTarget = targets.waterTargetLiters || 2.5;
-
-  const handleWaterAdd = useCallback((liters) => {
-    const isFlooding = todayWaterTotal >= waterTarget;
-    dispatch({
-      type: 'ADD_WATER',
-      payload: {
-        id: generateId(),
-        amountLiters: liters,
-        dateKey: getToday(),
-        timestamp: Date.now(),
-      },
-    });
-    setLastWaterAmt(liters);
-    setWaterSplash(true);
-    if (isFlooding) setWaterFlood(true);
-    const dur = isFlooding ? 1400 : 700;
-    setTimeout(() => { setWaterSplash(false); setWaterFlood(false); setLastWaterAmt(null); }, dur);
-  }, [dispatch, todayWaterTotal, waterTarget]);
 
   const todayKcalTarget = effectiveKcal || targets.kcal;
   const todayProteinTarget = effectiveProtein || targets.protein;
@@ -585,9 +563,9 @@ export default function Dashboard() {
         }[tier];
 
         return (
-          <div className={`ov-water-wrap${waterSplash ? ' ov-water-wrap--splash' : ''}${waterFlood ? ' ov-water-wrap--flood' : ''}`}>
+          <div className="ov-water-wrap">
             <div className={`ov-water-float ov-water-float--${tier}`}>
-              {/* Left column: glass + controls */}
+              {/* Glass display — ambient only, no controls */}
               <div className="ov-water-left">
                 <svg className="ov-water-glass" width="28" height="38" viewBox="0 0 24 32" fill="none">
                   <defs>
@@ -618,42 +596,13 @@ export default function Dashboard() {
                       </>}
                     </>;
                   })()}
-                  {/* Glass body — straight cylinder, rounded bottom */}
                   <path d="M5 4 L5 25 Q5 30 12 30 Q19 30 19 25 L19 4"
                     stroke={waterColors.stroke} strokeWidth="1.2" fill="none" opacity="0.4" strokeLinejoin="round"/>
-                  {/* Rim — straight lip, slightly wider */}
                   <line x1="4" y1="4" x2="20" y2="4"
                     stroke={waterColors.stroke} strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-                  {/* Glass shine */}
                   <line x1="7.5" y1="7" x2="7.5" y2="25"
                     stroke="rgba(255,255,255,0.4)" strokeWidth="1.2" strokeLinecap="round"/>
-                  {/* Overflow bulge when flooding */}
-                  {waterFlood && (
-                    <path d="M5 4 Q8 0.5 12 2 Q16 0.5 19 4" fill="url(#water-grad)" className="ov-water-overflow"/>
-                  )}
                 </svg>
-                {/* Flood droplets */}
-                {waterFlood && <>
-                  <span className="ov-flood-drop ov-flood-drop--1" />
-                  <span className="ov-flood-drop ov-flood-drop--2" />
-                  <span className="ov-flood-drop ov-flood-drop--3" />
-                  <span className="ov-flood-drop ov-flood-drop--4" />
-                  <span className="ov-flood-drop ov-flood-drop--5" />
-                </>}
-                <div className="ov-water-controls">
-                  <button className="ov-water-ctrl" aria-label="Add 0.25L"
-                    onClick={() => handleWaterAdd(0.25)}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                  </button>
-                  <button className="ov-water-ctrl" aria-label="Remove 0.25L"
-                    disabled={todayWaterTotal <= 0}
-                    onClick={() => {
-                      const logs = (state.waterLogs || []).filter(l => l.dateKey === getToday());
-                      if (logs.length > 0) dispatch({ type: 'DELETE_WATER', payload: logs[logs.length - 1].id });
-                    }}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                  </button>
-                </div>
               </div>
               {/* Right side: hint (top) + amount (bottom) */}
               <div className="ov-water-right">
@@ -689,8 +638,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            {/* Splash feedback */}
-            {waterSplash && <span className="ov-water-splash">+{lastWaterAmt === 1 ? '1L' : `${lastWaterAmt * 1000}ml`}</span>}
           </div>
         );
       })()}
