@@ -59,12 +59,14 @@
 .today--training .meal-entries-scroll .fec-card {
   border-color: rgba(var(--_accent), 0.08);
 }
-.today--training .food-add-option {
-  background: rgba(var(--_accent), 0.06);
-  color: var(--color-primary);
+.today--training .food-add-menu {
+  border-color: rgba(var(--_accent), 0.12);
 }
-.today--training .food-add-option:active {
-  background: rgba(var(--_accent), 0.12);
+.today--training .food-add-row:active {
+  background: rgba(var(--_accent), 0.08);
+}
+.today--training .food-add-row-icon {
+  color: var(--color-primary);
 }
 .today--training .food-quick-add-chip {
   background: rgba(var(--_accent), 0.06);
@@ -828,9 +830,72 @@
 .food-add-options {
   display: flex;
   flex-direction: column;
-  background: rgba(46, 142, 192, 0.03);
+  gap: 8px;
+}
+
+/* ——— Action menu ——— */
+.food-add-menu {
+  display: flex;
+  flex-direction: column;
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+}
+
+.food-add-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.food-add-row:not(:last-child) {
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.food-add-row:active {
+  background: var(--color-surface-highlight);
+}
+
+.food-add-row-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.food-add-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.food-add-row-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.food-add-row-desc {
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  opacity: 0.65;
+  line-height: 1.2;
+}
+
+.food-add-row-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  opacity: 0.4;
 }
 
 /* ——— Quick add strip ——— */
@@ -915,49 +980,26 @@
   flex-shrink: 0;
 }
 
-.food-add-option {
+/* Scan button inside Log New form */
+.direct-scan-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  font-family: var(--font-sans);
-  color: var(--color-text);
-  text-align: left;
-  transition: background 0.1s;
-  min-height: 48px;
-}
-
-.food-add-option:not(:last-child) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.food-add-option:active {
-  background: rgba(46, 142, 192, 0.06);
-}
-
-.food-add-option svg {
-  flex-shrink: 0;
-  color: var(--color-primary);
-}
-
-.food-add-option-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.food-add-option-title {
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 0.78rem;
   font-weight: 600;
-  line-height: 1.2;
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.14), rgba(74, 143, 231, 0.06));
+  color: var(--color-primary);
+  border: 1px dashed rgba(74, 143, 231, 0.25);
+  margin-bottom: 4px;
 }
 
-.food-add-option-desc {
-  font-size: 0.62rem;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  opacity: 0.7;
-  line-height: 1.2;
+.direct-scan-btn:active {
+  background: linear-gradient(135deg, rgba(74, 143, 231, 0.28), rgba(74, 143, 231, 0.16));
 }
 
 /* ——— Daily food log ——— */

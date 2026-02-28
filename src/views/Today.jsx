@@ -171,7 +171,12 @@ export default function Today() {
     if (navStack.length > 0) {
       const prev = navStack[navStack.length - 1];
       setNavStack((s) => s.slice(0, -1));
-      setCustomStepRaw(prev);
+      if (prev === 'menu') {
+        setCustomStepRaw(null);
+        setAddFoodOpen(true);
+      } else {
+        setCustomStepRaw(prev);
+      }
     } else {
       handleCustomClose();
     }
@@ -417,9 +422,9 @@ export default function Today() {
           <div className="add-mode-view">
             <div className="add-mode-header">
               <button className="add-mode-back" onClick={navigateBack}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
-              <span className="add-mode-title">Find a Meal</span>
+              <span className="add-mode-title">Search My Meals</span>
             </div>
             <div className="search-flow">
               <div className="search-flow-bar" ref={mealSearchRef}>
@@ -477,11 +482,17 @@ export default function Today() {
           <div className="add-mode-view">
             <div className="add-mode-header">
               <button className="add-mode-back" onClick={navigateBack}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
-              <span className="add-mode-title">Quick Log</span>
+              <span className="add-mode-title">Log New</span>
             </div>
             <div className="direct-form">
+              <button type="button" className="direct-scan-btn" onClick={() => navigateTo('scan')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Scan barcode to auto-fill
+              </button>
               <div className="direct-form-group">
                 <label className="confirm-label">Meal name</label>
                 <input
@@ -871,44 +882,38 @@ export default function Today() {
                     </div>
                   </div>
                 )}
-                <div className="food-add-options">
-                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setMealQuery(''); setCustomStep('search'); }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                  <span className="food-add-option-text">
-                    <span className="food-add-option-title">Find a meal</span>
-                    <span className="food-add-option-desc">Search saved &amp; database</span>
-                  </span>
-                </button>
-                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal() }); setCustomStep('list'); }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2C9 2 4 3.5 4 8c0 3 2 5 2 5h12s2-2 2-5c0-4.5-5-6-8-6z"/>
-                    <path d="M6 13v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"/>
-                  </svg>
-                  <span className="food-add-option-text">
-                    <span className="food-add-option-title">Cook a meal</span>
-                    <span className="food-add-option-desc">Build from ingredients</span>
-                  </span>
-                </button>
-                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setCustomStep('direct'); }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
-                  </svg>
-                  <span className="food-add-option-text">
-                    <span className="food-add-option-title">Quick log</span>
-                    <span className="food-add-option-desc">Enter name &amp; macros</span>
-                  </span>
-                </button>
-                <button className="food-add-option" onClick={() => { setAddFoodOpen(false); setCustomStep('scan'); }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-                  </svg>
-                  <span className="food-add-option-text">
-                    <span className="food-add-option-title">Scan barcode</span>
-                    <span className="food-add-option-desc">Look up nutrition info</span>
-                  </span>
-                </button>
+                <div className="food-add-menu">
+                  <button className="food-add-row" onClick={() => { setAddFoodOpen(false); setMealQuery(''); setNavStack(['menu']); setCustomStepRaw('search'); }}>
+                    <svg className="food-add-row-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span className="food-add-row-text">
+                      <span className="food-add-row-title">Search my meals</span>
+                      <span className="food-add-row-desc">Find something you&apos;ve had</span>
+                    </span>
+                    <svg className="food-add-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <button className="food-add-row" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal() }); setNavStack(['menu']); setCustomStepRaw('list'); }}>
+                    <svg className="food-add-row-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2C9 2 4 3.5 4 8c0 3 2 5 2 5h12s2-2 2-5c0-4.5-5-6-8-6z"/>
+                      <path d="M6 13v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"/>
+                    </svg>
+                    <span className="food-add-row-text">
+                      <span className="food-add-row-title">Cook new</span>
+                      <span className="food-add-row-desc">Build from ingredients</span>
+                    </span>
+                    <svg className="food-add-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  <button className="food-add-row" onClick={() => { setAddFoodOpen(false); setCustomDraft({ mealSlot: getDefaultMeal(), name: '', kcal: '', protein: '', saveToMyMeals: true }); setNavStack(['menu']); setCustomStepRaw('direct'); }}>
+                    <svg className="food-add-row-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    <span className="food-add-row-text">
+                      <span className="food-add-row-title">Log new</span>
+                      <span className="food-add-row-desc">Scan barcode or type</span>
+                    </span>
+                    <svg className="food-add-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
                 </div>
               </div>
             )}
