@@ -19,6 +19,7 @@
   padding-bottom: max(88px, calc(88px + env(safe-area-inset-bottom)));
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 .app-loading {
