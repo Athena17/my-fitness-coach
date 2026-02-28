@@ -66,14 +66,18 @@ export default function BarcodeScanner({ onResult, onClose }) {
   useEffect(() => {
     mountedRef.current = true;
 
-    let nativeDetector = null;
-    if (typeof globalThis.BarcodeDetector !== 'undefined') {
+    async function getDetector() {
+      const formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'];
+      // Try native BarcodeDetector first
+      if (typeof globalThis.BarcodeDetector !== 'undefined') {
+        try { return new globalThis.BarcodeDetector({ formats }); } catch { /* fall through */ }
+      }
+      // Polyfill for iOS / unsupported browsers
       try {
-        nativeDetector = new globalThis.BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'],
-        });
+        const { BarcodeDetector: Polyfill } = await import('barcode-detector');
+        return new Polyfill({ formats });
       } catch {
-        // not available
+        return null;
       }
     }
 
@@ -114,14 +118,15 @@ export default function BarcodeScanner({ onResult, onClose }) {
       if (!mountedRef.current) return;
       setStatus('scanning');
 
-      if (!nativeDetector) return;
+      const detector = await getDetector();
+      if (!detector || !mountedRef.current) return;
 
       let busy = false;
       timerRef.current = setInterval(async () => {
         if (busy || !mountedRef.current || processedRef.current || !video || video.readyState < 2) return;
         busy = true;
         try {
-          const results = await nativeDetector.detect(video);
+          const results = await detector.detect(video);
           if (results.length > 0 && mountedRef.current && !processedRef.current) {
             doLookup(results[0].rawValue);
           }
