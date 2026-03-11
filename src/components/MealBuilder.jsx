@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { calculateMealTotals, toGrams } from '../utils/ingredientCalc.js';
@@ -24,27 +24,26 @@ function IngredientSearch({ value, onChange, onSelect }) {
       .slice(0, 8);
   }, [value]);
 
-  const updateRect = useCallback(() => {
-    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
-  }, []);
+  const wantDropdown = open && results.length > 0;
 
   useEffect(() => {
-    if (!open || results.length === 0) return;
-    const rafId = requestAnimationFrame(updateRect);
-    const scrollables = [
-      inputRef.current?.closest('.modal-content'),
-      document.querySelector('.app-main'),
-    ].filter(Boolean);
-    scrollables.forEach((el) => el.addEventListener('scroll', updateRect, { passive: true }));
-    window.addEventListener('resize', updateRect);
-    return () => {
-      cancelAnimationFrame(rafId);
-      scrollables.forEach((el) => el.removeEventListener('scroll', updateRect));
-      window.removeEventListener('resize', updateRect);
-    };
-  }, [open, results.length, updateRect]);
+    if (!wantDropdown) return;
+    let active = true;
+    let rafId;
+    function tick() {
+      if (!active || !inputRef.current) return;
+      const r = inputRef.current.getBoundingClientRect();
+      setRect((prev) => {
+        if (prev && prev.top === r.top && prev.left === r.left && prev.width === r.width && prev.bottom === r.bottom) return prev;
+        return r;
+      });
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+    return () => { active = false; cancelAnimationFrame(rafId); };
+  }, [wantDropdown]);
 
-  const showDropdown = open && results.length > 0 && rect;
+  const showDropdown = wantDropdown && rect;
 
   return (
     <div className="mb-search-wrap">
@@ -54,7 +53,7 @@ function IngredientSearch({ value, onChange, onSelect }) {
         className="mb-input"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => { setOpen(true); requestAnimationFrame(updateRect); }}
+        onFocus={() => setOpen(true)}
         placeholder="Search ingredient…"
       />
       {showDropdown && createPortal(

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { useApp } from '../context/useApp.js';
@@ -178,23 +178,25 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
   const [rect, setRect] = useState(null);
   const results = useMemo(() => searchDb(value, allDb), [value, allDb]);
 
-  const updateRect = useCallback(() => {
-    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
-  }, []);
+  const wantDropdown = open && value.trim().length >= 2;
 
+  // Continuously track input position while dropdown is open
   useEffect(() => {
-    if (!open || value.trim().length < 2) return;
-    // Use rAF to measure after browser has finished layout and auto-scroll-into-view
-    const rafId = requestAnimationFrame(updateRect);
-    const appMain = document.querySelector('.app-main');
-    if (appMain) appMain.addEventListener('scroll', updateRect, { passive: true });
-    window.addEventListener('resize', updateRect);
-    return () => {
-      cancelAnimationFrame(rafId);
-      if (appMain) appMain.removeEventListener('scroll', updateRect);
-      window.removeEventListener('resize', updateRect);
-    };
-  }, [open, value, updateRect]);
+    if (!wantDropdown) return;
+    let active = true;
+    let rafId;
+    function tick() {
+      if (!active || !inputRef.current) return;
+      const r = inputRef.current.getBoundingClientRect();
+      setRect((prev) => {
+        if (prev && prev.top === r.top && prev.left === r.left && prev.width === r.width && prev.bottom === r.bottom) return prev;
+        return r;
+      });
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+    return () => { active = false; cancelAnimationFrame(rafId); };
+  }, [wantDropdown]);
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') {
@@ -204,7 +206,7 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
     }
   }
 
-  const showDropdown = open && value.trim().length >= 2 && rect;
+  const showDropdown = wantDropdown && rect;
 
   return (
     <div className="ilf-name-wrap">
@@ -214,7 +216,7 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
         className="ilf-field ilf-field-name"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => { setOpen(true); requestAnimationFrame(updateRect); }}
+        onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder="Ingredient name"
