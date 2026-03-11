@@ -70,7 +70,7 @@ const STEP_META = [
 ];
 
 export default function Onboarding() {
-  const { state, dispatch } = useApp();
+  const { dispatch } = useApp();
 
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
@@ -175,9 +175,10 @@ export default function Onboarding() {
     setStep(step - 1);
   }
 
-  function handleMealBuilt() {
-    // ILF dispatches to state — read from there
-    setSavedMeals(state.customMeals || []);
+  function handleMealBuilt(mealData) {
+    // state.customMeals may not have updated yet (dispatch is async),
+    // so accumulate directly from the onSave callback
+    setSavedMeals((prev) => [...prev, mealData]);
     setTutorialPhase('done');
   }
 

@@ -980,6 +980,91 @@
   flex-shrink: 0;
 }
 
+/* Kitchen leftovers section */
+.food-kitchen {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.food-kitchen-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.food-kitchen-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding: 2px 0;
+  margin: 0 -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.food-kitchen-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.food-kitchen-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  scroll-snap-align: start;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 152, 0, 0.08);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 152, 0, 0.2);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  max-width: 180px;
+}
+
+.food-kitchen-chip:active {
+  background: rgba(255, 152, 0, 0.15);
+  transform: scale(0.96);
+}
+
+.food-kitchen-emoji {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.food-kitchen-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.food-kitchen-detail {
+  font-size: 0.58rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: #ff9800;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Scan button inside Log New form */
 .direct-scan-btn {
   display: flex;
@@ -1933,8 +2018,11 @@
   width: 100%;
 }
 
-.ilf-dropdown-portal {
-  position: fixed;
+.ilf-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   z-index: 9999;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);

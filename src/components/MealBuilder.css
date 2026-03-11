@@ -117,8 +117,11 @@
 }
 
 /* Dropdown */
-.mb-dropdown-portal {
-  position: fixed;
+.mb-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   z-index: 9999;
   background: var(--color-surface);
   border: 1px solid var(--glass-border);

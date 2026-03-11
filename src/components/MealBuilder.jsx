@@ -1,5 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useMemo, useRef } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { calculateMealTotals, toGrams } from '../utils/ingredientCalc.js';
 import { useApp } from '../context/useApp.js';
@@ -14,7 +13,6 @@ function getPortions(ing) {
 function IngredientSearch({ value, onChange, onSelect }) {
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
-  const [rect, setRect] = useState(null);
 
   const results = useMemo(() => {
     if (!value || value.length < 2) return [];
@@ -24,27 +22,7 @@ function IngredientSearch({ value, onChange, onSelect }) {
       .slice(0, 8);
   }, [value]);
 
-  const updateRect = useCallback(() => {
-    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
-  }, []);
-
-  useEffect(() => {
-    if (!open || results.length === 0) return;
-    updateRect();
-    // Listen to all scrollable ancestors (modal-content, app-main, etc.)
-    const scrollables = [
-      inputRef.current?.closest('.modal-content'),
-      document.querySelector('.app-main'),
-    ].filter(Boolean);
-    scrollables.forEach((el) => el.addEventListener('scroll', updateRect, { passive: true }));
-    window.addEventListener('resize', updateRect);
-    return () => {
-      scrollables.forEach((el) => el.removeEventListener('scroll', updateRect));
-      window.removeEventListener('resize', updateRect);
-    };
-  }, [open, results.length, updateRect]);
-
-  const showDropdown = open && results.length > 0 && rect;
+  const showDropdown = open && results.length > 0;
 
   return (
     <div className="mb-search-wrap">
@@ -54,11 +32,11 @@ function IngredientSearch({ value, onChange, onSelect }) {
         className="mb-input"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => { setOpen(true); updateRect(); }}
+        onFocus={() => setOpen(true)}
         placeholder="Search ingredient…"
       />
-      {showDropdown && createPortal(
-        <div className="mb-dropdown mb-dropdown-portal" style={{ top: rect.bottom, left: rect.left, width: rect.width }}>
+      {showDropdown && (
+        <div className="mb-dropdown">
           {results.map((ing) => (
             <button
               key={ing.id}
@@ -74,8 +52,7 @@ function IngredientSearch({ value, onChange, onSelect }) {
               </span>
             </button>
           ))}
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );

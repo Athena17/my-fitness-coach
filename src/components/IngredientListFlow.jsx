@@ -1,5 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useMemo, useRef } from 'react';
 import ingredientsDatabase from '../data/ingredientsDatabase.js';
 import { useApp } from '../context/useApp.js';
 import { toGrams } from '../utils/ingredientCalc.js';
@@ -175,24 +174,7 @@ function makeMatchedRow(match) {
 function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macroFlags }) {
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
-  const [rect, setRect] = useState(null);
   const results = useMemo(() => searchDb(value, allDb), [value, allDb]);
-
-  const updateRect = useCallback(() => {
-    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
-  }, []);
-
-  useEffect(() => {
-    if (!open || value.trim().length < 2) return;
-    updateRect();
-    const appMain = document.querySelector('.app-main');
-    if (appMain) appMain.addEventListener('scroll', updateRect, { passive: true });
-    window.addEventListener('resize', updateRect);
-    return () => {
-      if (appMain) appMain.removeEventListener('scroll', updateRect);
-      window.removeEventListener('resize', updateRect);
-    };
-  }, [open, value, updateRect]);
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') {
@@ -202,7 +184,7 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
     }
   }
 
-  const showDropdown = open && value.trim().length >= 2 && rect;
+  const showDropdown = open && value.trim().length >= 2;
 
   return (
     <div className="ilf-name-wrap">
@@ -212,14 +194,14 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
         className="ilf-field ilf-field-name"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => { setOpen(true); updateRect(); }}
+        onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder="Ingredient name"
         disabled={disabled}
       />
-      {showDropdown && createPortal(
-        <div className="ilf-dropdown ilf-dropdown-portal" style={{ top: rect.bottom, left: rect.left, width: rect.width }}>
+      {showDropdown && (
+        <div className="ilf-dropdown">
           {results.length > 0 ? (
             <>
               {results.slice(0, 3).map((ing) => (
@@ -262,8 +244,7 @@ function NameInput({ value, onChange, onSelect, onConfirm, allDb, disabled, macr
               </button>
             </div>
           )}
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );
