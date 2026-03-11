@@ -2018,11 +2018,8 @@
   width: 100%;
 }
 
-.ilf-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+.ilf-dropdown-portal {
+  position: fixed;
   z-index: 9999;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
